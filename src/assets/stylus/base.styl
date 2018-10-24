@@ -1,0 +1,665 @@
+
+
+*
+  box-sizing:border-box;
+html,
+body,
+#app,
+.wrapper 
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+.login-wrap
+    background: #324157;
+
+
+body, html
+
+  font-family:'微软雅黑', 'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, sans-serif, 'Droid Sans Fallback'
+  user-select: none
+  -webkit-tap-highlight-color: transparent
+  background: $color-background
+  color: $color-text
+  margin: 0
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr,
+acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong,
+sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table,
+caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption,
+footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio,
+video
+  padding: 0
+  margin: 0
+  border: none
+  outline: none
+  font-family: '微软雅黑', arial,"Microsoft Yahei","Hiragino Sans GB",sans-serif,'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, 'Droid Sans Fallback'
+  -webkit-text-size-adjust: 100%
+  -ms-text-size-adjust: 100%
+a,a:hover
+  text-decoration: none;
+img 
+  width 100%
+  height 100%
+.clearfix:after
+  display: block
+  content: "."
+  height: 0
+  clear: both
+  visibility: hidden
+.clearfix
+  zoom: 1
+
+.floatRight
+  float: right
+.floatNone
+  float: none
+.floatLeft
+  float: left
+.pointer
+  cursor pointer
+.ui-cell 
+  position: relative
+  display: -webkit-box
+  display: -moz-box
+  display: -webkit-flex
+  display: -ms-flexbox
+  display: flex
+  -webkit-box-align: center
+  -moz-box-align: center
+  -webkit-align-items: center
+  -ms-flex-align: center
+  align-items: center
+.ui-primary
+  -webkit-box-flex: 1
+  -webkit-flex: 1
+  -ms-flex: 1
+  flex: 1
+.ui-cell-lt 
+  -webkit-align-self: flex-start
+  -moz-align-self: flex-start
+  align-self: flex-start
+.ui-cell-lb
+  justify-content: space-between
+.ui-cell-la
+  justify-content: space-around
+.ui-cell-lc
+  justify-content: center
+.ui-cell-lr
+  justify-content: flex-end
+.ui-cell-cl
+  flex-direction: column
+.ui-cell-hh
+  flex-wrap:wrap
+  justify-content:space-between
+.ui-cell-ft 
+  text-align: right
+  color: #aaa
+  -webkit-box-align: center
+  -webkit-align-items: center
+  -ms-flex-align: center
+  align-items: center
+.ui-wrap
+  flex-wrap: wrap
+.ui-cell-bt
+  align-self:flex-end
+.ui-nowrap 
+  max-width: 100%
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+.clearfix::after
+  content: ""
+  display: block
+  height: 0
+  clear: both
+  visibility: hidden
+.ui-nowrap, .ui-nowrap-flex, .ui-nowrap-2, .ui-nowrap-3 
+  overflow: hidden
+  text-overflow: ellipsis
+.ui-nowrap 
+  max-width: 100%
+  white-space: nowrap
+.ui-nowrap-flex, .ui-nowrap-2, .ui-nowrap-3 
+  display: -webkit-box
+  -webkit-box-orient: vertical
+.ui-nowrap-flex 
+  -webkit-line-clamp: 1
+  -webkit-box-flex: 1
+  height: inherit
+/*要截断的行数*/
+.ui-nowrap-2 
+  -webkit-line-clamp: 2
+.ui-nowrap-3
+  -webkit-line-clamp: 3
+/*文字截断*/
+.ui-nowrap-2 
+  -webkit-line-clamp: 2
+.ui-nowrap-flex, .ui-nowrap-2, .ui-nowrap-3
+  display: -webkit-box
+  -webkit-box-orient: vertical
+.ui-nowrap, .ui-nowrap-flex, .ui-nowrap-2, .ui-nowrap-3 
+  overflow: hidden
+  text-overflow: ellipsis
+
+/* 文字样式 */
+/*字体大小颜色*/
+.fsize10
+  font-size: 10px
+.fsize12
+  font-size: 12px
+.fsize14
+  font-size: 14px
+.fsize15
+  font-size: 15px
+.fsize16
+  font-size: 16px
+.fsize18
+  font-size: 18px
+.fsize20
+  font-size: 20px
+.fsize24
+  font-size: 24px
+.fsize40
+  font-size: 40px
+.fbold
+  font-weight: bold
+.color333
+  color:#333
+.color666
+  color:#666
+.color999
+  color:#999
+.colorfff
+  color:#fff;
+.color179
+  color:rgba(179,179,179,1)
+.color128
+  color:rgba(128,128,128,1)
+.color77
+  color:rgba(77,77,77,1)
+.color4d
+  color:#4d4d4d
+.color80
+  color:#808080
+.themeColor
+  color:$theme-color
+
+  /*背景色*/
+.bgWhite 
+  background: #ffffff
+.grey 
+  background: #f7f7f7
+.greyf5f5f5
+  background: #f5f5f5
+.greyf2f2f2
+  background: #f2f2f2
+.themeBg
+  background-color: $theme-color
+/*图片的大小*/
+.imgW100
+  width: 100px
+  height: 100px
+.imgW90
+  width: 90px
+  height: 90px
+.imgW80
+  width: 80px
+  height: 80px
+.imgW70
+  width: 70px
+  height: 70px
+.imgW60
+  width: 60px
+  height: 60px
+.imgW50
+  width: 50px
+  height: 50px
+.imgW40
+  width: 40px
+  height: 40px
+.imgW38
+  width: 38px
+  height: 38px
+.iconW40
+  width: 40px
+  height: 40px
+.iconW32
+  width: 32px
+  height: 32px
+.iconW28
+  width: 28px
+  height: 28px
+.iconW24
+  width: 24px
+  height: 24px
+.iconW20
+  width: 20px
+  height: 20px
+.iconW12
+  width: 12px
+  height: 12px
+.iconW10
+  width: 10px
+  height: 10px
+.iconW17
+  width: 17px
+  height: 17px
+
+/*定位*/
+.relative
+  position: relative
+.absolute
+  position: absolute
+.fixed
+  position: fixed
+/*padding*/
+.pad5
+  padding:5px
+.pad10
+  padding:10px
+.pad15
+  padding:15px
+.pad20
+  padding:20px
+.pad30
+  padding:30px
+.padTb30
+  padding: 30px 0
+.padTb20
+  padding: 20px 0
+.padTb15
+  padding: 15px 0
+.padTb10
+  padding: 10px 0
+.padTb5
+  padding: 5px 0
+.padLr30
+  padding: 0 30px
+.padLr20
+  padding: 0 20px
+.padLr15
+  padding: 0 15px
+.padLr10
+  padding: 0 10px
+.padLr5
+  padding: 0 5px
+
+
+/*margin*/
+
+.marR5
+  margin-right: 5px 
+.marR10
+  margin-right: 10px
+.marR15
+  margin-right: 15px
+.marR20
+  margin-right: 20px
+.marR25
+  margin-right: 25px
+.marR30
+  margin-right: 30px
+.marR40
+  margin-right: 40px
+.marR50
+  margin-right: 50px
+.marT50
+  margin-top: 50px
+.marT45
+  margin-top: 45px
+.marT40
+  margin-top: 40px
+.marT35
+  margin-top: 35px
+.marT30
+  margin-top: 30px
+.marT20
+  margin-top: 20px
+.marT15
+  margin-top: 15px
+.marT12
+  margin-top: 12px
+.marT10
+  margin-top: 10px
+.marT8
+  margin-top: 8px
+.marT5
+  margin-top: 5px
+.marL50
+  margin-left: 50px
+.marL40
+  margin-left: 40px
+.marL35
+  margin-left: 35px
+.marL30
+  margin-left: 30px
+.marL25
+  margin-left: 25px
+.marL20
+  margin-left: 20px
+.marL15
+  margin-left: 15px
+.marL10
+  margin-left: 10px
+.marL8
+  margin-left: 8px
+.marL5
+  margin-left: 5px
+.marB40
+  margin-bottom: 40px
+.marB35
+  margin-bottom: 35px
+.marB30
+  margin-bottom: 30px
+.marB25
+  margin-bottom: 25px
+.marB20
+  margin-bottom: 20px
+.marB15
+  margin-bottom: 15px
+.marB10
+  margin-bottom: 10px
+.marB8
+  margin-bottom: 8px
+.marB5
+  margin-bottom: 5px
+.marB0
+  margin-bottom: 0
+
+.contBespread
+  width: 100%;
+  min-height: 100vh;
+  
+
+.ui-cell-sb 
+  justify-content: space-between;
+
+.ui-cell-sa
+  justify-content: space-around;
+
+.ui-cell-cn
+  justify-content: center;
+
+.ui-cell-end
+  justify-content: flex-end;
+
+.ui-cell-cen 
+  justify-content: center;
+
+.ui-cell-cl
+  flex-direction: column;
+
+.ui-cell-hh
+  flex-wrap:wrap;
+  justify-content:space-between;
+
+.ui-cell-ft 
+  text-align: right;
+  color: #aaa;
+  -webkit-box-align: center;
+  -webkit-align-items: center;
+  -ms-flex-align: center;
+  align-items: center;
+.pointer
+  cursor pointer
+
+// 内容样式
+.contentBox
+  position relative
+.leftBox554
+  width 554px
+  position: relative
+  float left
+  background-color #fff
+  margin-right: -100%;
+  z-index 10
+.rightBox554
+  padding-left  569px
+  width 100%
+  z-index 1
+  .rightContentBox
+      background-color #fff
+
+.pagination 
+    padding: 0 20px;
+    text-align: right;
+    margin: 20px 0;
+//  color
+.btnColor
+  background-color #00ac97
+  color #fff
+  border-color #00ac97
+
+.textCenter
+  text-align center
+textarea
+  font-family: '微软雅黑', 'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, sans-serif, 'Droid Sans Fallback'
+// #voucher .el-upload-list--picture-card .el-upload-list__item,#voucher .el-upload--picture-card
+//   width 110px
+//   height 110px 
+//   line-height: 110px;
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+input[type="number"]{
+    -moz-appearance: textfield;
+}
+
+.ms-login .el-form-item .el-input__inner{
+      height: 60px;
+      line-height: 60px;
+      border-radius: 6px;
+      padding-left: 60px;  
+      font-size 16px;
+}
+.ms-login .el-form-item--small .el-form-item__error{
+    padding-top:5px;
+  }
+.ms-login .el-input__prefix{
+  left: 20px;
+}
+
+.iframeVisible .el-dialog 
+  overflow hidden
+
+
+
+// New
+  
+/* 元素显示及空格清除和字体还原 */
+.row {
+    font-size: 0;
+    display: block;
+}
+
+.col {
+    font-size: 1rem;
+    display: inline-block;
+}
+
+.dib {
+    display: inline-block;
+}
+
+.db {
+    display: block;
+}
+
+.di {
+    display: inline;
+}
+
+/* 字体 行内 行内块元素对齐 */
+
+.tar {
+    text-align: right;
+}
+
+.tal {
+    text-align: left;
+}
+
+.tac {
+    text-align: center;
+}
+
+/* 浮动与清除浮动 */
+.cf::before,
+.cf::after {
+    height:0;
+    content:"";
+    clear:both;
+}
+
+/* 手势 背景 hover效果*/
+
+.cp {
+    cursor: pointer;
+}
+
+.cp-all > * {
+    cursor: pointer;
+}
+
+.bg-primary {
+    color: #66b1ef;
+}
+
+.hv-primary:hover {
+    color: #409eff;
+}
+
+.hv-primary > *:hover {
+    color: #409eff;
+}
+
+.bg-success {
+    color: #67c23a
+}
+
+.hv-success:hover {
+    color: #85ce61;
+}
+.hv-success > *:hover {
+    color: #85ce61;
+}
+
+.bg-warning {
+    color: #e6a23c;
+}
+
+.hv-warning:hover {
+    color: #ebb563;
+}
+
+.hv-warning > *:hover {
+    color: #ebb563;
+}
+
+
+.bg-danger {
+    color: #f78989;
+}
+
+.hv-danger {
+    color: #f56c6c
+}
+
+.hv-danger > * {
+    color: #f56c6c
+}
+
+/* 对齐 */
+
+.vam {
+    vertical-align: middle;
+}
+
+.vat {
+    vertical-align: top;
+}
+
+.vab {
+    vertical-align: bottom;
+}
+
+/* 浮动 */
+.fl {
+    float: left;
+}
+
+.fr {
+    float: right;
+}
+
+
+// 栅格
+[class*="col-"], .col{
+    display: inline-block;
+    font-size: 1rem;
+    /* === */
+    /* border: 1px solid #000; */
+    min-height: 20px;
+}
+
+.col-lg_5{
+    width: 5%;
+}
+
+.col-lg-1{
+    width: 10%;
+}
+.col-lg-1_6{
+    width: 16.66666666666667%;
+}
+
+.col-lg-2{
+    width: 20%;
+}
+.col-lg-2_5{
+    width: 25%;
+}
+
+.col-lg-3{
+    width: 30%;
+}
+
+.col-lg-3_3{
+        width: 33.333333%;
+    }
+
+.col-lg-3_5{
+        width: 35%;
+    }
+
+.col-lg-4{
+    width:40%;
+}
+
+.col-lg-5{
+    width: 50%;
+}
+
+.col-lg-5_5{
+    width: 50%;
+}
+
+.col-lg-6{
+    width: 60%;
+}
+
+.col-lg-7{
+    width:70%; 
+}
+
+.col-lg-8{
+    width: 80%;
+}
+
+.col-lg-9{
+    width: 90%;
+}
+
+.col-lg-10{
+    width: 100%;
+}

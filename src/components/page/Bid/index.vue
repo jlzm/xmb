@@ -1,0 +1,388 @@
+<template>
+    <div class="bid">
+        <div class="listBox">
+            <div class="operationBox clearfix">
+                <div class="floatLeft leftBox clearfix">
+                    <el-form :inline="true"  class="demo-form-inline" :model="searchData">
+                        <el-form-item >
+                            <el-input v-model="searchData.antistop" placeholder="请输入项目名称或客户名称"></el-input>
+                        </el-form-item>
+                        <el-form-item label="投标状态">
+                            <el-select v-model="sellStatus" placeholder="请选择投标状态" popper-class="border">
+                                <el-option value="-1" label="所有列表"></el-option>
+                                <el-option value="0" label="投标中"></el-option>
+                                <el-option value="1" label="未中标"></el-option>
+                                <el-option value="2" label="已中标"></el-option>
+                                <el-option value="3" label="未投标"></el-option>
+                                
+                                
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item>
+                            <div class="leftBtn btn"  @click="getBinList(1)">
+                        
+                                <span class="btnTitle">查询</span>
+                            </div>
+                        </el-form-item>
+                    </el-form>
+                    
+                </div>
+                <div class="floatRight rightBox clearfix">
+                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"  @click="getFormulaBar(item.clickEvent)" >
+                        <i class="iconfont marR5" :class="[item.icon]"></i>
+                        <span class="btnTitle">{{item.title}}</span>
+                    </div> 
+                </div>
+            </div> 
+            <div class="contentBox clearfix bgWhite padTb10">
+                <div class="pad20 bgWhite">
+                    <!-- 投标文件开始 -->
+                    <el-table
+                        ref="multipleTable"
+                        :data="tableData"
+                        stripe
+                        v-loading="loading"
+                        align="center"
+                        border
+                        tooltip-effect="dark"
+                        style="width: 100%"
+                        @selection-change="handleSelectionChange">
+                        <el-table-column
+                        type="selection"
+                        align="center"
+                        width="55">
+                        </el-table-column>
+                        <el-table-column
+                        type="index"
+                        label="序号"
+                        width="50"
+                        align="center">
+                        </el-table-column>
+                     
+                        <el-table-column
+                        prop="projectname"
+                        label="项目名称"
+                        
+                        align="center"
+                        show-overflow-tooltip>
+                        
+                        </el-table-column>
+                        <el-table-column
+                        prop="custmername"
+                        label="客户名称"
+                        align="center"
+                        width="240">
+                        </el-table-column>
+                      
+                        <el-table-column
+                        prop="bindsum"
+                        label="投标预算金额"
+                        align="center"
+                        width="140">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.bindsum?'待填写':'￥'+scope.row.bindsum}}</span>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="binddocumenttime"
+                        label="标书购买截止时间"
+                        align="center"
+                        width="140">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.binddocumenttime?'待填写':scope.row.binddocumenttime}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                        prop="bindendtime"
+                        label="标书投递截止时间"
+                        align="center"
+                        width="140">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.bindendtime?'待填写':scope.row.bindendtime}}</span>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="staffname"
+                        label="项目负责人"
+                        align="center"
+                        width="100">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.staffname?'待填写':scope.row.staffname}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                        prop="state"
+                        label="招标状态"
+                        align="center"
+                        width="140">
+                            <template slot-scope="scope">
+                                <span v-if="scope.row.state==0">投标中</span>
+                                <span v-if="scope.row.state==1">未中标</span>
+                                <span v-if="scope.row.state==2">已中标</span>
+                                <span v-if="scope.row.state==3">未投标</span>
+                             
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                        fixed="right"
+                        label="操作"
+                        width="200"
+                        align="center">
+                            <template slot-scope="scope">
+                                <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
+                                    <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                </el-tooltip>
+                                <el-tooltip class="item" effect="dark" content="更改项目状态" placement="top-end" >
+                                    <el-button type="warning" icon="el-icon-refresh" @click="onChangeDialogVisible(scope.row)"></el-button>
+                                </el-tooltip>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <!-- 投标文件结束 -->
+
+                </div>
+                <!-- 分页 -->
+                <div class="pagination" v-if="tableData[0]">
+                    <el-pagination 
+                    background
+                    :page-size="pageSize"
+                    layout="prev, pager, next"
+                    @current-change="pagingChange"
+                    :total="tableData[0].total">
+                    </el-pagination>
+                </div>
+
+               
+            </div>
+        </div>
+
+        <el-dialog
+        title="更改项目状态"
+        :visible.sync="changeDialogVisible"
+        width="30%"
+        >
+        <div>
+            <div class="marB20">
+                <el-radio v-model="radioState" label="2">已中标</el-radio>
+            </div>
+            <div class="marB20">
+                <el-radio v-model="radioState" label="1">未中标</el-radio>
+            </div>
+            <div >
+                <el-radio v-model="radioState" label="3">未投标</el-radio>
+            </div>
+            
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="changeDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="changeConfirm">确 定</el-button>
+        </span>
+        </el-dialog>
+
+        
+        
+
+    </div>
+    
+</template>
+<script>
+
+import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
+import vProjectInfo from '../../common/ProjectInfo.vue';  //项目信息
+import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
+
+import {Axios} from './../../../api/axios'
+import {Session} from './../../../api/axios'
+
+
+
+export default {
+  
+  data () {
+    return {
+        loading:false,
+        searchData:{
+            antistop:'',
+            area:'',
+            principal:''
+        },
+        changeDialogVisible:false,
+        pitchChangeDialog:{},
+        radioState:'2',
+        sellStatus:'-1',
+        tableData: [],
+        limits:JSON.parse(sessionStorage.getItem('limits')),
+        multipleSelection: [],
+        pageSize:20,
+        formulaList:{ //编辑栏按钮数
+            parent:'marketClue',
+            left:[
+                {
+                    title:'编辑',
+                    clickEvent:'compile',
+                    icon:'icon-iconfontedit'
+                }
+
+            ],
+            right:[
+                {
+                    title:'导出',
+                    clickEvent:'export',
+                    icon:'icon-jia'
+                }
+            ]
+        }
+    }
+  },
+  
+  components:{
+    vParticularsTab,vProjectInfo,vBidInfo
+  },
+  created(){
+      this.getBinList(1)
+  },
+  methods:{
+    //FormulaBar组件按钮事件
+    getFormulaBar(res){
+        console.log(res)
+        if(res=='export'){
+            this.exportworkorder()
+        }
+    },
+    //Tab 切换事件
+    getCutTab(res){
+        console.log(res)
+    },
+    //分页
+    pagingChange(val){
+        this.getBinList(val)
+    },
+    //表格全选事件
+    handleSelectionChange(val) {
+        this.multipleSelection = val;
+    },
+    //跳转详情事件
+    onDetails(row){
+        this.$router.push({ 
+            path: 'bidDetails',                
+            query:{
+                threadid:row.sellid,
+                id:row.id
+            }
+         })
+    },
+    //获取列表数据
+    getBinList(page){
+        this.loading = true
+        let reqBody = {
+            "api": "getbinlist",
+            "searchname": this.searchData.antistop,
+            "companyid": sessionStorage.getItem('companyid'),
+            "userid": sessionStorage.getItem('userid'),
+            "limit":this.limits['bin'],
+            "status":this.sellStatus,
+            "page":page,
+            "pagesize":this.pageSize
+        }
+
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.tableData = res.data
+                
+            }else{
+                this.tableData = []
+                this.$message.error(res.msg);
+            }
+            setTimeout(() => {
+                this.loading = false
+            }, 1000);
+            
+        })
+    },
+    //弹出
+    onChangeDialogVisible(row){
+        this.changeDialogVisible = true
+        this.pitchChangeDialog = row
+        console.log(row)
+    },
+    //确定更改
+    changeConfirm(){
+        let pitchChangeDialog = this.pitchChangeDialog 
+        let reqBody={
+            "api": "updatebinstatus",
+            "id": pitchChangeDialog.id,
+            "state": this.radioState
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.$message.success('更改成功');
+                this.changeDialogVisible = false
+                this.getBinList(1)
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+
+        })
+    },
+    //导出
+    exportworkorder(){
+        console.log(this.multipleSelection)
+        if(this.multipleSelection.length<1){
+            this.$message.error('请选择需要导出的数据')
+            return false
+        }
+        let ids = ''
+        for(let i=0;i<this.multipleSelection.length;i++){
+            if(ids){
+                ids = ids + "," + this.multipleSelection[i].id
+            }else{
+                ids = this.multipleSelection[i].id
+            }
+        }
+        window.open(Session.exportUrl+'index/exportbin?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+    }
+    
+  }
+}
+</script>
+
+<style scoped lang="stylus" rel="stylesheet/stylus">     
+    .bid
+        width 100%
+        padding 10px 15px
+        overflow hidden         
+        .operationBox
+            height 52px
+            background-color #fff
+            padding 10px
+            margin-bottom 10px
+        .btn
+            height 32px
+            line-height 32px
+            font-size 12px
+            padding 0 15px
+            border-radius 3px
+            color #fff
+            background-color #00AC97
+            cursor pointer
+            min-width 80px
+            text-align center
+        .leftBtn
+            float left
+            margin-right 5px
+        .rightBtn
+            float left 
+            margin-left 5px
+        .returnBtn
+            background-color #f4f4f4
+            color #666
+        .btnTitle
+            vertical-align middle
+    .border
+        border-color:#00AC97
+</style>
