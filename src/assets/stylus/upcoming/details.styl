@@ -1,0 +1,117 @@
+// 待办详情弹出层修改
+.particulars
+    -moz-box-shadow -6px 0px 16px #ededed
+    -webkit-box-shadow -6px 0px 16px #ededed
+    box-shadow -6px 0px 16px #ededed
+    // 公共样式
+    .personnel-avatar
+        width 50px
+        height 50px
+        border-radius 25px
+        overflow hidden
+    .particulars-desc-content-box
+        padding 20px 0 0 40px
+    // 截止事件和主要内容
+    .particulars-desc-content
+        font-size 18px
+    // 标题
+    .particulars-title-wrap
+        vertical-align bottom
+        padding 14px 20px 14px
+        // height 6%
+        .particulars-title-left
+            .iconBox-particulars
+                margin-right 10px 
+            .particulars-title-txt
+                color #333
+                font-size 16px
+        .particulars-title-right
+            .iconBox-particulars
+                margin-left 20px
+    // 详细内容
+    .particulars-content
+        overflow: auto;  
+        height 86%
+        padding 0 20px
+        .iconBox-particulars
+            margin-right 20px
+        // 截止时间
+        .particulars-endTime-wrap
+            padding 15px 0
+            .particulars-endTime-left
+               line-height 30px
+               .particulars-endTime-titleTxt
+                    font-size 18px
+                    color #333
+        //安排事项
+        .particulars-desc-wrap
+            padding-bottom 20px
+            .particulars-desc-title
+                // vertical-align top
+            .particulars-desc-bottom
+                margin-top 20px
+                font-size 14px
+                color #999
+        // 执行人
+        .particulars-executor-wrap
+            .particulars-personnel-list
+                padding 20px 0 0 20px
+                .particulars-personnel-item
+                    display: flex;
+                    flex-direction column
+                    justify-content center
+                    align-items center;
+                    position relative
+                    padding-bottom 20px
+                    .accomplish-icon
+                        position absolute
+                        height 20px
+                        width 20px
+                        border-radius 50%
+                        overflow hidden
+                        top 0
+                        right 10px
+                    .personnel-completeTxt,
+                    .personnel-completeTime
+                        padding-top 10px
+                    .personnel-completeTxt
+                        font-size 14px
+                        color #666
+                    .personnel-completeTime
+                        font-size 12px
+                        color #999
+        // 评论区
+        .particulars-comment-wrap
+            padding-top 20px
+            .particulars-comment-items
+                padding-left 40px
+                .particulars-comment-item
+                    padding-top 20px
+                    border-bottom 1px solid #f5f5f5
+                    .comment-item-title
+                        font-size 14px
+                        color #666
+                    .comment-item-desc
+                        margin 10px 0 5px 0
+                        color #333
+            
+            
+// 待办弹出层公共样式
+.particulars-title-wrap,
+.particulars-endTime-wrap,
+.particulars-desc-wrap,
+.particulars-executor-wrap
+    padding-top 20px
+    border-bottom 1px solid #f5f5f5
+    
+.particulars-content-titleTxt
+    vertical-align middle
+    font-size 14px
+    color #333
+// 新增公共样式
+
+.iconBox-particulars
+    display inline-block
+    vertical-align middle
+    width 20px
+    height 20px

@@ -25,22 +25,15 @@
                             <!-- 修改 -->
                            <el-row :gutter="20">
                                 <el-col :span="12">
-                                    <div class="remind-alert" v-if="item.state==0"
-                                        :title="item.flag==0?'一般':'紧急'"
+                                    <div class="remind-alert"
                                         type="error"
                                         :closable="false"
                                         center>
-                                        <img v-if="item.flag!=0" v-lazy="'static/img/backlogIcon/urgency.png'" alt="">
-                                        <img v-if="item.flag==0" v-lazy="'static/img/backlogIcon/general.png'" alt="">
-                                        <img v-if="item.state==1" v-lazy="'static/img/backlogIcon/complete.png'" alt="">
+                                        <img v-if="item.state==0 && item.flag!=0" v-lazy="'static/img/backlogIcon/urgency.png'" alt="">
+                                        <img v-else-if="item.state==0 && item.flag==0" v-lazy="'static/img/backlogIcon/general.png'" alt="">
+                                        <img v-else-if="item.state==1" v-lazy="'static/img/backlogIcon/complete.png'" alt="">
+                                        <img v-else v-lazy="'static/img/backlogIcon/complete.png'" alt="">
                                     </div>
-                                    <!-- <div class="remind-alert" v-if="item.state==1"
-                                        title="已完成"
-                                        type="success"
-                                        :closable="false"
-                                        center>
-                                        <img v-lazy="'static/img/backlogIcon/urgency.png'" alt="">
-                                    </div> -->
                                 </el-col>
                                 <!-- 修改 -->
                                 <el-col :span="12">
@@ -62,7 +55,7 @@
                                     <i class="iconBox">
                                         <img v-lazy="'static/img/backlogIcon/initiator.png'"  alt="">
                                     </i>
-                                    <span class="backlog-bottom-txt vam">我发起的</span>
+                                    <span class="backlog-bottom-txt vam">{{item.createpeople}}</span>
                                 </div>
 
                                 <!-- 待办截止时间 -->
@@ -131,21 +124,20 @@
                 <div class="particulars-content">
 
                     <!-- 截止完成时间区域 -->
-                    <div class="particulars-endTime-wrap">
-                        <el-row>
-                            <el-col :span="12">
-                                <div class="particulars-endTime-left row">
-                                    <i class="iconBox-particulars vam">
-                                        <img  v-lazy="'static/img/backlogIcon/timems.png'" alt="">
-                                    </i>
-                                    <!-- 截止完成时间 -->
-                                    <span class="particulars-endTime-titleTxt vam">{{backlogDetail.endtime}}</span>
-                                </div>
-                            </el-col>
-                            <el-col :span="12" class="tar">
+                     <div class="particulars-endTime-wrap">
+                        <div class="particulars-desc-title row">
+                            <i class="iconBox-particulars vam">
+                                <img  v-lazy="'static/img/backlogIcon/timems.png'" alt="">
+                            </i>
+                            <!-- 截止完成时间 -->
+                            <span class="particulars-content-titleTxt vam">截止时间</span>
+                        </div>
+                        <div class="particulars-desc-content-box row">
+                            <div class="col-lg-7 particulars-desc-content vam">{{backlogDetail.endtime}}</div>
+                            <div class="col-lg-3 vam tar fsize14">
                                 <el-button type="primary" @click="onConfirm(2)">确认完成</el-button>
-                            </el-col>
-                        </el-row>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- 待办内容区域 -->
@@ -162,7 +154,7 @@
                                 {{backlogDetail.taskdescribe}}
                             </div>
                             <div class="particulars-desc-bottom">
-                                <span>发出人</span>
+                                <span>{{backlogDetail.taskname}}</span>
                                 <span class="particulars-bottom-interval">|</span>
                                 <span class="particulars-desc-createTime">{{backlogDetail.createtime}}</span>
                             </div>
@@ -176,7 +168,7 @@
                                 <img  v-lazy="'static/img/backlogIcon/gray_executor.png'" alt="">
                             </i>
                             <span class="particulars-content-titleTxt" style="margin-right:20px">执行人</span>
-                            <span class="particulars-content-titleTxt">2/9已完成</span>
+                            <span class="particulars-content-titleTxt">{{backlogDetail.complete}}/{{backlogDetail.taskpeople}} 已完成</span>
                         </div>
                         <!-- 执行人列表 -->
                         <div class="particulars-personnel-list">
@@ -185,11 +177,11 @@
                                     <div class="personnel-avatar">
                                         <img class="personnelImg" v-lazy="{src:item.portrait,error:'static/img/portrait.png'}"  alt="">
                                     </div>
-                                    <i class="accomplish-icon" v-if="item.state==1||item.state==2">
+                                    <i class="accomplish-icon" v-if="item.state == 2">
                                         <img v-lazy="'static/img/do_complete.png'"  alt="">
                                     </i>
                                     <div class="personnel-completeTxt tac">{{item.staffname}}</div>
-                                    <div class="personnel-completeTime tac">{{item.createtime ||'待添加' }}</div>
+                                    <div v-if="item.state == 2" class="personnel-completeTime tac">{{item.createtime}}</div>
                                 </el-col>
                         </el-row>
                         </div>
@@ -202,23 +194,25 @@
                                 <img  v-lazy="'static/img/backlogIcon/comments_20.png'" alt="">
                             </i>
                             <span class="particulars-content-titleTxt" style="margin-right:5px">评论</span>
-                            <span class="particulars-content-titleTxt">(5)</span>
+                            <span class="particulars-content-titleTxt">({{backlogDetail.taskrecordlist && backlogDetail.taskrecordlist.length}})</span>
                         </div>
                         <div class="particulars-comment-items">
                             <el-row :gutter="20" v-for="(item,index) in backlogDetail.taskrecordlist" :key="index" class="particulars-comment-item">
                                 <el-col :span="3">
                                     <div class="personnel-avatar">
-                                    <img class="personnelImg" v-lazy="{src:item.portrait,error:'static/img/portrait.png'}"  alt="">
+                                        <img class="personnelImg" :src="item.portrait"  alt="">
                                     </div>
                                 </el-col>
                                 <el-col :span="21">
-                                    <el-row class="comment-item-title">
-                                        <el-col span="12">{{item.staffname}}</el-col>
-                                        <el-col span="12" class="tar">{{item.updatetime}}</el-col>
-                                    </el-row>
-                                    <!-- 评论内容 -->
-                                    <div class="comment-item-desc">
-                                        <span style="padding-top:10px">{{item.remark}}</span>
+                                    <div class="marT20">
+                                        <el-row class="comment-item-title">
+                                        <el-col :span="12">{{item.staffname}}</el-col>
+                                        <el-col :span="12" class="tar">{{item.updatetime}}</el-col>
+                                        </el-row>
+                                        <!-- 评论内容 -->
+                                        <div class="comment-item-desc flb row">
+                                            <span class="fsize16" style="line-height: 25px">{{item.remark}}</span>
+                                        </div>
                                     </div>
                                 </el-col>
                             </el-row>
@@ -229,15 +223,13 @@
                 <!-- New 评论编辑区域 -->
                 <div class="publishBox">
                     <form action="" class="comment-form row">
-                        <div class="comment-input-box dib" style="width:85%;">
-                            <el-input style="width:100%;"  placeholder="请输入内容" v-model="backlogRemark"></el-input>
+                        <div class="comment-input-box dib vam" style="width:85%;">
+                            <el-input class="vam" @keydown.native="handlerMultiEnter(backlogDetail.taskid, $event)" type="textarea" autosize  style="width:100%;"  placeholder="请输入内容" v-model="backlogRemark"></el-input>
                         </div>
-                        <div class="comment-btn-box tar dib" style="width:15%">
-                            <el-button style="width:95%;" type="primary" @click="onRecordAdd(backlogDetail.taskid)">发送</el-button>
+                        <div class="comment-btn-box tar dib vam" style="width:15%">
+                            <el-button class="vam" style="width:95%;" native-type="submit" type="primary" @click="onRecordAdd(backlogDetail.taskid)">发送</el-button>
                         </div>
                     </form>
-
-
                 </div>
             </div>
         </transition>
@@ -252,7 +244,8 @@ import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
 
-
+// css
+import "../../../assets/stylus/upcoming/details.styl"
 
 export default {
 
@@ -297,9 +290,6 @@ export default {
             ]
         },
         atTaskid:'',
-
-
-
     }
   },
 
@@ -341,7 +331,7 @@ export default {
     },
     //获取列表数据
     _getMyBacklogList(page){
-        this.loading = true
+        this.loading = true;
         let reqBody = {
             "api": "mybackloglist",
             "userid":sessionStorage.getItem('userid'),
@@ -361,10 +351,8 @@ export default {
                 }
                 this.$message.error(res.msg);
             }
-            setTimeout(() => {
-                this.loading = false
-            }, 1000);
-
+        }).then(res => {
+            this.loading = false;
         })
     },
     //分页事件
@@ -383,7 +371,9 @@ export default {
         Axios(reqBody,'user').then((res) => {
             console.log(res)
             if(res.state==10001){
-                this.show = !this.show
+                if(!show){
+                    this.show = !this.show
+                }
                 this.backlogDetail = res.data
             }else{
                 if(res.state==10002){
@@ -418,6 +408,24 @@ export default {
 
         })
     },
+
+    // 回车发送评论
+    handlerMultiEnter (taskid, e){
+        
+        let code = e.keyCode,
+                ctrl = e.ctrlKey,
+                shift = e.shiftKey,
+                alt = e.altKey;
+        
+        // if(code == "13" && ctrl && !shift && !alt) {
+        //     e.target.value += '\n';
+        // }
+        if(code == "13" && !ctrl && !shift && !alt) {
+            e.preventDefault();
+            this.onRecordAdd(taskid);
+        }
+    },
+
     //发送信息
     onRecordAdd(taskid){
         let reqBody = {
@@ -425,27 +433,23 @@ export default {
                 "userid":sessionStorage.getItem('userid'),
                 "taskid":taskid,
                 "remark":this.backlogRemark
-
-            }
-            Axios(reqBody,'user').then((res) => {
-                console.log(res)
-                if(res.state==10001){
-                    this.$message.success(res.msg);
-                    this.backlogRemark = ''
-                    this._getMyBacklogList(1)
-                    this.onMyBacklogDetail(taskid,true)
-                }else{
-                    if(res.state==10002){
-
-                    }
-                    this.$message.error(res.msg);
+        }
+        Axios(reqBody,'user').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.$message.success('评论成功');
+                this.backlogRemark = ''
+                this._getMyBacklogList(1)
+                this.onMyBacklogDetail(taskid,true)
+            }else{
+                if(res.state==10002){
+                    
                 }
-
-            })
+                this.$message.error(res.msg);
+            }
+            
+        })
     },
-
-
-
   }
 
 }
@@ -501,7 +505,7 @@ export default {
             font-size 14px
             color #666
             .backlog-bottom-items
-                padding-top 20px
+                padding-top 15px
                 .backlog-bottom-item
                     margin-right 20px
                     font-size 0
@@ -538,12 +542,10 @@ export default {
         bottom 0
         right 0
         width 31.25%
-        height 81.5%
-
+        height 88.4%
         background-color #fff
         z-index 9999
         box-shadow 0 2px 12px 0 rgba(0,0,0,.1)
-        font-size 14px
         .particularsTitle
             line-height: 32px
             padding-bottom 20px
@@ -587,15 +589,15 @@ export default {
         .publishBox
             position absolute
             margit-top 60px
-            background #f5f5f5
+            background #fbfbfb
             border-top 1px solid #f5f5f5
             bottom 0
             left 0
             padding 0 20px
             width 100%
-            height 65px
+            // height 65px
             .comment-form
-                line-height 65px
+                padding 13.5px
 
         .particularsCen
             overflow-y auto
@@ -648,126 +650,9 @@ export default {
     padding-bottom- 20px
     font-size 16px
     color #333
-    font-family MicrosoftYaHei
 
 
 
 
-// 待办详情弹出层修改
-.particulars
-    -moz-box-shadow -6px 0px 16px #ededed
-    -webkit-box-shadow -6px 0px 16px #ededed
-    box-shadow -6px 0px 16px #ededed
-    // 公共样式
-    .personnel-avatar
-        width 50px
-        height 50px
-        border-radius 25px
-        overflow hidden
-    // 标题
-    .particulars-title-wrap
-        vertical-align bottom
-        background #f5f5f5
-        padding 10px 20px 10px
-        // height 6%
-        .particulars-title-left
-            .iconBox-particulars
-                margin-right 10px 
-            .particulars-title-txt
-                color #333
-                font-size 16px
-        .particulars-title-right
-            .iconBox-particulars
-                margin-left 20px
-    // 详细内容
-    .particulars-content
-        overflow: auto;  
-        height 86%
-        padding 0 20px
-        .iconBox-particulars
-            margin-right 20px
-        // 截止时间
-        .particulars-endTime-wrap
-            padding 15px 0
-            .particulars-endTime-left
-               line-height 30px
-               .particulars-endTime-titleTxt
-                    font-size 18px
-                    color #333
-        //安排事项
-        .particulars-desc-wrap
-            padding-bottom 20px
-            .particulars-desc-title
-                // vertical-align top
-            .particulars-desc-content-box
-                padding 20px 0 0 40px
-            .particulars-desc-bottom
-                margin-top 20px
-                font-size 14px
-                color #999
-        // 执行人
-        .particulars-executor-wrap
-            padding-bottom 20px
-            .particulars-personnel-list
-                padding 20px 0 0 20px
-                .particulars-personnel-item
-                    display: flex;
-                    flex-direction column
-                    justify-content center
-                    align-items center;
-                    position relative
-                    padding-bottom 20px
-                    .accomplish-icon
-                        position absolute
-                        height 20px
-                        width 20px
-                        border-radius 50%
-                        overflow hidden
-                        top 0
-                        right 10px
-                    .personnel-completeTxt,
-                    .personnel-completeTime
-                        padding-top 10px
-                    .personnel-completeTxt
-                        font-size 14px
-                        color #666
-                    .personnel-completeTime
-                        font-size 12px
-                        color #999
-        // 评论区
-        .particulars-comment-wrap
-            padding-top 20px
-            .particulars-comment-items
-                padding-left 40px
-                .particulars-comment-item
-                    padding-top 20px
-                    .comment-item-title
-                        font-size 14px
-                        color #666
-                    .comment-item-desc
-                        margin 10px 0 5px 0
-                        font-size 16px
-                        color #333
-            
-            
-// 待办弹出层公共样式
-.particulars-title-wrap,
-.particulars-endTime-wrap,
-.particulars-desc-wrap,
-.particulars-executor-wrap
-    padding-top 20px
-    border-bottom 1px solid #f5f5f5
-    
-.particulars-content-titleTxt
-    vertical-align middle
-    font-size 14px
-    color #333
-// 新增公共样式
-
-.iconBox-particulars
-    display inline-block
-    vertical-align middle
-    width 20px
-    height 20px
 
 </style>

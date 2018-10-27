@@ -208,13 +208,13 @@
                                                         <span class="fsize16 color222">￥255,685.00</span>
                                                     </div>
                                                     <div class="finance-strip-items row">
-                                                        <div class="finance-strip-item">
-                                                            <div class="finance-strip-bar dib fsize12 colorfff col-lg-8 vam">
+                                                        <div style="width: 90%" class="finance-strip-item">
+                                                            <div style="width: 80%" class="finance-strip-bar dib fsize12 colorfff vam">
                                                                 <div>招待费用</div>
                                                                 <div class="marT8">￥255,685.00</div>
-                                                            </div>
-                                                            <div class="dib col-lg-2 fsize12 color333 vam">
-                                                                <span style="padding-left: 10px">80%</span>
+                                                                <div class="finance-strip-scale fsize12 color333 vam tal col-lg-1">
+                                                                    <span class="marL10">80%</span>
+                                                                </div>
                                                             </div>
                                                         </div>
                                                     </div>
@@ -474,7 +474,8 @@ export default {
             },
         ],
         // 支出
-        totalOutlay: null,
+        totalOutlay: null, //总支出
+
         financeOutlayList: [],
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
@@ -604,8 +605,8 @@ export default {
             }
 
         })
-            console.log('testArr:', testArr);
-            this.financeOutlayList = [total, entertain];
+            this.totalOutlay = total
+            this.financeOutlayList = [entertain];
             console.log('this.financeOutlayList:', this.financeOutlayList);
     },
 
@@ -1087,9 +1088,15 @@ export default {
             .finance-strip-item
                 margin-bottom 20px
                 .finance-strip-bar
+                    position relative
                     background #66adff
                     border-radius 3px
-                    padding 8px
+                    padding 5px
+                    .finance-strip-scale
+                        position absolute
+                        right -10%
+                        top 16px
+
 
 
 // 背景
