@@ -39,7 +39,7 @@
                     <!-- 投标文件开始 -->
                     <el-table
                         ref="multipleTable"
-                        :data="tableData"
+                        :data="tableData.list"
                         stripe
                         v-loading="loading"
                         align="center"
@@ -134,6 +134,9 @@
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
                                     <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
+                                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
+                                    <el-button type="success" icon="el-icon-edit"  @click="onCompile(scope.row)" ></el-button>
+                                </el-tooltip>
                                 <el-tooltip class="item" effect="dark" content="更改项目状态" placement="top-end" >
                                     <el-button type="warning" icon="el-icon-refresh" @click="onChangeDialogVisible(scope.row)"></el-button>
                                 </el-tooltip>
@@ -144,13 +147,13 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData[0]">
+                <div class="pagination" v-if="tableData.total>0">
                     <el-pagination 
                     background
                     :page-size="pageSize"
                     layout="prev, pager, next"
                     @current-change="pagingChange"
-                    :total="tableData[0].total">
+                    :total="tableData.total">
                     </el-pagination>
                 </div>
 
@@ -181,9 +184,65 @@
         </span>
         </el-dialog>
 
-        
-        
 
+        <el-dialog
+        title="编辑招投标信息"
+        :visible.sync="compileDialogVisible"
+        width="30%"
+        >
+        <div>
+            <el-form ref="form" :model="form" label-width="140px" class="compileDialog">
+                <el-form-item label="项目名称">
+                    <el-input v-model="form.projectname" disabled></el-input>
+                </el-form-item>
+                <el-form-item label="投标预算金额" :show-message='false' :required='true'>
+                    <el-input type="number" v-model="form.bindsum" :controls="false"></el-input>
+                    <span>元</span>
+                </el-form-item>
+                <el-form-item label="标书购买截止时间" :show-message='false' :required='true'>
+                    <el-date-picker v-model="form.binddocumenttime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
+                </el-form-item>
+                <el-form-item label="标书投递截止时间" :show-message='false' :required='true'>
+                    <el-date-picker v-model="form.bindendtime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
+                </el-form-item>
+                <el-form-item label="标书购买">
+                    <el-select v-model="form.binddocumentis" placeholder="请选择">
+                        <el-option label="准备中" value="0"></el-option>
+                        <el-option label="已完成" value="1"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="投标证书保证金缴纳">
+                    <el-select v-model="form.bindsumis" placeholder="请选择">
+                        <el-option label="准备中" value="0"></el-option>
+                        <el-option label="已完成" value="1"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="商务标书">
+                    <el-select v-model="form.businessbind" placeholder="请选择">
+                        <el-option label="准备中" value="0"></el-option>
+                        <el-option label="已完成" value="1"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="技术标书">
+                    <el-select v-model="form.technologybindis" placeholder="请选择">
+                        <el-option label="准备中" value="0"></el-option>
+                        <el-option label="已完成" value="1"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="资质文件及授权">
+                    <el-select v-model="form.authorizationis" placeholder="请选择">
+                        <el-option label="准备中" value="0"></el-option>
+                        <el-option label="已完成" value="1"></el-option>
+                    </el-select>
+                </el-form-item>
+            </el-form>
+            
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="compileDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="updatebin">确 定</el-button>
+        </span>
+        </el-dialog>
     </div>
     
 </template>
@@ -208,14 +267,28 @@ export default {
             area:'',
             principal:''
         },
+        form: {
+          projectname: '',
+          bindsum:'',
+          binddocumenttime:'',
+          bindendtime:'',
+          binddocumentis:'',
+          bindsumis:'',
+          businessbind:'',
+          technologybindis:'',
+          authorizationis:''
+        },
+        binInfo:{},
         changeDialogVisible:false,
+        compileDialogVisible:false,
         pitchChangeDialog:{},
         radioState:'2',
         sellStatus:'-1',
         tableData: [],
         limits:JSON.parse(sessionStorage.getItem('limits')),
         multipleSelection: [],
-        pageSize:20,
+        pageSize:10,
+        page:1,
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
@@ -257,7 +330,8 @@ export default {
     },
     //分页
     pagingChange(val){
-        this.getBinList(val)
+        this.page = val
+        this.getBinList()
     },
     //表格全选事件
     handleSelectionChange(val) {
@@ -274,7 +348,7 @@ export default {
          })
     },
     //获取列表数据
-    getBinList(page){
+    getBinList(){
         this.loading = true
         let reqBody = {
             "api": "getbinlist",
@@ -283,7 +357,7 @@ export default {
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['bin'],
             "status":this.sellStatus,
-            "page":page,
+            "page":this.page,
             "pagesize":this.pageSize
         }
 
@@ -344,7 +418,72 @@ export default {
                 ids = this.multipleSelection[i].id
             }
         }
-        window.open(Session.exportUrl+'index/exportbin?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+        window.open(Session.exportUrl+'exportbin?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+    },
+    onCompile(row){
+        this._getBinInfo(row.id)
+    },
+    //编辑
+    updatebin(){
+        let form = this.form
+        if(!form.bindsum||!form.binddocumenttime||!form.bindendtime){
+            this.$message.error('请填写完整信息')
+            return false
+        }
+        let reqBody = {
+            "api": "updatebin",
+            "id": this.binInfo.bininfo.id,
+            "projectname": form.projectname,
+            "bindsum": form.bindsum,
+            "binddocumenttime": form.binddocumenttime,
+            "bindendtime": form.bindendtime,
+            "binddocumentis": form.binddocumentis,
+            "bindsumis": form.bindsumis,
+            "businessbind": form.businessbind,
+            "technologybindis": form.technologybindis,
+            "authorizationis": form.authorizationis
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.$message.success('修改成功');
+                this.compileDialogVisible = false
+                this.getBinList()
+            }else{
+                this.$message.error(res.msg);
+            }
+
+        })
+    },
+    //招投标信息
+    _getBinInfo(id){
+        let reqBody = {
+            "api": "getbininfo",
+            "id": id,
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                
+                this.binInfo = res.data
+                let bininfo = res.data.bininfo
+                this.form= {
+                    projectname: bininfo.projectname,
+                    bindsum:bininfo.bindsum,
+                    binddocumenttime:bininfo.binddocumenttime,
+                    bindendtime:bininfo.bindendtime,
+                    binddocumentis:bininfo.binddocumentis+'',
+                    bindsumis:bininfo.bindsumis+'',
+                    businessbind:bininfo.businessbind+'',
+                    technologybindis:bininfo.technologybindis+'',
+                    authorizationis:bininfo.authorizationis+''
+                }
+                this.compileDialogVisible = true
+            }else{
+                this.$message.error(res.msg);
+            }
+
+        })
     }
     
   }
@@ -385,4 +524,11 @@ export default {
             vertical-align middle
     .border
         border-color:#00AC97
+    .compileDialog
+        .el-input
+            width 220px
+        .el-input-number
+            width 220px
+        .el-select
+            width 220px
 </style>

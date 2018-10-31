@@ -8,42 +8,42 @@
             <div class="newContent">
                 
                 <el-form ref="newMarketClue" :model="newMarketClue" label-width="140px">
-                    <el-form-item label="项目名称：">
+                    <el-form-item label="项目名称：" :show-message='false' :required='true'>
                         <el-input v-model="newMarketClue.projectname"></el-input>
                     </el-form-item>
-                    <el-form-item label="预计招投标时间：">
+                    <el-form-item label="预计招投标时间：" :show-message='false' :required='true'>
                         <el-date-picker
                         v-model="newMarketClue.estimatedtime"
-                        type="datetime"
+                        type="date"
                         
-                        value-format="yyyy-MM-dd HH:mm:ss"
+                        value-format="yyyy-MM-dd "
                         :picker-options="pickerOptions0"
                         placeholder="选择日期">
                         </el-date-picker>
                     </el-form-item>
-                    <el-form-item label="项目预算金额：">
+                    <el-form-item label="项目预算金额：" :show-message='false' :required='true'>
                         <el-input type="number"  v-model="newMarketClue.estimatedsum"></el-input>
                         <span class="money">元</span>
                     </el-form-item>
-                    <el-form-item label="项目资金来源：">
+                    <el-form-item label="项目资金来源：" :show-message='false' :required='true'>
                         <el-select v-model="newMarketClue.sumsourceid" placeholder="请选择">
                             <el-option :label="item.typename" :value="item.id" v-for="(item,index) in sumsourceList" :key="index"></el-option>
                           
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="客户信息：">
+                    <el-form-item label="客户信息：" :show-message='false' :required='true'>
                         <el-select v-model="newMarketClue.customerid" placeholder="请选择" @change="getAddressd">
                             <el-option v-for="(item,index) in customerList" :key="index" :label="item.custmername" :value="item.id"></el-option>
                             
                         </el-select>
                     </el-form-item>
-                    <el-form-item label="所在地区：">
+                    <el-form-item label="所在地区：" :show-message='false' :required='true'>
                         <el-input disabled  v-model="newMarketClue.address"></el-input>
                     </el-form-item>
-                    <el-form-item label="联系人姓名：">
+                    <el-form-item label="联系人姓名：" :show-message='false' :required='true'>
                         <el-input  v-model="newMarketClue.linkman"></el-input>
                     </el-form-item>
-                    <el-form-item label="手机号码：">
+                    <el-form-item label="手机号码：" :show-message='false' :required='true'>
                         <el-input type="number"  v-model="newMarketClue.linkmanphone"></el-input>
                     </el-form-item>
                     <el-form-item label="项目概况：">

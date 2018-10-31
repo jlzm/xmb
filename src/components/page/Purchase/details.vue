@@ -106,7 +106,7 @@
                             <!-- 进度查看结束 -->
 
                             <div v-show="tabListIndex==1" class="invitationBox clearfix">
-                                <div class="imgItem" v-for="(item,index) in imgList" :key="index">
+                                <div class="imgItem" v-for="(item,index) in imgList" :key="index" @click="examinePicture(item)">
                                     <img :src="item" alt="">
                                 </div>
                             </div>
@@ -131,10 +131,13 @@
            
             <el-upload
             multiple
+            ref="upload"
             class="upload-demo"
             :action="exportUrl"
+            :data="uploadData"
             :on-remove = "handleRemove"
             :file-list="fileUploadList"
+            :auto-upload="false"
             :on-success="handleSuccess"
             >
             <el-button size="small" type="primary">点击上传</el-button>
@@ -142,7 +145,7 @@
         </div>
         <span slot="footer" class="dialog-footer newCustmer-dialog-footer">
             <el-button @click="addFileVisible = false">取 消</el-button>
-            <el-button type="primary" @click="addFile">确 定</el-button>
+            <el-button type="primary" @click="submitUpload">确 定</el-button>
         </span>
         </el-dialog>
     </div>
@@ -167,22 +170,27 @@ export default {
         purchaseInfo:{},
       
         imgList:[],
-        exportUrl:Session.exportUrl+'index/saveFile',
+        uploadData:{
+
+        },
+        exportUrl:Session.exportUrl+'saveFile',
         addFileVisible:false,
         fileBoxList:[],
         fileUploadList:[],
         fileList:[],
         fileListStr:'',
         fileListName:'',
+        fileListSize:'',
+        successLength:0,
         multipleSelection: [],
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
-                {
-                    title:'添加记录',
-                    clickEvent:'add',
-                    icon:'icon-iconfontedit'
-                },
+                // {
+                //     title:'添加记录',
+                //     clickEvent:'add',
+                //     icon:'icon-iconfontedit'
+                // },
                 {
                     title:'添加文件',
                     clickEvent:'addFile',
@@ -247,8 +255,8 @@ export default {
     
   },
   methods:{
-      handleSuccess(response, file, fileList){
-       
+     handleSuccess(response, file, fileList){
+        //console.log(response,fileList);
         
         if(this.fileListStr){
             this.fileListStr = this.fileListStr + ',' + response.fileUrl
@@ -260,8 +268,21 @@ export default {
         }else{
             this.fileListName = response.fileName
         }
-
+        if(this.fileListSize){
+            this.fileListSize = this.fileListSize + ',' + response.filesize
+        }else{
+            this.fileListSize = response.filesize
+        }
+        if(response.fileUrl){
+            this.successLength = this.successLength+1
+        }
+        if(this.successLength== fileList.length){
+            this.successLength = 0
+           this.addFile()
+        }
+       
         
+        console.log(fileList.length)
     },
     handleRemove(file, fileList) {
         console.log(fileList);
@@ -294,6 +315,8 @@ export default {
         }else if(res=='addFile'){
             this.fileListStr = ''
             this.fileListName = ''
+            this.fileListSize = ''
+            this.successLength = 0
             this.fileUploadList = []
             this.addFileVisible = true
         }else if(res =='download'){
@@ -322,7 +345,12 @@ export default {
         }
         Axios(reqBody,'index').then((res) => {
             console.log(res)
+            
             if(res.state==10001){
+                this.uploadData = {
+                    "companyid": sessionStorage.getItem('companyid'),
+                    "projectid":res.data.projectid,
+                }
                 this.purchaseInfo = res.data
                 if(res.data.purchaseurl.indexOf(",") != -1){
                     this.imgList = res.data.purchaseurl.split(",")
@@ -439,13 +467,15 @@ export default {
             "api": "addpurchasefile",
             "purchaseid": this.$route.query.id,
             "fileurl": this.fileListStr,
-            "filename": this.fileListName
+            "filename": this.fileListName,
+            "filesize":this.fileListSize,
            
         }
         Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
                 this.$message.success('添加成功')
+                this.successLength = 0
                 this.addFileVisible = false
                 this.getPurchasefilelist(this.purchaseInfo.id)
             }else{
@@ -453,6 +483,16 @@ export default {
             }
 
         })
+    },
+    examinePicture(url){
+         this.$alert('<img src='+url+'></img>', {
+          dangerouslyUseHTMLString: true,
+          showConfirmButton:false
+        });
+    },
+    submitUpload(){
+        this.$refs.upload.submit()
+       
     }
 
     

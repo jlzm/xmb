@@ -29,7 +29,7 @@ export default {
             searchData: {
                 antistop: ""
             },
-            pageSize: 10,
+            pageSize: 4,
             multipleSelection: [],
             formulaList: {
                 //编辑栏按钮数
@@ -50,10 +50,11 @@ export default {
                 ]
             },
 
-            dialogTitle: null,
+            dialogTitle: null
         };
     },
     methods: {
+
         // 选择人员
         handleCheckChange(data, checkedNodes) {
             console.log(checkedNodes);
@@ -65,8 +66,13 @@ export default {
             if (currentNode) {
                 currentNode.forEach(item => {
                     if (!item.userlist) {
-                        _newTaskuser.name += `${item.staffname},`;
-                        _newTaskuser.id += `${item.userid},`;
+                        if(_newTaskuser.name) {
+                            _newTaskuser.name += `,${item.staffname}`;
+                            _newTaskuser.id += `,${item.userid}`;
+                        } else {
+                            _newTaskuser.name = `${item.staffname}`;
+                            _newTaskuser.id = `${item.userid}`;
+                        }
                     }
                 });
             }
@@ -87,7 +93,6 @@ export default {
                         }
                         this.$message.error(res.msg);
                     }
-
                     this.departList.forEach(deap => {
                         deap.treeName =
                             deap.deptname + ` (${deap.deptnumber}人)`;
@@ -99,7 +104,6 @@ export default {
                             deap.userlist.forEach(user => {
                                 // console.log('user:', user);
                                 user.treeName = user.staffname;
-                                // user.id = ++userId;
                             });
                         }
                     });
@@ -167,11 +171,13 @@ export default {
                     }
                 })
                 .then(res => {
-                    this.loading = false;
-                });
+                    setTimeout(() => {
+                        this.loading = false;
+                    }, 2000);
+                })
         },
 
-        // 待办详情
+        // 获取待办详情
         toDoDetail(reqBody, show) {
             Axios(reqBody, "user").then(res => {
                 console.log(res);
@@ -207,30 +213,10 @@ export default {
             });
         },
 
-        onConfirm(taskType) {
-            let reqBody = {
-                api: "complete",
-                userid: sessionStorage.getItem("userid"),
-                taskid: this.atTaskid,
-                type: taskType
-            };
-            Axios(reqBody, "user").then(res => {
-                console.log(res);
-                if (res.state == 10001) {
-                    this.$message.success(res.msg);
-                    this.show = false;
-                } else {
-                    if (res.state == 10002) {
-                    }
-                    this.$message.error(res.msg);
-                }
-            });
-        },
-
         //创建待办
         establish(reqBody) {
             if (
-                !this.newIssue.taskname ||
+
                 !this.newIssue.taskdescribe ||
                 !this.newIssue.flag ||
                 !this.taskuserId ||

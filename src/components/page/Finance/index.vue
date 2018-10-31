@@ -4,8 +4,22 @@
             <div class="operationBox clearfix">
                 <div class="floatLeft leftBox clearfix">
                     <el-form :inline="true"  class="demo-form-inline" :model="searchData">
-                       
-                        <el-form-item label="项目">
+                       <el-form-item>
+                            <div class="leftBtn btnst" :class="tableIndex==1?'actBtn':''"  @click="cutList(1)">
+                                <span class="btnTitle">支出列表</span>
+                            </div>
+                        </el-form-item>
+                        <el-form-item>
+                            <div class="leftBtn btnst" :class="tableIndex==2?'actBtn':''"  @click="cutList(2)">
+                                <span class="btnTitle">回款列表</span>
+                            </div>
+                        </el-form-item>
+                        <el-form-item>
+                            <div class="leftBtn btnst" :class="tableIndex==3?'actBtn':''" @click="cutList(3)">
+                                <span class="btnTitle">财务数据</span>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="项目" v-if="tableIndex!=3">
                             <el-select v-model="searchData.projectId" placeholder="请选择项目" popper-class="border">
                                 <el-option value="" label="所有项目"></el-option>
                                 <el-option :value="item.id" :label="item.projectname" v-for="(item,index) in  projectList" :key="index"></el-option>
@@ -14,13 +28,13 @@
                             </el-select>
                         </el-form-item>
 
-                        <el-form-item label="类型">
+                        <el-form-item label="类型" v-if="tableIndex!=3">
                             <el-select v-model="searchData.sumsourceId" placeholder="请选择类型" popper-class="border">
                                 <el-option value="" label="所有类型"></el-option>
                                 <el-option :value="item.id" :label="item.typename" v-for="(item,index) in  sumsourceList" :key="index"></el-option>
                             </el-select>
                         </el-form-item>
-                        <el-form-item label="">
+                        <el-form-item label="" v-if="tableIndex!=3">
                             <el-date-picker
                             v-model="searchData.time"
                             type="datetimerange"
@@ -32,31 +46,26 @@
                             </el-date-picker>
                         </el-form-item>
                         
-                        <el-form-item>
+                        <el-form-item v-if="tableIndex!=3">
                             <div class="leftBtn btn" @click="getSearchData" >
                         
                                 <span class="btnTitle">查询</span>
                             </div>
                         </el-form-item>
-                        <el-form-item>
+                        <el-form-item v-if="tableIndex!=3">
                             <div class="leftBtn btn"  @click="newFinance">
                         
-                                <span class="btnTitle">{{tableIndex==1?'新建项目支出':'新建项目回款'}}</span>
+                                <span class="btnTitle">{{tableIndex==1?'新建':'新建'}}</span>
                             </div>
                         </el-form-item>
-                        <el-form-item>
+                        <el-form-item v-if="tableIndex!=3">
                             <div class="leftBtn btn"  @click="exportworkorder">
                         
                                 <span class="btnTitle">导出</span>
                             </div>
                         </el-form-item>
 
-                        <el-form-item>
-                            <div class="leftBtn btn"  @click="cutList">
                         
-                                <span class="btnTitle">{{tableIndex==1?'切换至回款列表':'切换至支出列表'}}</span>
-                            </div>
-                        </el-form-item>
                     </el-form>
                     
                 </div>
@@ -67,9 +76,9 @@
                     </div> 
                 </div>
             </div> 
-            <div class="contentBox clearfix bgWhite padTb10">
+            <div class="contentBox clearfix bgWhite padTb10"  v-if="tableIndex!=3">
                 <div class="pad20 bgWhite" >
-                    <div  v-show="tableIndex==1">
+                    <div  v-if="tableIndex==1">
                         <!-- 投标文件开始 -->
                         <el-table
                             ref="multipleTable"
@@ -138,7 +147,12 @@
                                     <el-tooltip class="item" effect="dark" content="用户详情" placement="top-end">
                                         <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
                                     </el-tooltip>
-                                    
+                                    <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
+                                        <el-button type="success" icon="el-icon-edit-outline"  @click="onCompile(scope.row)" ></el-button>
+                                    </el-tooltip>
+                                    <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
+                                        <el-button type="danger" icon="el-icon-delete"  @click="onDelete(scope.row)" ></el-button>
+                                    </el-tooltip>
                                     <!-- <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
                                         <el-button type="success" icon="el-icon-edit-outline"  @click="onAffirm(scope.row,'relieve')" ></el-button>
                                     </el-tooltip>
@@ -153,7 +167,7 @@
                         <!-- 投标文件结束 -->
                     </div>
                     
-                    <div v-show="tableIndex==2">
+                    <div v-if="tableIndex==2">
                         <!-- 投标文件开始 -->
                         <el-table
                             ref="multipleTable"
@@ -223,11 +237,14 @@
                                         <el-button @click="onDetails2(scope.row)" type="primary" icon="el-icon-view" ></el-button>
                                     </el-tooltip>
                                     
-                                    <!-- <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                        <el-button type="success" icon="el-icon-edit-outline"  @click="onAffirm(scope.row,'relieve')" ></el-button>
+                                    <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
+                                        <el-button type="success" icon="el-icon-edit-outline"  @click="onCompile(scope.row)" ></el-button>
                                     </el-tooltip>
 
-                                    <el-tooltip class="item" effect="dark" content="删除" placement="top-end" >
+                                    <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
+                                        <el-button type="danger" icon="el-icon-delete"  @click="onDelete(scope.row)" ></el-button>
+                                    </el-tooltip>
+                                   <!-- <el-tooltip class="item" effect="dark" content="删除" placement="top-end" >
                                         <el-button type="danger" icon="el-icon-delete" @click="onAffirm(scope.row,'del')"></el-button>
                                     </el-tooltip> -->
                                     
@@ -237,8 +254,10 @@
                         <!-- 投标文件结束 -->
                     </div>
                     
+                    
 
                 </div>
+                
                 <!-- 分页 -->
                 <div class="pagination" v-if="tableIndex==1&&tableData[0]">
                     <el-pagination 
@@ -260,6 +279,112 @@
                 </div>
 
                
+            </div>
+            <div v-if="tableIndex==3">
+                <div >
+                    <el-row :gutter="10">
+                        <el-col :span="9">
+                            <div class="financialItem" v-loading="loading2">
+                                <div class="finance-content-r-c bgWhite">
+                                    <div class="finance-content-title row marB15">
+                                        <span class="fsize14 color333">收支趋势</span>   
+                                    </div>
+                                    <ve-line v-if="!loading2" :data="moneyTrend" :settings="chartSettings" :colors="colors"></ve-line>
+                                </div>
+                                
+                            </div>
+                        </el-col>
+                        <el-col :span="8">
+                            <div class="financialItem"  v-loading="loading">
+                                <div class="finance-content-r-c bgWhite">
+                                    <el-row class="finance-content-title">
+                                        <el-col :span="12">
+                                            <span class="fsize14 color333">资金明细</span>
+                                        </el-col>
+                                        <el-col :span="12" class="tar">
+                                            <span class="fsize14 vam cp" >查看更多</span>
+                                            <!-- <i class="finance-content-more-icon dib vam">
+                                                <img v-lazy="'static/img/porjectAmount/more.png'" alt="">
+                                            </i> -->
+                                        </el-col>
+                                    </el-row>
+                                    <div class="finance-content-list-wrap">
+                                        <div class="finance-content-item" v-for="(item, index) in capitalList" :key="index" :class="{bgF5:index%2==0}">
+                                            <el-row>
+                                                <el-col :span="12">
+                                                <div class="finance-detail-title">
+                                                    <span class="fsize16 color222">{{item.projectname}}</span>
+                                                </div>
+
+                                                </el-col>
+                                                <el-col :span="12" class="tar">
+                                                    <div class="finance-money-amount row" :class="[item.state==0? 'colorRed' : 'colorGreen']">
+                                                        <span v-if="item.state==1" class="fsize16">+</span>
+                                                        <span v-else class="fsize16">-</span>
+                                                        <span class="fsize16">{{item.money}}</span>
+                                                    </div>
+                                                </el-col>
+                                            </el-row>
+                                            <el-row class="row marT12">
+                                                <el-col :span="12" class="row">   
+                                                    <span class="fsize14 color999">{{item.time}}</span>
+                                                    <span class="fsize14 color999">|</span>
+                                                    <span class="fsize14 color999">{{item.name}}</span>
+                                                </el-col>
+                                                <el-col :span="12" class="tar">   
+                                                    <span class="fsize14 color999">{{item.type}}</span>
+                                                </el-col>
+                                            </el-row>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="7">
+                            <div class="financialItem"  v-loading="loading1">
+                                <div class="finance-content-l-c bgWhite">
+                                    <div class="finance-content-title row">
+                                        <span class="fsize14 color333">数据统计</span>
+                                        <el-switch
+                                        style="display: block;float: right;"
+                                        v-model="statisticsTitle.statisticsSwitch"
+                                        active-color="#13ce66"
+                                        inactive-color="#ff4949"
+                                        active-text="收入"
+                                        inactive-text="支出"
+                                        @change="switchChange">
+                                        </el-switch>
+                                    </div>
+                                    <div class="finance-content-list-wrap">
+                                        <div class="finance-outlay-total row">
+                                            <span class="fsize16 color333">{{statisticsTitle.title}}：</span>
+                                            <span class="fsize16 color333">￥{{moneyStatistics.moneysum}}</span>
+                                        </div>
+                                        <div class="finance-strip-items row">
+                                            <div  class="finance-strip-item"  v-for="(item, index) in moneyStatistics.list" :key="index">
+                                                <div :style="'width:'+item.percentage+'%'" class="finance-strip-bar dib fsize12 colorfff vam">
+                                                    
+                                                </div>
+                                                <div class="finance-strip-item-text">
+                                                    <div class="finance-strip-item-info fsize12 color333 vam tal col-lg-1 ">
+                                                        <div>{{item.type}}</div>
+                                                        <div class="marT8" :class="statisticsTitle.statisticsSwitch?'colorGreen':'colorRed'">￥{{item.money}}</div>
+                                                    </div>
+                                                    
+                                                    <div class="finance-strip-scale fsize12 color333 vam tal  floatRight">
+                                                        
+                                                        <span class="marL10  fsize12">{{item.percentage}}%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                </div>
             </div>
         </div>
         
@@ -292,12 +417,11 @@
                     </el-form-item>
                     <el-form-item label="上传凭证：">
                         <el-upload
-                        action="https://jsonplaceholder.typicode.com/posts/"
-                        :auto-upload="false"
+                        :action="imageUrl"
                         :multiple='true'
                         :file-list="expendImagelist"
                         list-type="picture-card"
-                        :on-change="imgChange"
+                        :on-success="handleSuccess"
                         :on-remove="handleRemove">
                         <i class="el-icon-plus"></i>
                         </el-upload>
@@ -336,19 +460,18 @@
                     <el-form-item label="回款时间：" :show-message='false' :required='true'>
                         <el-date-picker
                         v-model="newReturned.returnedtime"
-                        type="datetime"
-                        value-format="yyyy-MM-dd HH:hh:mm"
+                        type="date"
+                        value-format="yyyy-MM-dd"
                         placeholder="选择日期">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="上传凭证：">
                         <el-upload
-                        action="https://jsonplaceholder.typicode.com/posts/"
-                        :auto-upload="false"
+                        :action="imageUrl"
+                       
                         :multiple='true'
                         list-type="picture-card"
-                        :file-list="returnedImagelist"
-                        :on-change="imgChange"
+                        :on-success="handleSuccess"
                         :on-remove="handleRemove">
                         <i class="el-icon-plus"></i>
                         </el-upload>
@@ -361,6 +484,108 @@
             <span slot="footer" class="dialog-footer">
                 <el-button @click="returnedDialogVisible = false">取 消</el-button>
                 <el-button type="primary" @click="addReturndMoney">确 定</el-button>
+            </span>
+        </el-dialog>
+
+
+        <el-dialog title="编辑支出" :visible.sync="expendCompileVisible" width="40%">
+            <div>
+                <el-form :model="newExpend" label-width="140px">
+                    <el-form-item label="支出项目：" :show-message='false' :required='true'>
+                        <el-select v-model="newExpend.projectid" placeholder="请选择支出项目">
+                            <el-option
+                            v-for="(item,index) in projectList"
+                            :key="index"
+                            :label="item.projectname"
+                            :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="支出类别：" :show-message='false' :required='true'>
+                        <el-select v-model="newExpend.typeid" placeholder="请选择支出类别">
+                            <el-option
+                            v-for="(item,index) in sumsourceList"
+                            :key="index"
+                            :label="item.typename"
+                            :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="支出金额：" :show-message='false' :required='true'>
+                        <el-input v-model="newExpend.sum" type="number"></el-input>
+                    </el-form-item>
+                    <el-form-item label="上传凭证：">
+                        <el-upload
+                        :action="imageUrl"
+                        ref='upload'
+                        :on-success="compileSuccess"
+                        :multiple='true'
+                        list-type="picture-card"
+                        :file-list="expendImagelist"
+                        :data="uploadData"
+                        :on-remove="compileRemoveImg">
+                        <i class="el-icon-plus"></i>
+                        </el-upload>
+                    </el-form-item>
+                    <el-form-item label="备注信息：">
+                        <el-input v-model="newExpend.remark" type="textarea" :autosize="{ minRows: 6, maxRows: 15}"></el-input>
+                    </el-form-item>
+                </el-form> 
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="expendCompileVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updateexpenditure">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <el-dialog title="编辑回款" :visible.sync="returnedCompileVisible" width="40%">
+            <div>
+                <el-form :model="newReturned" label-width="140px">
+                    <el-form-item label="回款项目：" :show-message='false' :required='true'>
+                        <el-select v-model="newReturned.projectid" placeholder="请选择支出项目">
+                            <el-option
+                            v-for="(item,index) in projectList"
+                            :key="index"
+                            :label="item.projectname"
+                            :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                   
+                    <el-form-item label="回款金额：" :show-message='false' :required='true'>
+                        <el-input v-model="newReturned.sum" type="number" ></el-input>
+                    </el-form-item>
+                    <el-form-item label="回款内容：" :show-message='false' :required='true'>
+                        <el-input v-model="newReturned.content" type="textarea" :autosize="{ minRows: 3, maxRows: 15}" ></el-input>
+                    </el-form-item>
+                    <el-form-item label="回款时间：" :show-message='false' :required='true'>
+                        <el-date-picker
+                        v-model="newReturned.returnedtime"
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:hh:mm"
+                        placeholder="选择日期">
+                        </el-date-picker>
+                    </el-form-item>
+                    <el-form-item label="上传凭证：">
+                        <el-upload
+                        :action="imageUrl"
+                        :multiple='true'
+                        list-type="picture-card"
+                        :file-list="expendImagelist"
+                        :data="uploadData"
+                        :on-success="returnedSuccess"
+                        :on-remove="returnedRemoveImg">
+                        <i class="el-icon-plus"></i>
+                        </el-upload>
+                    </el-form-item>
+                    <el-form-item label="备注信息：">
+                        <el-input v-model="newReturned.remark" type="textarea" :autosize="{ minRows: 6, maxRows: 15}"></el-input>
+                    </el-form-item>
+                </el-form> 
+            </div>
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="returnedCompileVisible = false">取 消</el-button>
+                <el-button type="primary" @click="updatereturndmoney">确 定</el-button>
             </span>
         </el-dialog>
 
@@ -380,12 +605,39 @@ import {Session} from './../../../api/axios'
 export default {
   
   data () {
+    this.chartSettings = {
+        metrics: ['收入', '支出' ,'结余'],
+        dimension: ['日期'],
+        area: true
+      }
+    this.colors = ['#1BE9BF','#FF7993', '#63C2FF',
+    '#FF594C', '#37D983','#D7C6FA','#0071B6']
     return {
         loading:false,
+        loading1:false,
+        loading2:false,
         expendDialogVisible:false,
         returnedDialogVisible:false,
+        expendCompileVisible:false,
+        returnedCompileVisible:false,
         returnedImagelist:[],
         expendImagelist:[],
+        capitalList:[],//资金明细外层列表
+        moneyStatistics:{},//数据统计
+        moneyTrend:{
+          columns: ['日期', '收入', '支出', '结余'],
+          rows: [
+            
+          ]
+        },  //趋势图
+        statisticsTitle:{
+            title:'支出总额',
+            statisticsSwitch:false,
+        },
+        
+        expendiPage:1,
+        returnedPage:1,
+        imageUrl:Session.exportUrl+'saveImage',
         timeVal:'yyyy-MM-dd HH:mm:ss',
         searchData:{
             antistop:'',
@@ -399,7 +651,9 @@ export default {
             typeid:'',
             sum:'',
             remark:'',
-            images:''
+            images:'',
+            imagestwo:'',
+            id:''
         },
         newReturned:{
             projectid:'',
@@ -407,7 +661,12 @@ export default {
             sum:'',
             remark:'',
             returnedtime:'',
-            images:''
+            images:'',
+            imagestwo:'',
+            id:''
+        },
+        uploadData:{
+
         },
         sumsourceList:[],
         projectList:[],
@@ -431,56 +690,15 @@ export default {
                
             ]
         },
-        leftTabList:{
-            tabType:'leftTabList',
-            tabTitle:'基本信息',
-            tabActive:0,
-            icon:'icon-jibenxinxi',
-            item:[
-                {
-                    title:'项目信息',
-                    clickEvent:'projectInfo',
-                    
-                },
-                {
-                    title:'招投标信息',
-                    clickEvent:'bidInfo',
-                    
-                }
-            ]
-        },
-        rightTabList:{
-            tabType:'rightTabList',
-            tabTitle:'关联数据',
-            tabActive:3,
-            icon:'icon-guanliangongnengliebiaoiconxuanzhong',
-            item:[
-                {
-                    title:'跟进记录',
-                    clickEvent:'projectInfo'
-                },
-                {
-                    title:'投标准备',
-                    clickEvent:'projectInfo'  
-                },
-                {
-                    title:'招标文件',
-                    clickEvent:'projectInfo'  
-                },
-                {
-                    title:'投标文件',
-                    clickEvent:'projectInfo'  
-                }
-            ]
-        }
+        
     }
   },
   components:{
     vParticularsTab,vProjectInfo,vBidInfo
   },
   created () {
-      this.getExpendiTureList(1)  
-      this.getReturnedMoneyList(1)
+      this.getExpendiTureList()  
+      this.getReturnedMoneyList()
       this._getSumsource()
       this._getPurchaseProjectList()
 
@@ -499,53 +717,136 @@ export default {
     handleSelectionChange(val) {
         this.multipleSelection = val;
     },
+    handleSuccess(response, file, fileList){
+        if(file.response){
+            if(this.imagepc){
+                this.imagepc = this.imagepc+','+file.response.fileUrl
+            }else{
+                this.imagepc  = file.response.fileUrl
+            }
+        }
+        
+        console.log(file)
+    },
+     //图片上传处理
     handleRemove(file, fileList) {
-        this.newReturned.images = ''
-        this.newExpend.images = ''
-        for(let i=0;i<fileList.length;i++){
-            this.initBase(fileList[i].url)
-        }
+        this.imagepc = ''
         console.log(fileList)
+        for(let i=0;i<fileList.length;i++){
+            if(fileList[i].response){
+                if(this.imagepc){
+                    this.imagepc = this.imagepc+','+fileList[i].response.fileUrl
+                }else{
+                    this.imagepc  = fileList[i].response.fileUrl
+                }
+            }
+        }
     },
-    handlePictureCardPreview(file) {
     
-    },
-    imgChange(file, fileList){
-        this.dialogImageUrl = file.url
-        this.newReturned.images = ''
-        this.newExpend.images = ''
-        for(let i=0;i<fileList.length;i++){
-            this.initBase(fileList[i].url)
+    compileSuccess(response, file, fileList){
+        if(file.response){
+            if(this.newExpend.imagestwo){
+                this.newExpend.imagestwo = this.newExpend.imagestwo+','+file.response.fileUrl
+            }else{
+                this.newExpend.imagestwo  = file.response.fileUrl
+            }
         }
-        console.log(fileList)
+        
+        console.log(file)
+    },
+    //图片删除
+    compileRemoveImg(file, fileList) {
+        this.newExpend.images = ''
+        this.newExpend.imagestwo = ''
+        for(let i=0;i<fileList.length;i++){
+            
+            if(this.newExpend.imagestwo){
+                if(fileList[i].response){
+                    this.newExpend.imagestwo = this.newExpend.imagestwo+','+fileList[i].response.fileUrl
+                }else if(fileList[i].status=='success'){
+                    this.newExpend.imagestwo = this.newExpend.imagestwo+','+fileList[i].url
+                }
+            }else{
+                if(fileList[i].response){
+                    this.newExpend.imagestwo = fileList[i].response.fileUrl
+                }else if(fileList[i].status=='success'){
+                    this.newExpend.imagestwo = fileList[i].url
+                }
+            }
+        }
+        console.log(this.newExpend.imagestwo);
+    },
+
+    returnedSuccess(response, file, fileList){
+        if(file.response){
+            if(this.newReturned.imagestwo){
+                this.newReturned.imagestwo = this.newReturned.imagestwo+','+file.response.fileUrl
+            }else{
+                this.newReturned.imagestwo  = file.response.fileUrl
+            }
+        }
+        
+        console.log(file)
+    },
+    //图片删除
+    returnedRemoveImg(file, fileList) {
+        this.newReturned.images = ''
+        this.newReturned.imagestwo = ''
+        for(let i=0;i<fileList.length;i++){
+            
+            if(this.newReturned.imagestwo){
+                if(fileList[i].response){
+                    this.newReturned.imagestwo = this.newReturned.imagestwo+','+fileList[i].response.fileUrl
+                }else if(fileList[i].status=='success'){
+                    this.newReturned.imagestwo = this.newReturned.imagestwo+','+fileList[i].url
+                }
+            }else{
+                if(fileList[i].response){
+                    this.newReturned.imagestwo = fileList[i].response.fileUrl
+                }else if(fileList[i].status=='success'){
+                    this.newReturned.imagestwo = fileList[i].url
+                }
+            }
+        }
+        console.log(this.newReturned.imagestwo);
     },
             
     
     //分页
     pagingChange(val){
+        this.expendiPage = val
         this.getExpendiTureList(val)
     },
     //分页
     pagingChange1(val){
+        this.returnedPage = val
         this.getReturnedMoneyList(val)
     },
     //切换列表
-    cutList(){
-        this.searchData={
-            antistop:'',
-            projectId:'',
-            sumsourceId:'',
-            principal:'',
-            time:''
-        }
-        if(this.tableIndex==1){
-            this.tableIndex = 2
+    cutList(tableIndex){
+        this.expendiPage = 1
+        this.returnedPage = 1
+        if(tableIndex!=this.tableIndex&&tableIndex!=3){
+            this.searchData={
+                antistop:'',
+                projectId:'',
+                sumsourceId:'',
+                principal:'',
+                time:''
+            }
+            this.imagepc = ''
+            this.tableIndex = tableIndex
+            this.multipleSelection = []
+            this.getExpendiTureList()  
+            this.getReturnedMoneyList()
         }else{
-            this.tableIndex = 1
+             this.tableIndex = tableIndex
+             this._getdetaillist()
+             this._getemoneybyyear(0)
+             this.getmoneytrend()
         }
-        this.multipleSelection = []
-        this.getExpendiTureList(1)  
-        this.getReturnedMoneyList(1)
+        
+        
     },
     onDetails(row){
         this.$router.push({ 
@@ -564,7 +865,7 @@ export default {
         })
     },
     //获取列表数据 -- 项目支出
-    getExpendiTureList(page){
+    getExpendiTureList(){
         this.loading = true
         let searchData = {
             time:[
@@ -583,7 +884,7 @@ export default {
             "userid": sessionStorage.getItem('userid'),
             "workstatus":0,
             "limit":this.limits['finance'],
-            "page":page,
+            "page":this.expendiPage,
             "pagesize":this.pageSize,
             "starttime": searchData.time[0],
             "endtime": searchData.time[1],
@@ -607,7 +908,7 @@ export default {
         })
     },
     //获取列表数据 -- 项目回款
-    getReturnedMoneyList(page){
+    getReturnedMoneyList(){
         this.loading = true
         let searchData = {
             time:[
@@ -625,7 +926,7 @@ export default {
             "userid": sessionStorage.getItem('userid'),
             "workstatus":0,
             "limit":Session.limits['finance'],
-            "page":page,
+            "page":this.returnedPage,
             "pagesize":this.pageSize,
             "starttime": searchData.time[0],
             "endtime": searchData.time[1],
@@ -695,7 +996,8 @@ export default {
                 typeid:'',
                 sum:'',
                 remark:'',
-                images:''
+                images:'',
+                imagepc:''
             }
             this.expendDialogVisible = true
         }else {
@@ -706,41 +1008,15 @@ export default {
                 sum:'',
                 remark:'',
                 returnedtime:'',
-                images:''
+                images:'',
+                imagepc:''
             }
             
             this.returnedDialogVisible = true
             
         }
     },
-    initBase(url){
-        let that = this
-        fetch(url).then(data=>{
-            const blob = data.blob();
-            return blob;
-        }).then(blob=>{
-            let reader = new window.FileReader();
-            reader.onloadend = function() {
-                const data = reader.result;
-                if(that.tableIndex==2){
-                    if(that.newReturned.images){
-                        that.newReturned.images = that.newReturned.images+','+data.replace(/^data:image\/(png|jpg);base64,/, "")
-                    }else{
-                        that.newReturned.images = data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                    }
-                }else{
-                    if(that.newExpend.images){
-                        that.newExpend.images = that.newExpend.images+','+data.replace(/^data:image\/(png|jpg);base64,/, "")
-                    }else{
-                        that.newExpend.images = data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                    }
-                }
-                
-               
-            };
-            reader.readAsDataURL(blob);
-        })
-    },
+    
    
     //新增回款
     addReturndMoney(){
@@ -758,6 +1034,7 @@ export default {
             "returnedtime": newReturned.returnedtime,
             "remark": newReturned.remark,
             "images": newReturned.images,
+            "imagepc":this.imagepc,
             "passmanid":sessionStorage.getItem('userid'),
         }
         Axios(reqBody,'index').then((res) => {
@@ -773,6 +1050,7 @@ export default {
                     returnedtime:'',
                     images:''
                 }
+                this.imagepc = ''
                 this.getReturnedMoneyList(1)
                 
             }else{
@@ -795,6 +1073,7 @@ export default {
             "typeid": newExpend.typeid,
             "remark": newExpend.remark,
             "images": newExpend.images,
+            "imagepc":this.imagepc,
             "companyid": sessionStorage.getItem('companyid'),
             "passmanid":sessionStorage.getItem('userid'),
         }
@@ -810,6 +1089,7 @@ export default {
                     remark:'',
                     images:''
                 }
+                this.imagepc = ''
                 this.getExpendiTureList(1) 
                 
             }else{
@@ -833,9 +1113,9 @@ export default {
             }
         }
         if(this.tableIndex==1){
-            window.open(Session.exportUrl+'index/exportexpenditure?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+            window.open(Session.exportUrl+'exportexpenditure?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
         }else{
-            window.open(Session.exportUrl+'index/exportreturnedmoney?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+            window.open(Session.exportUrl+'exportreturnedmoney?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
         }
         
         
@@ -850,6 +1130,282 @@ export default {
         }else{
             this.getReturnedMoneyList(1)
         }
+    },
+    //编辑弹出
+    onCompile(row){
+        if(this.tableIndex==1){
+            
+            this._getExpenditureInfo(row.id)
+        }else if(this.tableIndex==2){
+            this._getReturnedMoneyInfo(row.id)
+        }
+    },
+    //项目支出详情
+    _getExpenditureInfo(id){
+        let reqBody = {
+            "api": "getexpenditureinfo",
+            "id":id,
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                let images = []
+                this.uploadData = {
+                    "companyid": sessionStorage.getItem('companyid'),
+                    "projectid":res.data.projectid,
+                }
+                this.expenditureInfo = res.data
+                this.imgList = res.data.images.split(',')
+                for(let i=0;i<this.imgList.length;i++){
+                    images.push({
+                        url:this.imgList[i]
+                    })
+                    console.log(this.imgList[i])
+                    
+                }
+                this.expendImagelist = images
+                this.newExpend = {
+                    projectid:res.data.projectid,
+                    typeid:res.data.typeid,
+                    sum:res.data.sum,
+                    remark:res.data.remark,
+                    images:'',
+                    imagestwo:res.data.images,
+                    id:id
+                }
+                this.expendCompileVisible = true
+            }else{
+                this.$message.error(res.msg);
+            }
+        })
+    },
+    updateexpenditure(){
+        let newExpend = this.newExpend
+        if(!newExpend.projectid || !newExpend.sum || !newExpend.typeid  ){
+
+            this.$message.error('请填写完整信息');
+            return false
+        }
+        console.log(this.newExpend)
+        let reqBody = {
+            "api": "updateexpenditure",
+            "projectid": this.newExpend.projectid,
+            "sum": this.newExpend.sum,
+            "typeid": this.newExpend.typeid,
+            "remark": this.newExpend.remark,
+            "images": this.newExpend.images,
+            "imagestwo": this.newExpend.imagestwo,
+            "id":this.newExpend.id,
+
+           
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.$message.success('修改成功')
+                this.expendCompileVisible = false
+                this.getExpendiTureList()
+            }else{
+                this.$message.error(res.msg);
+            }
+          
+            
+        })
+        
+    },
+
+    //项目回款详情
+    _getReturnedMoneyInfo(id){
+        let reqBody = {
+            "api": "getreturnedmoneyinfo",
+            "id":id,
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                let images = []
+                this.uploadData = {
+                    "companyid": sessionStorage.getItem('companyid'),
+                    "projectid":res.data.projectid,
+                }
+                this.returnedMoneyInfo = res.data
+                this.imgList = res.data.images.split(',')
+                for(let i=0;i<this.imgList.length;i++){
+                    images.push({
+                        url:this.imgList[i]
+                    })
+                    console.log(this.imgList[i])  
+                }
+                this.expendImagelist = images
+             
+                this.newReturned={
+                    projectid:res.data.projectid,
+                    content:res.data.content,
+                    sum:res.data.sum,
+                    remark:res.data.remark,
+                    returnedtime:res.data.returnedtime,
+                    images:'',
+                    imagestwo:res.data.images,
+                    id:id
+                }
+                this.returnedCompileVisible = true
+            }else{
+                this.$message.error(res.msg);
+            }
+        })
+    },
+    updatereturndmoney(){
+         let newReturned = this.newReturned
+        if(!newReturned.projectid || !newReturned.sum || !newReturned.content || !newReturned.returnedtime ){
+
+            this.$message.error('请填写完整信息');
+            return false
+        }
+        console.log(this.newReturned)
+        let reqBody = {
+            "api": "updatereturndmoney",
+            "projectid": this.newReturned.projectid,
+            "returndid":  this.newReturned.id,
+            "sum": this.newReturned.sum,
+            "returnedtime": this.newReturned.returnedtime,
+            "content":this.newReturned.content,
+            "remark": this.newReturned.remark,
+            "imagestwo": this.newReturned.imagestwo,
+            "images": this.newReturned.images
+
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.$message.success('修改成功')
+                this.returnedCompileVisible = false
+                this.getReturnedMoneyList()
+            }else{
+                this.$message.error(res.msg);
+            }
+          
+            
+        })
+        
+    },
+    //删除
+    onDelete(row){
+        let reqBody 
+        if(this.tableIndex==1){
+            reqBody = {
+                "api": "deleteexpenditure",
+                "id": row.id
+            }
+        }else if(this.tableIndex==2){
+            reqBody = {
+                "api": "deletereturnedmoney",
+                "id": row.id
+            }
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                 this.$message.success('删除成功')
+                 if(this.tableIndex==1){
+                     this.getExpendiTureList()  
+                 }else if(this.tableIndex==2){
+                     this.getReturnedMoneyList()
+                 }
+                 
+            }else{
+                this.$message.error(res.msg);
+            }
+           
+            
+        })
+    },
+    _getdetaillist(){
+        this.loading = true
+        let reqBody = {
+            "api": "getdetaillist",
+            "page": 1,
+            "pagesize":7,
+            "companyid": sessionStorage.getItem('companyid'),
+
+
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+               this.capitalList = res.data.list
+            }else{
+                this.$message.error(res.msg);
+            }
+            setTimeout(() => {
+                this.loading = false
+            }, 1000);
+          
+            
+        })
+    },
+    _getemoneybyyear(state){
+        this.loading1 = true
+        let reqBody = {
+            "api": "getemoneybyyear",
+            "state": state,
+            "companyid": sessionStorage.getItem('companyid'),
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+               this.moneyStatistics = res.data
+            }else{
+                this.$message.error(res.msg);
+            }
+            setTimeout(() => {
+                this.loading1 = false
+            }, 1000);
+        })
+        
+    },
+    getmoneytrend(){
+        this.loading2 = true
+        let reqBody = {
+            "api": "getmoneytrend",
+            "companyid": sessionStorage.getItem('companyid'),
+        }
+        Axios(reqBody,'','','getmoneytrend').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                let getData = res.data
+                let moneyTrend=[];
+               
+                for(let i=0;i<getData.length;i++){
+                    let analysis = {
+                        '日期':getData[i].yearmonth,
+                        "收入":getData[i].rmoney,
+                        '支出':getData[i].emoney,
+                        "结余":getData[i].remoney,
+                        
+                    }
+                    console.log(analysis)
+                    moneyTrend.push(analysis)
+                }
+               this.moneyTrend.rows = moneyTrend
+               console.log(this.moneyTrend)
+            }else{
+                this.$message.error(res.msg);
+            }
+            setTimeout(() => {
+                this.loading2 = false
+            }, 1000);
+        })
+    },
+    switchChange(val){
+        console.log(val)
+        let state = 0
+        let title = '支出总额'
+        if(val){
+            state = 1
+            title = '收入总额'
+        }
+        this.statisticsTitle.title = title
+        this._getemoneybyyear(state)
     }
     
     
@@ -870,15 +1426,31 @@ export default {
             margin-bottom 10px
         .btn
             height 32px
-            line-height 32px
+            line-height 30px
             font-size 12px
             padding 0 15px
             border-radius 3px
+            border 1px solid #00AC97
             color #fff
             background-color #00AC97
             cursor pointer
             min-width 80px
             text-align center
+        .btnst
+            height 32px
+            line-height 30px
+            font-size 12px
+            padding 0 15px
+            border-radius 3px
+            border 1px solid #00AC97
+            color #00ac97
+            cursor pointer
+            min-width 80px
+            text-align center
+        .actBtn
+            color #fff
+            background-color #00AC97
+            
         .leftBtn
             float left
             margin-right 5px
@@ -896,4 +1468,63 @@ export default {
         border-color:#00AC97
     .line
         text-align center
+    .financialItem
+        background-color #fff
+        width 100%
+        height 700px
+        .finance-content-wrap
+        // 公共样式
+        .finance-content-title
+            padding 15px 0
+            border-bottom 1px solid #ededed
+        .finance-content-list-wrap
+            padding 20px 0 20px
+            // 公共样式结束
+        .finance-content-r-c,.finance-content-l-c
+            padding 0 20px
+            .finance-content-more-icon
+                height 14px
+                width 14px
+            .finance-content-item
+                border 1px solid #f2f2f2
+                padding 20px 10px
+        .finance-strip-items
+            
+            margin-top 30px
+            .finance-strip-item
+                position relative
+                margin-bottom 20px
+                height 42px
+                .finance-strip-bar
+                    position relative
+                    background #d8e9fd
+                    border-radius 3px
+                    padding 5px
+                    height 42px
+                    
+            .finance-strip-item-text
+                position absolute
+                top 0
+                left 0
+                height 42px
+                width 100%
+                z-index 10
+                cursor pointer
+                .finance-strip-scale
+                    width 14%
+                    line-height 42px
+                .finance-strip-item-info
+                    width 85%
+                    height 42px
+                    color #666
+                    font-size 12px
+                    padding 5px 10px
+        .lineHeight42
+            line-height 42px
+        .bgF5
+            background-color #f5f5f5
+        .colorRed
+            color #FF4949
+        .colorGreen
+            color #13CE66
 </style>

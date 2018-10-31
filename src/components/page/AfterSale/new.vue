@@ -34,7 +34,8 @@
                         v-model="newMarketClue.gettime"
                         type="datetime"
                         placeholder="选择上门时间"
-                        value-format="yyyy-MM-dd HH:mm:ss">
+                        value-format="yyyy-MM-dd"
+                        format="yyyy-MM-dd">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="紧急程度：" :show-message='false' :required='true'>
@@ -127,7 +128,7 @@ export default {
         //新增
         addworkorder(){
             let newMarketClue = this.newMarketClue
-            if(!newMarketClue.projectid || !newMarketClue.projectaddress || !newMarketClue.linkman || !newMarketClue.linkphone || !newMarketClue.gettime || !newMarketClue.flag ||!newMarketClue.serviceid || !newMarketClue.servicetype || !newMarketClue.serviceid){
+            if(!newMarketClue.projectid || !newMarketClue.projectaddress || !newMarketClue.linkman || !newMarketClue.linkphone || !newMarketClue.gettime || !newMarketClue.flag ||newMarketClue.serviceid.length<=0 || !newMarketClue.servicetype ){
                 this.$message.error('请填写完整信息');
                 return false
             }

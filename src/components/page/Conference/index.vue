@@ -106,7 +106,7 @@
                                     <el-input v-model="taskuserName" disabled></el-input>
                                 </el-form-item>
                                 <el-form-item label="会议类型"  :show-message='false' :required='true'>
-                                    <el-select v-model="newMeeting.meetingtype" placeholder="请选择会议类型">
+                                    <el-select v-model="newMeeting.meetingtypename" placeholder="请选择会议类型">
                                         <el-option
                                         v-for="(item,index) in meetingTypeList"
                                         :key="index"
@@ -135,8 +135,9 @@
                                 </el-form-item>
                                 
                                 <el-form-item>
-                                    <el-button type="primary" @click="establish">立即创建</el-button>
-                                  
+                                    <el-button @click="detailModify" v-if="modify==true" type="primary">立即创建</el-button>
+                                    <el-button @click="establish" v-else type="primary">立即创建</el-button>
+
                                 </el-form-item>
                             </el-form>
                         </div>
@@ -180,13 +181,13 @@
                                 <i class="iconBox-particulars vam">
                                     <img  v-lazy="'static/img/backlogIcon/list.png'" alt="">
                                 </i>
-                                <span class="particulars-title-txt vam">我发出的待办详情</span>
+                                <span class="particulars-title-txt vam">会议纪要详情</span>
                             </div>
                         </el-col>
                         <el-col :span=12 class="tar vam">
                             <div class="particulars-title-right dib">
                                 <!-- 编辑待办 -->
-                                <i class="iconBox-particulars cp">
+                                <i @click="_editDetail" class="iconBox-particulars cp">
                                     <img  v-lazy="'static/img/backlogIcon/gray_editor.png'" alt="">
                                 </i>
                                 <!-- 删除此条待办 -->
@@ -243,7 +244,7 @@
                         <!-- 待办详情 -->
                         <div class="particulars-desc-content-box">
                             <div class="particulars-desc-content">
-                                {{backlogDetail.taskdescribe}}
+                                {{backlogDetail.meetingdesc}}
                             </div>
                             <div class="particulars-desc-bottom">
                                 <span>{{backlogDetail.address ||'暂无地点'}}</span>
@@ -291,7 +292,7 @@
                                     </div>
                                 </el-col>
                                 <el-col :span="21">
-                                    <div class="marT20">
+                                    <div class="comment-item-content">
                                         <el-row class="comment-item-title">
                                         <el-col :span="12">{{item.staffname}}</el-col>
                                         <el-col :span="12" class="tar">{{item.updatetime}}</el-col>
@@ -362,9 +363,8 @@ export default {
         deptChecked:[],
         departArr:[],
         staffModel:[],
-        meetingTypeList:[]
-        
-        
+        meetingTypeList:[],
+        modify: false   
     }
   },
   
@@ -378,8 +378,46 @@ export default {
     this._getMeetingList(1);
   },
   methods:{
+
+    //   确认修改
+    detailModify () {
+        this.dialogVisible = false;
+        this.modify = false;
+
+    },
     
-    
+    // 编辑详情
+    _editDetail(taskid) {
+        this.modify = true;
+        this.show = false;
+        this.dialogVisible = true;
+        let _newTaskuser = {
+            name: "",
+            id: ""
+        };
+        console.log('this.backlogDetail:', this.backlogDetail);
+        let detailUser = this.backlogDetail.userlist;
+        detailUser.forEach(item => {
+            if(_newTaskuser.name) {
+                _newTaskuser.name += `,${item.staffname}`;
+                _newTaskuser.id += `,${item.userid}`;
+            } else {
+                _newTaskuser.name = `${item.staffname}`;
+                _newTaskuser.id = `${item.userid}`;
+            }
+        });
+        this.taskuserName = _newTaskuser.name;
+        this.taskuserId = _newTaskuser.id;
+        this.newMeeting.address = this.backlogDetail.address;
+        this.newMeeting.createtime = this.backlogDetail.createtime;
+        this.newMeeting.meetingtime = this.backlogDetail.meetingtime;
+        this.newMeeting.meetingname = this.backlogDetail.meetingname;
+        this.newMeeting.meetingtype = this.backlogDetail.meetingtype;
+        this.newMeeting.meetingtypename = this.backlogDetail.meetingtypename;
+        this.newMeeting.meetingdesc = this.backlogDetail.meetingdesc;
+
+        this._getDepartList(); 
+    },
 
     // 获取部门和人员
         _getDepartList () {
@@ -851,15 +889,7 @@ export default {
 // 更改
 
 .content-desc
-    white-space nowrap
-    text-overflow ellipsis 
-    overflow hidden
-    padding 15px 0
-    font-size 16px
-    color #333
-
-
-
+    padding 15px 0 7px
 
 
 </style>

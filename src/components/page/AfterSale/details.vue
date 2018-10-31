@@ -35,6 +35,10 @@
                             <div class="floatLeft infoItemContent">{{workorderInfo.linkphone}}</div>
                         </div>
                         <div class="infoItem clearfix">
+                            <div class="floatLeft infoItemTitle">发起人：</div>
+                            <div class="floatLeft infoItemContent">{{workorderInfo.username}}</div>
+                        </div>
+                        <div class="infoItem clearfix">
                             <div class="floatLeft infoItemTitle">上门时间：</div>
                             <div class="floatLeft infoItemContent">{{workorderInfo.gettime}}</div>
                         </div>
@@ -110,11 +114,11 @@
                                                <img  :src="item.portrait" alt="">
                                            </div>
                                        </div>
-                                       <div class="floatLeft">
+                                       <div class="floatLeft imgBox">
                                            <div class="fsize14 fbold marB15">{{item.staffname}} <span class="marL20">{{item.createtime}}</span> </div>
                                            <div class="fsize14 color666 marB15">{{item.remark}}</div>
                                            <div class="voucherImgBox clearfix marB15" v-if="item.fileurl">
-                                               <div class="voucherImgItem" v-for="(_item,_index) in item.fileurl.split(',')" :key="_index">
+                                               <div class="voucherImgItem" v-for="(_item,_index) in item.fileurl.split(',')" :key="_index" @click="examinePicture(_item)">
                                                    <img :src="_item" alt="">
                                                </div>
                                                
@@ -123,7 +127,12 @@
                                        </div>
                                    </div>
                                    <!-- 凭证列表项结束 -->
+                                   
                                </div>
+                               <div class="pad20"  v-if="proofList.length<=0">
+                                    <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                                    <div class="notText">暂无完成凭证</div>
+                                </div>
                             </div>
                             <!-- 投标准备结束 -->
                         </div>
@@ -149,16 +158,15 @@
                 <div class="floatLeft addVoucherTitle">添加图片</div>
                 <div class="floatLeft addVoucherContent">
                     <el-upload
-                    action="https://jsonplaceholder.typicode.com/posts/"
+                    multiple
+                    :data="uploadData"
+                    :action="imageUrl"
+                    :on-remove = "handleRemove"
+                    :on-success="handleSuccess"
                     list-type="picture-card"
                     :file-list="imagelist"
-                    :multiple='true'
                     :limit="9"
                     :on-exceed="handleExceed"
-                    :auto-upload="autoUpload"
-                    :on-success="handleSuccess"
-                    :on-remove="handleRemove"
-                    :on-change="imgChange"
                      ref="upload">
                     <i class="el-icon-plus"></i>
                     </el-upload>
@@ -190,15 +198,17 @@ export default {
   
   data () {
     return {
-        autoUpload:false,
-        dialogImageUrl: '',
-        imgData:'',
+      
         imagelist:[],
         upVoucher:{
             fileurl:'',
             remark:''
         },
+        imageUrl:Session.exportUrl+'saveImage',
+        imagepc:'',
+        uploadData:{
 
+        },
         dialogVisible: false,
         tabListIndex:0,
         workorderInfo:{},  //工单详情
@@ -212,20 +222,7 @@ export default {
                 
             ],
             right:[
-                {
-                    title:'上传凭证',
-                    clickEvent:'uploading',
-                    icon:'icon-iconfontedit'
-                },
-                {
-                    title:'接受派单',
-                    clickEvent:'reception',
-                    icon:'icon-bianji'
-                },{
-                    title:'确认完成',
-                    clickEvent:'confirm',
-                    icon:'icon-jia'
-                }
+                
             ]
         },
         leftTabList:{
@@ -265,8 +262,7 @@ export default {
   methods:{
     getFormulaBar(res){
         if(res=='uploading'){
-            this.upVoucher.remark = ''
-            this.upVoucher.fileurl = ''
+            this.imagepc = ''
             this.imagelist = []
             this.dialogVisible = true
         }else if(res=='reception'){
@@ -284,65 +280,33 @@ export default {
     
     //图片上传处理
     handleRemove(file, fileList) {
-        this.dialogImageUrl = ''
-        this.upVoucher.fileurl = ''
+        this.imagepc = ''
         console.log(fileList)
-        if(fileList.length>0){
-            for(let i=0;i<fileList.length; i++){
-                this.initBase(fileList[i].url)
+        for(let i=0;i<fileList.length;i++){
+            if(fileList[i].response){
+                if(this.imagepc){
+                    this.imagepc = this.imagepc+','+fileList[i].response.fileUrl
+                }else{
+                    this.imagepc  = fileList[i].response.fileUrl
+                }
             }
         }
-        
     },
     handleSuccess(response, file, fileList){
-
-        this.dialogImageUrl = file.url
-        console.log(this.dialogImageUrl)
-    },
-    handlePictureCardPreview(file) {
-        this.dialogImageUrl = file.url;
-        this.dialogVisible = true;
-    },
-    imgChange(file, fileList){
-        
-        if(fileList.length>0){
-            for(let i=0;i<fileList.length;i++){
-            // if(fileList[i].size){
-            //     const isLt2M = fileList[i].size / 1024  < 200;
-            //     if (!isLt2M) {
-            //         this.$message.error('上传图片大小不能超过 200kb!');
-            //         fileList.splice(i,1); 
-            //     }
-            //     }
+        if(file.response){
+            if(this.imagepc){
+                this.imagepc = this.imagepc+','+file.response.fileUrl
+            }else{
+                this.imagepc  = file.response.fileUrl
             }
-            this.initBase(file.url)
         }
         
+        console.log(file)
     },
     handleExceed(files, fileList) {
         this.$message.warning(`最多选择9张图片`);
     },
-    initBase(url){
-        let that = this
-        fetch(url).then(data=>{
-            const blob = data.blob();
-            return blob;
-        }).then(blob=>{
-            let reader = new window.FileReader();
-            
-            reader.onloadend = function() {
-                const data = reader.result;
-                if(that.upVoucher.fileurl){
-                    that.upVoucher.fileurl = that.upVoucher.fileurl+','+data.replace(/^data:image\/(png|jpg);base64,/, "")
-                }else{
-                    that.upVoucher.fileurl = data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                }
-                
-            };
-
-            reader.readAsDataURL(blob);
-        })
-    },
+   
     /////////
     //售后工单详情
     _getWorkorderInfo(){
@@ -353,7 +317,12 @@ export default {
         Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
+                
                 this.workorderInfo = res.data.workorderinfo
+                this.uploadData = {
+                    "companyid": sessionStorage.getItem('companyid'),
+                    "projectid":res.data.workorderinfo.projectid,
+                }
                 let servicelist = ''
                 for(let i=0;i<res.data.servicelist.length;i++){
                     if(servicelist){
@@ -380,8 +349,6 @@ export default {
             console.log(res)
             if(res.state==10001){
                 if(res.data.isworkservice==0){
-                    this.formulaList.right = []
-                }else{
                     this.formulaList.right = [
                         {
                             title:'上传凭证',
@@ -389,15 +356,76 @@ export default {
                             icon:'icon-iconfontedit'
                         },
                         {
-                            title:'接受派单',
-                            clickEvent:'reception',
-                            icon:'icon-bianji'
-                        },{
                             title:'确认完成',
                             clickEvent:'confirm',
                             icon:'icon-jia'
                         }
                     ]
+                }else if(res.data.isworkservice==1){
+                    if(res.data.isaccept==0){
+                        this.formulaList.right = [
+                            {
+                                title:'上传凭证',
+                                clickEvent:'uploading',
+                                icon:'icon-iconfontedit'
+                            },
+                            {
+                                title:'接受派单',
+                                clickEvent:'reception',
+                                icon:'icon-bianji'
+                            }
+                        ]
+                    }else if(res.data.isaccept==1){
+                        this.formulaList.right = [
+                            {
+                                title:'上传凭证',
+                                clickEvent:'uploading',
+                                icon:'icon-iconfontedit'
+                            },
+                                {
+                                title:'确认完成',
+                                clickEvent:'confirm',
+                                icon:'icon-jia'
+                            }
+                        ]
+                    }else if(res.data.isaccept==2){
+                        this.formulaList.right = [
+                            
+                        ]
+                    }
+                    
+                }else if(res.data.isworkservice==2){
+                    if(res.data.isaccept==1){
+                        this.formulaList.right = [
+                        {
+                            title:'上传凭证',
+                            clickEvent:'uploading',
+                            icon:'icon-iconfontedit'
+                        },
+                        {
+                            title:'确认完成',
+                            clickEvent:'confirm',
+                            icon:'icon-jia'
+                        }
+                        ]
+                    }else if(res.data.isaccept==2){
+                        this.formulaList.right = [
+                            {
+                                title:'上传凭证',
+                                clickEvent:'uploading',
+                                icon:'icon-iconfontedit'
+                            }
+                        ]
+                    }
+
+                    this.formulaList.left = [
+                        {
+                            title:'编辑',
+                            clickEvent:'compile',
+                            icon:'icon-bianji'
+                        }
+                    ]
+                    
                 }
                 
             
@@ -439,8 +467,9 @@ export default {
             "serviceid": sessionStorage.getItem('userid'),
             "serviceaddress": "项目宝-电脑版",
             "remark": this.upVoucher.remark,
-            "fileurl": this.upVoucher.fileurl,
+            "fileurl": "",
             "companyid":sessionStorage.getItem('companyid'),
+            "imagepc":this.imagepc
         }
         Axios(reqBody,'index').then((res) => {
             console.log(res)
@@ -476,6 +505,12 @@ export default {
                 this.$message.error(res.msg);
             }
         })
+    },
+    examinePicture(url){
+         this.$alert('<img class="bigImg" src='+url+'></img>', {
+          dangerouslyUseHTMLString: true,
+          showConfirmButton:false
+        });
     }
     
   }
@@ -530,6 +565,9 @@ export default {
             width 100px
             height 100px
             margin-right 20px
+            margin-bottom 20px
+        .imgBox
+            width 970px
     .addVoucherTitle
         width 10%
     .addVoucherContent
@@ -555,4 +593,5 @@ export default {
                 line-height 25px
                 margin-left 20px
                 font-size 14px
+    
 </style>

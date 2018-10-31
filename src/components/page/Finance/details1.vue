@@ -45,15 +45,13 @@
                 <div class="floatLeft rightBox554">
                     <div class="rightContentBox">
                         <!-- 标题Tab开始 -->
-                        <v-particularsTab :particularsTabList="rightTabList" @returnCutTab="getCutTab"></v-particularsTab>
-
-                       
+                        <v-particularsTab :particularsTabList="rightTabList" @returnCutTab="getCutTab"></v-particularsTab> 
                         <!-- 标题Tab结束 -->
                         <div class="pad10">
 
                             <!-- 跟进记录开始 -->
                            <div class="voucherImgBox clearfix marB15">
-                                <div class="voucherImgItem" v-for="(_item,_index) in imgList" :key="_index">
+                                <div class="voucherImgItem" v-for="(_item,_index) in imgList" :key="_index" @click="examinePicture(_item)">
                                     <img :src="_item" alt="">
                                 </div>
                                                
@@ -68,7 +66,7 @@
         <el-dialog title="编辑回款" :visible.sync="expendDialogVisible" width="40%">
             <div>
                 <el-form :model="newReturned" label-width="140px">
-                    <el-form-item label="回款项目：">
+                    <el-form-item label="回款项目：" :show-message='false' :required='true'>
                         <el-select v-model="newReturned.projectid" placeholder="请选择支出项目">
                             <el-option
                             v-for="(item,index) in projectList"
@@ -79,13 +77,13 @@
                         </el-select>
                     </el-form-item>
                    
-                    <el-form-item label="回款金额：">
+                    <el-form-item label="回款金额：" :show-message='false' :required='true'>
                         <el-input v-model="newReturned.sum" type="number"></el-input>
                     </el-form-item>
-                    <el-form-item label="回款内容：">
+                    <el-form-item label="回款内容：" :show-message='false' :required='true'>
                         <el-input v-model="newReturned.content" type="textarea" :autosize="{ minRows: 3, maxRows: 15}"></el-input>
                     </el-form-item>
-                    <el-form-item label="回款时间：">
+                    <el-form-item label="回款时间：" :show-message='false' :required='true'>
                         <el-date-picker
                         v-model="newReturned.returnedtime"
                         type="datetime"
@@ -95,12 +93,12 @@
                     </el-form-item>
                     <el-form-item label="上传凭证：">
                         <el-upload
-                        action="https://jsonplaceholder.typicode.com/posts/"
-                        :auto-upload="false"
+                        :action="imageUrl"
                         :multiple='true'
                         list-type="picture-card"
                         :file-list="expendImagelist"
-                        :on-change="imgChange"
+                        :data="uploadData"
+                        :on-success="handleSuccess"
                         :on-remove="handleRemoveImg">
                         <i class="el-icon-plus"></i>
                         </el-upload>
@@ -140,9 +138,11 @@ export default {
         expendImagelist:[],
         sumsourceList:[],
         projectList:[],
+        imageUrl:Session.exportUrl+'saveImage',
         returnedMoneyInfo:{},  //工单详情
         imgList:[], //进度进程列表
         multipleSelection: [],
+        uploadData:{},
         proofList:[],
         newReturned:{
             projectid:'',
@@ -209,50 +209,38 @@ export default {
     handleRemove(file, fileList) {
         console.log(file, fileList);
     },
-    handlePictureCardPreview(file) {
-    
-    },
-    //图片选择
-    imgChange(file, fileList){
-        console.log(file)
-        this.initBase(file.url)
+    handleSuccess(response, file, fileList){
+        if(file.response){
+            if(this.newReturned.imagestwo){
+                this.newReturned.imagestwo = this.newReturned.imagestwo+','+file.response.fileUrl
+            }else{
+                this.newReturned.imagestwo  = file.response.fileUrl
+            }
+        }
         
+        console.log(file)
     },
     //图片删除
     handleRemoveImg(file, fileList) {
-        console.log( fileList);
         this.newReturned.images = ''
         this.newReturned.imagestwo = ''
         for(let i=0;i<fileList.length;i++){
-            if(fileList[i].status=='success'){
-                if(this.newReturned.imagestwo){
-                    this.newReturned.imagestwo = this.newReturned.imagestwo + ',' + fileList[i].url
-                }else{
-                    this.newReturned.imagestwo = fileList[i].url
+            
+            if(this.newReturned.imagestwo){
+                if(fileList[i].response){
+                    this.newReturned.imagestwo = this.newReturned.imagestwo+','+fileList[i].response.fileUrl
+                }else if(fileList[i].status=='success'){
+                    this.newReturned.imagestwo = this.newReturned.imagestwo+','+fileList[i].url
                 }
             }else{
-                this.initBase(fileList[i].url)
-            }
-            
-        }
-    },
-    initBase(url){
-        let that = this
-        fetch(url).then(data=>{
-            const blob = data.blob();
-            return blob;
-        }).then(blob=>{
-            let reader = new window.FileReader();
-            reader.onloadend = function() {
-                const data = reader.result;
-                    if(that.newReturned.images){
-                        that.newReturned.images = that.newReturned.images+','+data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                    }else{
-                        that.newReturned.images = data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                    }
+                if(fileList[i].response){
+                    this.newReturned.imagestwo = fileList[i].response.fileUrl
+                }else if(fileList[i].status=='success'){
+                    this.newReturned.imagestwo = fileList[i].url
                 }
-            reader.readAsDataURL(blob);
-        })
+            }
+        }
+        console.log(this.newReturned.imagestwo);
     },
     //项目回款详情
     _getReturnedMoneyInfo(){
@@ -264,6 +252,10 @@ export default {
             console.log(res)
             if(res.state==10001){
                 let images = []
+                this.uploadData = {
+                    "companyid": sessionStorage.getItem('companyid'),
+                    "projectid":res.data.projectid,
+                }
                 this.returnedMoneyInfo = res.data
                 this.imgList = res.data.images.split(',')
                 for(let i=0;i<this.imgList.length;i++){
@@ -276,7 +268,7 @@ export default {
              
                 this.newReturned={
                     projectid:res.data.projectid,
-                    content:res.data.returnedtime,
+                    content:res.data.content,
                     sum:res.data.sum,
                     remark:res.data.remark,
                     returnedtime:res.data.returnedtime,
@@ -329,6 +321,12 @@ export default {
         })
     },
     updatereturndmoney(){
+         let newReturned = this.newReturned
+        if(!newReturned.projectid || !newReturned.sum || !newReturned.content || !newReturned.returnedtime ){
+
+            this.$message.error('请填写完整信息');
+            return false
+        }
         console.log(this.newReturned)
         let reqBody = {
             "api": "updatereturndmoney",
@@ -357,6 +355,12 @@ export default {
             
         })
         
+    },
+    examinePicture(url){
+         this.$alert('<img class="bigImg" src='+url+'></img>', {
+          dangerouslyUseHTMLString: true,
+          showConfirmButton:false
+        });
     }
     
     
@@ -428,5 +432,7 @@ export default {
                 line-height 25px
                 margin-left 20px
                 font-size 14px
+    .el-select,.el-date-editor
+            width 100%
                 
 </style>

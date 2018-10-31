@@ -4,15 +4,20 @@
             <div class="operationBox clearfix">
                 <div class="floatLeft leftBox clearfix">
                     <el-form :inline="true"  class="demo-form-inline" :model="searchData">
+                        <el-form-item>
+                            <div class="leftBtn btnst" :class="workstatus==0?'actBtn':''"  @click="setWorkStatus(0)">
+                                <span class="btnTitle">进行中工单</span>
+                            </div>
+                        </el-form-item>
+                        <el-form-item>
+                            <div class="leftBtn btnst" :class="workstatus==1?'actBtn':''"  @click="setWorkStatus(1)">
+                                <span class="btnTitle">已完成工单</span>
+                            </div>
+                        </el-form-item>
                         <el-form-item >
                             <el-input v-model="searchData.antistop" placeholder="请输入工单编号或项目名称"></el-input>
                         </el-form-item>
-                        <el-form-item label="工单状态">
-                           <el-select v-model="workstatus" placeholder="请选择活动区域">
-                            <el-option label="进行中工单" value="0"></el-option>
-                            <el-option label="已完成工单" value="1"></el-option>
-                            </el-select>
-                        </el-form-item>
+                       
                       
                         <el-form-item>
                             <div class="leftBtn btn"  @click="getWorkorderList(1)">
@@ -151,8 +156,10 @@
                         prop="finishtime"
                         label="完成时间"
                         align="center"
-                        width="120">
-                            
+                        width="140">
+                            <template slot-scope="scope">
+                                <span>{{scope.row.finishtime?scope.row.finishtime:'--'}}</span>
+                            </template>
                         </el-table-column>
                         <el-table-column
                         fixed="right"
@@ -228,7 +235,8 @@
                         v-model="newMarketClue.gettime"
                         type="datetime"
                         placeholder="选择上门时间"
-                        value-format="yyyy-MM-dd HH:mm:ss">
+                        value-format="yyyy-MM-dd"
+                        format="yyyy-MM-dd">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="紧急程度：" :show-message='false' :required='true'>
@@ -328,6 +336,12 @@ export default {
     //Tab 切换事件
     getCutTab(res){
         console.log(res)
+    },
+    setWorkStatus(workstatus){
+        if(workstatus!=this.workstatus){
+            this.workstatus = workstatus
+            this.getWorkorderList(1)  
+        }
     },
     //表格全选事件
     handleSelectionChange(val) {
@@ -485,7 +499,7 @@ export default {
     updateCompile(){
         
         let newMarketClue = this.newMarketClue
-        if(!newMarketClue.projectid || !newMarketClue.projectaddress || !newMarketClue.linkman || !this.workorderid || !newMarketClue.linkphone || !newMarketClue.gettime || !newMarketClue.serviceid){
+        if(!newMarketClue.projectid || !newMarketClue.projectaddress || !newMarketClue.linkman || !this.workorderid || !newMarketClue.linkphone || !newMarketClue.gettime || newMarketClue.serviceid.length<=0){
             this.$message.error('请填写完整信息')
             return false
         }
@@ -541,7 +555,7 @@ export default {
                 ids = this.multipleSelection[i].id
             }
         }
-        window.open(Session.exportUrl+'index/exportworkorder?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+        window.open(Session.exportUrl+'exportworkorder?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
         
         let reqBody = {
             "api": "exportworkorder",
@@ -567,15 +581,31 @@ export default {
             margin-bottom 10px
         .btn
             height 32px
-            line-height 32px
+            line-height 30px
             font-size 12px
             padding 0 15px
             border-radius 3px
+            border 1px solid #00AC97
             color #fff
             background-color #00AC97
             cursor pointer
             min-width 80px
             text-align center
+        .btnst
+            height 32px
+            line-height 30px
+            font-size 12px
+            padding 0 15px
+            border-radius 3px
+            border 1px solid #00AC97
+            color #00ac97
+            cursor pointer
+            min-width 80px
+            text-align center
+        .actBtn
+            color #fff
+            background-color #00AC97
+            
         .leftBtn
             float left
             margin-right 5px

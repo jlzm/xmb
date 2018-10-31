@@ -7,7 +7,16 @@
                         <el-form-item >
                             <el-input v-model="searchData.antistop" placeholder="请输入项目名称或客户名称"></el-input>
                         </el-form-item>
-                       
+                       <el-form-item label="完成状态">
+                            <el-select v-model="searchData.status" placeholder="请选择项目状态" popper-class="border">
+                                <el-option value="-1" label="所有项目"></el-option>
+                                <el-option value="0" label="已完成项目"></el-option>
+                               
+                                <el-option value="1" label="未完成项目"></el-option>
+                                
+                                
+                            </el-select>
+                        </el-form-item>
                         <el-form-item>
                             <div class="leftBtn btn" @click="getProjectList(1)" >
                         
@@ -66,7 +75,7 @@
                         
                         <el-table-column
                         prop="bargainsum"
-                        label="项目总金额"
+                        label="合同签订金额"
                         align="center"
                         width="140">
                             <template slot-scope="scope">
@@ -75,7 +84,7 @@
                         </el-table-column>
                         <el-table-column
                         prop="totalamount"
-                        label="应收金额"
+                        label="应收总金额"
                         align="center"
                         width="140">
                             <template slot-scope="scope">
@@ -94,7 +103,7 @@
                             
                         <el-table-column
                         prop="appointedtime1"
-                        label="项目完成时间"
+                        label="约定完成时间"
                         align="center"
                         width="140">
                             <template slot-scope="scope">
@@ -108,6 +117,24 @@
                         width="100">
                             <template slot-scope="scope">
                                 <span>{{!scope.row.staffname?'待填写':scope.row.staffname}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                      
+                        label="项目状态"
+                        align="center"
+                        width="80">
+                            <template slot-scope="scope">
+                                <span>{{scope.row.status==0?'已完成':'进行中'}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                        prop="finishtime"
+                        label="完成时间"
+                        align="center"
+                        width="140">
+                            <template slot-scope="scope">
+                                <span>{{scope.row.finishtime?scope.row.finishtime:'--'}}</span>
                             </template>
                         </el-table-column>
                         <el-table-column
@@ -217,13 +244,17 @@
         width="30%"
         >
         <div>
-            <el-form  label-width="100px" class="demo-ruleForm">
-                <el-form-item label="客户名称" >
+            <el-form  label-width="100px" class="demo-ruleForm" style="padding-right:60px">
+                <el-form-item label="客户名称" :show-message='false' :required='true'>
                     <el-input v-model="newCustmerData.custmername"></el-input>
                 </el-form-item>
-                <el-form-item label="客户地址" >
-                    <el-input v-model="newCustmerData.addressd"></el-input>
+                <el-form-item label="客户地址" :show-message='false' :required='true'>
+                    <el-input :disabled="newCustmerData.latitude?false:true"  v-model="newCustmerData.addressd"></el-input>
+                    <i class="mapIcon"  @click="mapVisible = true">
+                        <img src="static/img/mapIcon.png" alt="">
+                    </i>
                 </el-form-item>
+               
             </el-form>
            
             
@@ -233,7 +264,7 @@
             <el-button type="primary" @click="addCustmer">确 定</el-button>
         </span>
         </el-dialog>
-
+        <v-map :mapVisible="mapVisible" @closeVisible="closeVisible" @confirmVal="confirmVal"  v-if="mapVisible"></v-map>
     </div>
     
 </template>
@@ -244,6 +275,7 @@ import {Session} from './../../../api/axios'
 import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
 import vProjectInfo from '../../common/ProjectInfo.vue';  //项目信息
 import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
+import vMap from '../../common/Map.vue';  //招投标信息
 
 
 
@@ -255,16 +287,20 @@ export default {
         searchData:{
             antistop:'',
             area:'',
-            principal:''
+            principal:'',
+            status:"-1"
+
         },
         tableData: [],
         multipleSelection: [],
         newDialogVisible:false,
         newCustmerVisible:false,
+        mapVisible:false,
         newCustmerData:{
             custmername:'',
             addressd:'',
-            
+            longitude:'',
+            latitude:'',
 
         },
         dialogtTitle:'',
@@ -313,12 +349,16 @@ export default {
     }
   },
   components:{
-    vParticularsTab,vProjectInfo,vBidInfo
+    vParticularsTab,vProjectInfo,vBidInfo,vMap
   },
   created () {
     this.getProjectList(1)      
     this.getCustomerList()
     this.getDeptemp()
+  },
+  mounted(){
+     
+
   },
   methods:{
     //FormulaBar组件按钮事件
@@ -377,6 +417,8 @@ export default {
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['project'],
             "page":page,
+            "status":this.searchData.status,
+
             "pagesize":this.pageSize
         }
 
@@ -569,11 +611,20 @@ export default {
                 ids = this.multipleSelection[i].id
             }
         }
-        window.open(Session.exportUrl+'project/exportList?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+        window.open(Session.exportUrl+'exportList?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
     },
     //添加客户
     newCustmer(){
+        this.newCustmerData={
+            custmername:'',
+            addressd:'',
+            longitude:'',
+            latitude:'',
+        }
+
         this.newCustmerVisible = true
+
+
     },
     addCustmer(){
         if(!this.newCustmerData.custmername || !this.newCustmerData.addressd){
@@ -584,6 +635,8 @@ export default {
             "api": "basicadd",
             "uid": sessionStorage.getItem('userid'),
             "type": 4,
+            "longitude":this.newCustmerData.longitude,
+            "latitude":this.newCustmerData.latitude,
             "companyid":sessionStorage.getItem('companyid'),
             "custmername": this.newCustmerData.custmername,
             "addressd": this.newCustmerData.addressd,
@@ -593,17 +646,29 @@ export default {
             console.log(res)
             if (res.state == 10001) {
                 this.$message.success('添加成功')
-                this.getCustomerList()
                 this.newCustmerVisible = false
-
+                this.getCustomerList()
                 
             } else {
                 
             }
         })
+    },
+
+
+    //地图相关
+    closeVisible(mapVisible){
+        console.log(mapVisible)
+        this.mapVisible = mapVisible
+    },
+    confirmVal(mapVal){
+        this.mapVisible = false
+        console.log(mapVal)
+        this.newCustmerData.addressd = mapVal.address
+        this.newCustmerData.longitude = mapVal.lng
+        this.newCustmerData.latitude = mapVal.lat
     }
-    
-    
+
   }
   
 }
@@ -659,4 +724,7 @@ export default {
         right -85px
     .newCustmer-dialog-footer
         padding-right 0
+
+    
+        
 </style>

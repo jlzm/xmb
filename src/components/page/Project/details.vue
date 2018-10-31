@@ -19,11 +19,11 @@
 
                 </div>
                 <div class="floatLeft rightBox554">
-                    <div>
+                    <div class="rightContentBox">
                         <!-- 标题Tab开始 -->
-                        <v-particularsTab class="bgWhite" :particularsTabList="rightTabList" @returnCutTab="getCutTab"></v-particularsTab>
+                        <v-particularsTab :particularsTabList="rightTabList" @returnCutTab="getCutTab"></v-particularsTab>
                         <!-- 标题Tab结束 -->
-                        <div>
+                        <div class="pad10">
                             <!-- 进度查看开始 -->
                             <div v-show="tabListIndex==0" class="invitationBox">
                                 <el-table
@@ -108,121 +108,29 @@
                             </div>
                             <!-- 文件管理结束 -->
 
-
-
-                            <!-- New -->
                             <!-- 财务管理开始 -->
                             <div v-show="tabListIndex==2" class="invitationBox">
-                                <div class="finance-head-wrap bgWhite">
-                                    <el-row :gutter="20">
+                                <el-row :gutter="20">
                                     <el-col :span="8">
                                         <div class="financeItemBox">
-                                            <div class="finance-total-box ">
-                                                <div class="fsize18">项目总金额</div>
-                                                <div class=" marT45 row">
-                                                <span class="fsize40">{{fprojectManage.bargainsum || '300,000.00'}}</span>
-                                                <span class="fsize18">元</span>
-                                                </div>
-                                            </div>
+                                            <div class="fsize14 marB20">项目总金额</div>
+                                            <div>{{fprojectManage.bargainsum}}元</div>
                                         </div>
                                     </el-col>
                                     <el-col :span="8">
                                         <div class="financeItemBox">
-                                            <div class="finance-payback-box row">
-                                                <div class="fsize18">项目总金额</div>
-                                                <div class=" marT45 row">
-                                                    <span class="fsize40">{{fprojectManage.sum || '250,000.00'}}</span>
-                                                    <span class="fsize18">元</span>
-                                                </div>
-                                            </div>
+                                            <div class="fsize14 marB20">应收金额</div>
+                                            <div>{{fprojectManage.sum}}元</div>
                                         </div>
                                     </el-col>
                                     <el-col :span="8">
                                         <div class="financeItemBox">
-                                            <div class="finance-need-box">
-                                                <div class="fsize14">项目总金额</div>
-                                                <div class="marT45 row">
-                                                    <span class="fsize40">{{fprojectManage.totalamount || '450,000.00'}}</span>
-                                                    <span class="fsize18">元</span>
-                                                </div>
-                                            </div>
+                                            <div class="fsize14 marB20">回款金额</div>
+                                            <div>{{fprojectManage.totalamount}}元</div>
                                         </div>
                                     </el-col>
                                     
                                 </el-row>
-                                </div>
-                                <div class="finance-content-wrap marT10">
-                                    <el-row :gutter="10">
-                                        <el-col :span="12" class="finance-content-r">
-                                            <div class="finance-content-r-c bgWhite">
-                                                <el-row class="finance-content-title">
-                                                    <el-col :span="12">
-                                                        <span class="fsize14 color333">资金明细</span>
-                                                    </el-col>
-                                                    <el-col :span="12" class="tar">
-                                                        <span class="fsize14 vam cp" style="color: #4c97ff">查看更多</span>
-                                                        <i class="finance-content-more-icon dib vam">
-                                                            <img v-lazy="'static/img/porjectAmount/more.png'" alt="">
-                                                        </i>
-                                                    </el-col>
-                                                </el-row>
-                                                <div class="finance-content-list-wrap">
-                                                    <div class="finance-content-item" v-for="(item, index) in financeDetailList" :key="index" :class="{bgF5:index%2==0}">
-                                                        <el-row>
-                                                            <el-col :span="12">
-                                                            <div class="finance-detail-title">
-                                                                <span class="fsize16 color222">{{item.title}}</span>
-                                                            </div>
-
-                                                            </el-col>
-                                                            <el-col :span="12" class="tar">
-                                                                <div class="finance-money-amount row" :class="[item.profit ? 'colorRed' : 'colorGreen']">
-                                                                    <span v-if="item.profit" class="fsize16">+</span>
-                                                                    <span v-else class="fsize16">-</span>
-                                                                    <span class="fsize16">{{item.money}}</span>
-                                                                </div>
-                                                            </el-col>
-                                                        </el-row>
-                                                        <el-row class="row marT12">
-                                                            <el-col :span="12" class="row">   
-                                                                <span class="fsize14 color999">{{item.date}}</span>
-                                                                <span class="fsize14 color999">|</span>
-                                                                <span class="fsize14 color999">{{item.user}}</span>
-                                                            </el-col>
-                                                            <el-col :span="12" class="tar">   
-                                                                <span class="fsize14 color999">{{item.type}}</span>
-                                                            </el-col>
-                                                        </el-row>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </el-col>
-                                        <el-col :span="12" class="finance-content-l">
-                                            <div class="finance-content-l-c bgWhite">
-                                                <div class="finance-content-title row">
-                                                    <span class="fsize14 color333">支出统计</span>
-                                                </div>
-                                                <div class="finance-content-list-wrap">
-                                                    <div class="finance-outlay-total row">
-                                                        <span class="fsize16 color222">支出总额：</span>
-                                                        <span class="fsize16 color222">￥255,685.00</span>
-                                                    </div>
-                                                    <div class="finance-strip-items row">
-                                                        <div style="width: 90%" class="finance-strip-item">
-                                                            <div style="width: 80%" class="finance-strip-bar dib fsize12 colorfff vam">
-                                                                <div>招待费用</div>
-                                                                <div class="marT8">￥255,685.00</div>
-                                                                <div class="finance-strip-scale fsize12 color333 vam tal col-lg-1">
-                                                                    <span class="marL10">80%</span>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </el-col>
-                                </el-row>
-                                </div>
                             </div>
                             <!--财务管理结束 -->
 
@@ -352,17 +260,20 @@
         <div>
             <el-form  label-position="left" label-width="100px" >
                 <el-form-item label="文件夹">
-                    <el-select v-model="filetypeid" placeholder="请选择文件夹" >
+                    <el-select v-model="filetypeid" placeholder="请选择文件夹" @change="selectFile" >
                         <el-option :label="item.filename" :value="item.filetypeid"  v-for="(item,index) in fileBoxList" :key="index"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
             <el-upload
             multiple
+            ref="upload"
             class="upload-demo"
             :action="exportUrl"
-            :on-remove = "handleRemove"
+            :data="uploadData"
+            :auto-upload="false"
             :file-list="fileList"
+           
             :on-success="handleSuccess"
             >
             <el-button size="small" type="primary">点击上传</el-button>
@@ -370,7 +281,7 @@
         </div>
         <span slot="footer" class="dialog-footer newCustmer-dialog-footer">
             <el-button @click="addFileVisible = false">取 消</el-button>
-            <el-button type="primary" @click="addFile">确 定</el-button>
+            <el-button type="primary" @click="submitUpload">确 定</el-button>
         </span>
         </el-dialog>
 
@@ -408,9 +319,11 @@ export default {
         fileList:[],
         fileListStr:'',
         fileListName:'',
-        filetypeid:'',
+        filetypeid:'1',
+        uploadData:{},
+        successLength:0,
         fprojectManage:'',
-        exportUrl:Session.exportUrl+'index/saveFile',
+        exportUrl:Session.exportUrl+'saveFile',
         newCustmerData:{
             custmername:'',
             addressd:'',
@@ -434,49 +347,6 @@ export default {
           describe:'',
          
         },
-        // 资金明细
-        financeDetailList: [
-            {
-                id: 1,
-                title: '二期项目尾款',
-                date: '2018-10-22 11:23',
-                user: '李思明',
-                money: 200000.00,
-                type: '项目回款',
-                profit: true
-            },
-            {
-                id: 2,
-                title: '招待公关',
-                date: '2018-10-21 11:23',
-                user: '李思明',
-                money: 8000.00,
-                type: '项目支出',
-                profit: false
-            },
-            {
-                id: 3,
-                title: '差旅费用',
-                date: '2018-10-21 11:23',
-                user: '李思明',
-                money: 3000.00,
-                type: '项目支出',
-                profit: false
-            },
-            {
-                id: 4,
-                title: '差旅费用',
-                date: '2018-10-21 11:23',
-                user: '李思明',
-                money: 6000.00,
-                type: '项目支出',
-                profit: false
-            },
-        ],
-        // 支出
-        totalOutlay: null, //总支出
-
-        financeOutlayList: [],
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
@@ -520,18 +390,9 @@ export default {
             icon:'icon-guanliangongnengliebiaoiconxuanzhong',
             item:[
                 
-                {
-                    title:'进度查看',
-                    clickEvent:'projectInfo'  
-                },
-                {
-                    title:'文件管理',
-                    clickEvent:'projectInfo'  
-                },
-                {
-                    title:'财务数据',
-                    clickEvent:'projectInfo'  
-                }
+                
+                
+                
             ]
         }
     }
@@ -542,15 +403,17 @@ export default {
   created(){
     this._getProjectInfo()
    
-    this._getFileTypeList()
-    this.getprojectfinancial()
+   
+   
     this.getCustomerList()
     this.getDeptemp()
     this.getfilelist()
+    this.uploadData = {
+            "companyid": sessionStorage.getItem('companyid'),
+            "projectid":this.$route.query.id,
+            "typeid":this.filetypeid
+        }
     
-  },
-  mounted() {
-      this.getOutlay()
   },
   methods:{
     handleSuccess(response, file, fileList){
@@ -566,59 +429,21 @@ export default {
         }else{
             this.fileListName = response.fileName
         }
+        if(this.filesize){
+            this.filesize = this.filesize+','+response.filesize
+        }else{
+            this.filesize = response.filesize
+        }
+        if(response.fileUrl){
+            this.successLength = this.successLength+1
+        }
+        if(this.successLength== fileList.length){
+            this.successLength = 0
+           this.addFile()
+        }
 
         
     },
-    // 获取支出费用
-    getOutlay() {
-        let total = null,
-            testArr = [],
-            entertain = {
-                money: null
-            },
-            travel = {
-                money: null
-            },
-            office = {},
-            salary = {},
-            purchase = {},
-            other = {};
-        this.financeDetailList.forEach((item, index) => {
-            switch (item.profit) {
-                case false:
-                    total += item.money;
-                    switch (item.title) {
-                case '招待公关':
-                    entertain.title = item.title;
-                    entertain.money += item.money;
-                    break;
-                case '差旅费用':
-                    travel.title = item.title;
-                    travel.money += item.money;
-                    break;
-                default:
-                    break;
-                }
-                    break;
-                default:
-                    break;
-            }
-
-        })
-            this.totalOutlay = total
-            this.financeOutlayList = [entertain];
-            console.log('this.financeOutlayList:', this.financeOutlayList);
-    },
-
-    // 数组排序
-    sortByKey(arr, key) {
-        return arr.sort((a, b) => {
-            let x = a[key];
-            let y = b[key];
-            return ((x<y) ? -1 :((x>y) ? 1 : 0));
-        })
-    },
-
     handleRemove(file, fileList) {
         console.log(fileList);
         this.fileListName=''
@@ -652,6 +477,8 @@ export default {
             this.fileList=[],
             this.fileListStr='',
             this.fileListName='',
+            this.fileListsize='',
+      
             this.filetypeid = ''
             this.addFileVisible = true
         }
@@ -728,6 +555,14 @@ export default {
         Axios(reqBody,'project').then((res) => {
             console.log(res)
             if(res.state==10001){
+                this.progressstatus = res.data.progressstatus
+                this.ratelist = res.data.ratelist
+               
+                this.rightTabList.item=[]
+                this.rightTabList.item.push({
+                    title:'进度查看',
+                    clickEvent:'projectInfo'  
+                })
                 if(res.data.progressstatus.status==0){
                     this.formulaList.right = []
                 }
@@ -756,11 +591,14 @@ export default {
                         ]
                     }
                 }
-                this.progressstatus = res.data.progressstatus
-                this.ratelist = res.data.ratelist
+                
+            }else if(res.status==20001){
+                this.tabListIndex = 1
             }else{
                 this.$message.error(res.msg);
             }
+          
+            this._getFileTypeList()
 
         })
     },
@@ -774,12 +612,17 @@ export default {
         Axios(reqBody,'project').then((res) => {
             console.log(res)
             if(res.state==10001){
-               
+               this.rightTabList.item.push({
+                    title:'文件管理',
+                    clickEvent:'projectInfo'  
+                })
                 this.fileBoxList = res.data.filetype
+            }else if(res.status==20001){
+                this.tabListIndex = 2
             }else{
                 this.$message.error(res.msg);
             }
-
+             this.getprojectfinancial()
         })
     },
     //客户列表
@@ -828,7 +671,8 @@ export default {
             "api": "addprojectrate",
             "uid": sessionStorage.getItem('userid'),
             "projectid": this.$route.query.id,
-            "updatedescribe":this.updatedescribe
+            "updatedescribe":this.updatedescribe,
+            "companyid":sessionStorage.getItem('companyid'),
         }
 
         Axios(reqBody,'project').then((res) => {
@@ -837,7 +681,7 @@ export default {
                 this.$message.success('添加成功');
                 this.addDialogVisible = false
                 this.updatedescribe = ''
-                this._getRateList()
+                this._getRateList(true)
             }else{
                 this.$message.error(res.msg);
             }
@@ -849,15 +693,22 @@ export default {
         let reqBody = {
             "api": "getprojectfinancial",
             "projectid": this.$route.query.id,
+            "companyid":sessionStorage.getItem('companyid'),
         }
 
         Axios(reqBody,'project').then((res) => {
             console.log(res)
             if(res.state==10001){
+                this.rightTabList.item.push({
+                    title:'财务数据',
+                    clickEvent:'projectInfo'  
+                })
                 this.financeInfo = res.data
                 this.fprojectManage = res.data.fproject_manage
+            }else if(res.status==20001){
+
             }else{
-                this.$message.error(res.msg);
+              //  this.$message.error(res.msg);
             }
 
         })
@@ -867,6 +718,9 @@ export default {
         let reqBody = {
             "api": "updateprojectstatus",
             "id": this.$route.query.id,
+             "userid": sessionStorage.getItem('userid'),
+             "companyid":sessionStorage.getItem('companyid'),
+
         }
 
         Axios(reqBody,'project').then((res) => {
@@ -993,6 +847,7 @@ export default {
             "filetypeid": this.filetypeid,
             "filename":this.fileListName,
             "fileurl":this.fileListStr,
+            "filesize":this.filesize,
             "uid":sessionStorage.getItem('userid'),
 
         }
@@ -1003,6 +858,10 @@ export default {
                 this.$message.success('添加成功')
                 this.getfilelist()
                 this.fileList = []
+                this.fileListStr = ''
+                this.fileListName = ''
+                this.filesize = ''
+                this.successLength = 0
                 this.addFileVisible = false
 
                 
@@ -1032,6 +891,20 @@ export default {
                 
             }
         })
+    },
+    submitUpload(){
+     
+
+        this.$refs.upload.submit()
+       
+    },
+    selectFile(val){
+        this.uploadData = {
+            "companyid": sessionStorage.getItem('companyid'),
+            "projectid":this.$route.query.id,
+            "typeid":val
+        }
+        console.log(this.uploadData)
     }
    
     
@@ -1047,63 +920,11 @@ export default {
         width 100%
         padding 10px 15px
         overflow hidden
-    .finance-head-wrap
-        padding 20px 40px 40px
-        .financeItemBox
-            width 326px
-            height 166px
-            .finance-total-box,
-            .finance-payback-box
-            .finance-need-box
-                color #fff
-                padding 20px 20px 36px
-                height 100%
-                width 100%
-            .finance-total-box
-                background-image url('../../../../static/img/porjectAmount/total.png')
-            .finance-payback-box
-                background-image url('../../../../static/img/porjectAmount/payback.png')
-            .finance-need-box
-                background-image url('../../../../static/img/porjectAmount/need.png')    
-    .finance-content-wrap
-        // 公共样式
-        .finance-content-title
-            padding 15px 0
-            border-bottom 1px solid #ededed
-        .finance-content-list-wrap
-            padding 20px 0 20px
-
-        // 公共样式结束
-        .finance-content-r-c,
-        .finance-content-l-c
-            padding 0 20px
-            .finance-content-more-icon
-                height 14px
-                width 14px
-            .finance-content-item
-                border 1px solid #f2f2f2
-                padding 20px 10px
-        .finance-strip-items
-            margin-top 30px
-            .finance-strip-item
-                margin-bottom 20px
-                .finance-strip-bar
-                    position relative
-                    background #66adff
-                    border-radius 3px
-                    padding 5px
-                    .finance-strip-scale
-                        position absolute
-                        right -10%
-                        top 16px
-
-
-
-// 背景
-.bgF5
-    background #f5f5f5    
-
-
+        
+    .financeItemBox
+        border 1px solid #dddddd
+        padding 40px 20px
+        text-align center
     .compileDialog
         padding-right  100px
         .el-date-editor
@@ -1118,9 +939,4 @@ export default {
         right -85px
     .newCustmer-dialog-footer
         padding-right 0
-
-.colorRed
-    color #f33b3b
-.colorGreen
-    color #259f89
 </style>

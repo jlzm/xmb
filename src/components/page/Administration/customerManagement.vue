@@ -92,13 +92,18 @@
           <el-input ref="custmername" v-model="searchData.custmername"></el-input>
         </el-form-item>
         <el-form-item :required='true' label="所在地区：" label-position="left" label-width="100px">
-          <el-input ref="addressd" v-model="searchData.addressd"></el-input>
+          <el-input ref="addressd" :disabled="searchData.latitude?false:true"  v-model="searchData.addressd"></el-input>
+          <i class="mapIcon"  @click="mapVisible = true">
+              <img src="static/img/mapIcon.png" alt="">
+          </i>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button class="confirmBtn" type="primary" @click="_onBasicAdd">保存</el-button>
       </div>
     </el-dialog>
+
+    <v-map :mapVisible="mapVisible" :mapVal="mapVal" @closeVisible="closeVisible" @confirmVal="confirmVal"  v-if="mapVisible"></v-map>
   </div>
 
 </template>
@@ -106,7 +111,7 @@
 
   import {Axios} from './../../../api/axios'
   import {Session} from './../../../api/axios'
-
+  import vMap from '../../common/Map.vue';  //招投标信息
 
   export default {
     data() {
@@ -115,6 +120,7 @@
         search: '',
         loading: false,
         compileVisible: false,
+        mapVisible:false,
         pageSize: 10,
         edit: 0,
         searchData: {
@@ -122,10 +128,12 @@
           addressd: '',
           custmername: '',
           search: '',
+          longitude:'',
+          latitude:'',
         },
         folderList: [],
         limit: JSON.parse(sessionStorage.getItem('limits'))['deptemp'],
-
+        mapVal:{},
         formulaList: { //编辑栏按钮数
           parent: 'marketClue',
           left: [
@@ -147,7 +155,7 @@
       }
     },
 
-    components: {},
+    components: {vMap},
     created() {
       this._getBasicList(1)
     },
@@ -198,15 +206,24 @@
         this.compileVisible = true;
         this.searchData.custmername = "";
         this.searchData.addressd = "";
+        this.searchData.latitude = ''
+        this.searchData.longitude = ''
       },
       // 编辑
       onCompileVisible(type) {
+        this.mapVal = {
+          lng:type.longitude,
+          lat:type.latitude,
+          address:type.addressd,
+        }
         this.edit = 1;
         this.title = '编辑客户';
         this.compileVisible = true
         this.searchData.custmername = type.custmername
         this.searchData.custid = type.custid
         this.searchData.addressd = type.addressd
+        this.searchData.latitude = type.latitude
+        this.searchData.longitude = type.longitude
 
       },
       _onBasicAdd() {
@@ -221,6 +238,8 @@
               "custmername": this.searchData.custmername,
               "addressd": this.searchData.addressd,
               "fbasicid": this.searchData.custid,
+              "longitude":this.searchData.longitude,
+              "latitude":this.searchData.latitude ,
               "type": "4"
 
             }
@@ -250,8 +269,8 @@
               "uid": sessionStorage.getItem('userid'),
               "custmername": this.searchData.custmername,
               "addressd": this.searchData.addressd,
-              "longitude": '',
-              "latitude": '',
+              "longitude":this.searchData.longitude,
+              "latitude":this.searchData.latitude ,
               "type": "4"
 
             }
@@ -277,7 +296,21 @@
           }
 
         }
-      }
+      },
+
+      //地图相关
+    closeVisible(mapVisible){
+        console.log(mapVisible)
+        this.mapVisible = mapVisible
+    },
+    confirmVal(mapVal){
+        this.mapVisible = false
+        console.log(mapVal)
+        this.searchData.addressd = mapVal.address
+        this.searchData.longitude = mapVal.lng
+        this.searchData.latitude = mapVal.lat
+    }
+
 
 
     }

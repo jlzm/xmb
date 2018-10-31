@@ -151,13 +151,13 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData[0]">
+                <div class="pagination" v-if="tableData.list">
                     <el-pagination 
                     background
                     :page-size="pageSize"
                     layout="prev, pager, next"
                     @current-change="pagingChange"
-                    :total="tableData[0].total">
+                    :total="tableData.list[0].total">
                     </el-pagination>
                 </div>
 
@@ -200,8 +200,8 @@
                     <div class="floatLeft addVoucherTitle">添加图片</div>
                     <div class="floatLeft addVoucherContent">
                         <el-upload
-                        action="https://jsonplaceholder.typicode.com/posts/"
-                        :auto-upload="false"
+                         :action="imageUrl"
+                
                         multiple
                         :limit="9"
                       
@@ -209,7 +209,7 @@
                         list-type="picture-card"
                         :file-list="imgList"
                         :on-change="imgChange"
-                   
+                        :on-success="handleSuccessImg"
                         :on-remove="handleRemoveImg">
                         <i class="el-icon-plus"></i>
                         </el-upload>
@@ -274,6 +274,7 @@ export default {
             custmerId:''
         },
         tableData: [],
+        imageUrl:Session.exportUrl+'saveImage',
         purchaseTypeList:[],
         projectList:[],
         pageSize:10,
@@ -313,9 +314,10 @@ export default {
             remark:'',
             
         },
+        imagepc:'',
         remark:'',
         purchaseid:'',
-        exportUrl:Session.exportUrl+'index/saveFile',
+        exportUrl:Session.exportUrl+'saveFile',
         
     }
   },
@@ -457,7 +459,7 @@ export default {
                 ids = this.multipleSelection[i].id
             }
         }
-        window.open(Session.exportUrl+'index/exportpurchase?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+        window.open(Session.exportUrl+'exportpurchase?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
     },
     //删除
     onDelete(row){
@@ -481,6 +483,7 @@ export default {
     // //////////编辑
     //打开编辑层
     openCompile(row){
+        this.imagepc = ''
         let reqBody = {
             "api": "getpurchaseinfo",
             "id": row.id,
@@ -506,9 +509,9 @@ export default {
                 this.remark = res.data.remark
                 this.imgList = []
                 this.addPurchaseData.purchaseurltwo = res.data.purchaseurl
+                this.imagepc = res.data.purchaseurl
                 if(res.data.purchaseurl&&res.data.purchaseurl.indexOf(",") != -1){
                     let purchaseurl = res.data.purchaseurl.split(",")
-                    
                     for(let i=0;i<purchaseurl.length;i++){
                         this.imgList.push({
                             url:purchaseurl[i]
@@ -586,67 +589,47 @@ export default {
             }
         }
     }, 
-   
     //图片选择
     imgChange(file, fileList){
         console.log(fileList)
-        console.log(this.imgList)
-        
         for(let i=0;i<fileList.length;i++){
-            if(fileList[i].size){
-                const isLt2M = fileList[i].size / 1024  < 200;
-                if (!isLt2M) {
-                    this.$message.error('上传图片大小不能超过 200kb!');
-                    fileList.splice(i,1); 
-
-                }
-            }
+            
             
         }
-        this.initBase(file.url)
+       
         
     },
-    //图片删除
+  
+    //图片上传处理
     handleRemoveImg(file, fileList) {
-        console.log( fileList);
-        this.addPurchaseData.purchaseurl = ''
-        this.addPurchaseData.purchaseurltwo = ''
+        this.imagepc = ''
+        console.log(fileList)
         for(let i=0;i<fileList.length;i++){
-            if(fileList[i].status=='success'){
-                if(this.addPurchaseData.purchaseurltwo){
-                    this.addPurchaseData.purchaseurltwo = this.addPurchaseData.purchaseurltwo + ',' + fileList[i].url
+            if(fileList[i].response){
+                if(this.imagepc){
+                    this.imagepc = this.imagepc+','+fileList[i].response.fileUrl
                 }else{
-                    this.addPurchaseData.purchaseurltwo = fileList[i].url
+                    this.imagepc  = fileList[i].response.fileUrl
                 }
             }else{
-                this.initBase(fileList[i].url)
+                if(this.imagepc){
+                    this.imagepc = this.imagepc+','+fileList[i].url
+                }else{
+                    this.imagepc  = fileList[i].url
+                }
             }
-            
         }
     },
-    //转base64
-    initBase(url){
-        let that = this
-        console.log(1)
-        fetch(url).then(data=>{
-            const blob = data.blob();
-            return blob;
-        }).then(blob=>{
-            let reader = new window.FileReader();
-            
-            reader.onloadend = function() {
-                
-                const data = reader.result;
-                if(that.addPurchaseData.purchaseurl){
-                    that.addPurchaseData.purchaseurl = that.addPurchaseData.purchaseurl+','+data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                }else{
-                    that.addPurchaseData.purchaseurl = data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                }
-                
-            };
-
-            reader.readAsDataURL(blob);
-        })
+    handleSuccessImg(response, file, fileList){
+        if(file.response){
+            if(this.imagepc){
+                this.imagepc = this.imagepc+','+file.response.fileUrl
+            }else{
+                this.imagepc  = file.response.fileUrl
+            }
+        }
+        
+        console.log(file)
     },
     //添加明细
     addPurchaseArr(){
@@ -662,6 +645,7 @@ export default {
             this.$message.error('请填写金额')
             return false
         }
+        
         let reqBody = {
             "api": "updatepurchase",
             "projectid": this.purchaseArr[0].pid,
@@ -669,8 +653,9 @@ export default {
             "sum": this.purchaseArr[0].money,
             "remark": this.remark,
             "purchaseurl": this.addPurchaseData.purchaseurl,
-            "purchaseurltwo": this.addPurchaseData.purchaseurltwo,
+            "purchaseurltwo": this.imagepc,
             "purchaseid": this.purchaseid,
+         
         }
         Axios(reqBody,'index').then((res) => {
             console.log(res)

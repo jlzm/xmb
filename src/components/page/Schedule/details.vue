@@ -24,6 +24,33 @@
                         <v-particularsTab :particularsTabList="rightTabList" @returnCutTab="getCutTab"></v-particularsTab>
                         <!-- 标题Tab结束 -->
                         <div class="pad10">
+                            <div ref="progress" >
+                                <div :style="'margin-left:'+progressTextLeft+'px'" class="progressText" ref="progressText">
+                                    <div v-if="fProjectManage.status==1">
+                                        <div class="marB5">项目启动历时{{rateData.currentdays}}天</div>
+                                        <div>距离完成剩余{{rateData.remainingdays}}天</div>
+                                    </div>
+                                    <div v-if="fProjectManage.status==0">
+                                        <div class="marB5">该项目已完成</div>
+                                    </div>
+                                    
+                                </div>
+                                <div class="progressBox" :style="'padding: 0px '+progressBoxPad+'px'">
+                                    <el-progress :stroke-width="10" :percentage="this.progressVal" :show-text="false"></el-progress>
+                                </div>
+                                <div class="clearfix progressTime" :style="'padding: 0px '+progressBoxPad+'px 40px'">
+                                    <div class="floatLeft">
+                                        <div class="marB5">项目启动时间</div>
+                                        <div>{{fProjectManage.projectstarttime1}}</div>
+                                    </div>
+                                    <div class="floatRight endTime">
+                                        <div class="marB5">项目结束时间</div>
+                                        <div>{{fProjectManage.appointedtime1}}</div>
+                                    </div>
+                                </div>
+
+                                
+                            </div>
                             <!-- 进度查看开始 -->
                             <div class="invitationBox">
                                 <el-table
@@ -114,8 +141,12 @@ export default {
         tabListIndex:0,
         projectInfo:{},
         ratelist:[],
+        fProjectManage:{},
         updatedescribe:'',
         addDialogVisible:false,
+        progressVal:0,
+        progressWidth:0,
+        progressTextWidth:0,
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
@@ -160,8 +191,13 @@ export default {
   created(){
     this._getProjectInfo()
     this._getRateList()
-   
+    
   },
+  mounted(){
+        this.progressTextWidth = this.$refs.progressText.offsetWidth
+        this.progressWidth = this.$refs.progress.offsetWidth
+         console.log(this.$refs.progressText.offsetWidth)
+    },
   methods:{
     getFormulaBar(res){
         this.updatedescribe = ''
@@ -185,6 +221,7 @@ export default {
             if(res.state==10001){
                 this.projectInfo = res.data
                 
+                
             }else{
                 this.$message.error(res.msg);
             }
@@ -194,7 +231,7 @@ export default {
     //进度列表
     _getRateList(){
         let reqBody = {
-            "api": "getratelist",
+            "api": "getratedetails",
             "projectid": this.$route.query.id,
             "companyid": sessionStorage.getItem('companyid'),
         }
@@ -202,7 +239,17 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.ratelist = res.data.ratelist
-                if(res.data.progressstatus.status==0){
+                this.rateData = res.data
+                this.fProjectManage = res.data.fProject_manage
+                if(res.data.currentdays<=res.data.allday&&res.data.currentdays!=0){
+                    this.progressVal = res.data.currentdays/res.data.allday*100
+                }else if(res.data.currentdays<=res.data.allday&&res.data.currentdays==0){
+                    this.progressVal = 0
+                }else{
+                    this.progressVal = 100
+                }
+                
+                if(res.data.fProject_manage.status==0){
                     this.formulaList.right = []
                 }else{
                     this.formulaList.right = [{
@@ -227,6 +274,7 @@ export default {
             "api": "addprojectrate",
             "uid": sessionStorage.getItem('userid'),
             "projectid": this.$route.query.id,
+            "companyid":sessionStorage.getItem('companyid'),
             "updatedescribe":this.updatedescribe
         }
 
@@ -240,10 +288,21 @@ export default {
             }else{
                 this.$message.error(res.msg);
             }
-
         })
     },
     
+  },
+  computed: {
+    // 一个计算属性的 
+    progressTextLeft () {
+        let Width =  this.progressWidth - this.progressTextWidth -20
+        let marLeft = Width * this.progressVal /100
+        return marLeft
+    },
+    progressBoxPad(){
+        let pad = this.progressTextWidth/2
+        return pad
+    }
   }
 }
 </script>
@@ -253,6 +312,18 @@ export default {
         width 100%
         padding 10px 15px
         overflow hidden
-        
-    
+    .progressBox{
+       
+        margin 20px 0
+    }
+    .progressText
+        display inline-block
+        font-size 14px
+        color #666
+        min-width 110px
+    .progressTime
+        font-size 14px
+        color #666
+    .endTime
+        text-align right 
 </style>

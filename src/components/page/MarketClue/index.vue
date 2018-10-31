@@ -379,7 +379,7 @@ export default {
                 ids = this.multipleSelection[i].id
             }
         }
-        window.open(Session.exportUrl+'index/exportsellthread?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
+        window.open(Session.exportUrl+'exportsellthread?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
     },
     //弹出
     onChangeDialogVisible(row){

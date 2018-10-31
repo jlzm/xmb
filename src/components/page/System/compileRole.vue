@@ -19,8 +19,10 @@
           </el-form>
         </div>
       </div>
+
+
       <!--编辑-->
-      <div class="contentBox clearfix" v-if="mark == 1">
+      <div class="contentBox clearfix" v-if="editList.mark == 1">
         <div class="leftBox leftBox554">
           <div class="sectionBox">
             <div class="title"><img class="iconImg" src="../../../assets/img/bm.png" alt="">角色详情</div>
@@ -28,7 +30,7 @@
               <el-form ref="form" label-width="100px">
                 <div class="sectionItem">
                   <el-form-item label="角色姓名：">
-                    <el-input v-model="rolename"></el-input>
+                    <el-input v-model="editList.rolename"></el-input>
                   </el-form-item>
                 </div>
               </el-form>
@@ -36,7 +38,7 @@
                 <div class="sectionItem">
                   <el-form-item label="角色描述：">
                     <el-input resize="none" type="textarea" :autosize="{ minRows: 10, maxRows: 30}"
-                              v-model="roledesc"></el-input>
+                              v-model="editList.roledesc"></el-input>
                   </el-form-item>
                 </div>
               </el-form>
@@ -52,29 +54,43 @@
             <div class="pad10">
               <!-- 进度查看开始 -->
               <div class="jurisdiction">
-                <el-checkbox-group v-model="checkList">
-                  <div class="jurisdictionItem" v-for="(item,index) in array">
-                    <div class="itemTitle">
-                      <el-checkbox :checked="item.state == 1 ? true : false"
-                                   :label="item.alllimits == 0 ? item.authid : item.authids "
-                                   @change="handleCheckAllChange">{{item.authname}}
-                      </el-checkbox>
-                      <el-select :disabled="item.state == 1 ? false : true" size="mini" v-model="item.alllimits"
-                                 @change="choice(index)" placeholder="请选择"
-                                 class="xmb_select">
-                        <el-option
-                          v-for="item in options"
-                          :key="item.value"
-                          :label="item.label"
-                          :value="item.value">
-                        </el-option>
-                      </el-select>
-                    </div>
-                    <div class="genreList">
-                      <div class="itemGenre">{{item.describes}}</div>
-                    </div>
+                <div class="jurisdictionItem" v-for="(item,index) in array">
+                  <div class="itemTitle">
+                    <el-checkbox v-model="item.mychecked"
+                                 :indeterminate="item.isIndeterminate"
+                                 :label="item.alllimits == 0 ? item.authid : item.authids "
+                                 @change="CheckAll(index,$event)">{{item.authname}}
+                    </el-checkbox>
+                    <el-select size="mini" v-model="item.alllimits"
+                               @change="choice(index)" placeholder="请选择"
+                               class="xmb_select">
+                      <el-option
+                        v-for="item in options"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                      </el-option>
+                    </el-select>
                   </div>
-                </el-checkbox-group>
+                  <div class="genreList" v-if="item.alllimits == 0">
+                    <el-checkbox v-model="el.mychecked"
+                                 v-for="(el,dl) in item.auth"
+                                 :key="dl"
+                                 :label="item.authid"
+                                 @change="CheckedCities(index,el.authid,$event)">
+                      {{el.authname}}
+                    </el-checkbox>
+                  </div>
+                  <div class="genreList" v-else-if="item.alllimits == 1">
+                    <el-checkbox v-model="el.mychecked"
+                                 v-for="(el,dl) in item.auth1"
+                                 :key="dl"
+                                 :label="item.authids"
+                                 @change="CheckedCities(index,el.authid,$event)">
+                      {{el.authname}}
+                    </el-checkbox>
+                  </div>
+                </div>
               </div>
               <!-- 进度查看结束 -->
             </div>
@@ -117,27 +133,42 @@
             <div class="pad10">
               <!-- 进度查看开始 -->
               <div class="jurisdiction">
-                <el-checkbox-group v-model="checkList">
-                  <div class="jurisdictionItem" v-for="(item,index) in array" :key="index">
-                    <div class="itemTitle">
-                      <el-checkbox :label="item.alllimits == 0 ? item.authid : item.authids "
-                                   @change="handleCheckAllChange">{{item.authname}}
-                      </el-checkbox>
-                      <el-select size="mini" v-model="item.alllimits" @change="choice(index)" placeholder="请选择"
-                                 class="xmb_select">
-                        <el-option
-                          v-for="item in options"
-                          :key="item.value"
-                          :label="item.label"
-                          :value="item.value">
-                        </el-option>
-                      </el-select>
-                    </div>
-                    <div class="genreList">
-                      <div class="itemGenre">{{item.describes}}</div>
-                    </div>
+                <div class="jurisdictionItem" v-for="(item,index) in array" :key="index">
+                  <div class="itemTitle">
+                    <el-checkbox :indeterminate="item.isIndeterminate"
+                                 v-model="item.mychecked"
+                                 :label="item.alllimits == 0 ? item.authid : item.authids "
+                                 @change="CheckAll(index,$event)">{{item.authname}}
+                    </el-checkbox>
+                    <el-select size="mini" v-model="item.alllimits" @change="choice(index)"
+                               placeholder="请选择" class="xmb_select">
+                      <el-option
+                        v-for="item in options"
+                        :key="item.value"
+                        :label="item.label"
+                        :value="item.value">
+                      </el-option>
+                    </el-select>
                   </div>
-                </el-checkbox-group>
+                  <div class="genreList" v-if="item.alllimits == 0">
+                    <el-checkbox v-model="el.mychecked"
+                                 v-for="(el,dl) in item.auth"
+                                 :key="dl"
+                                 :label="item.authid"
+                                 @change="CheckedCities(index,el.authid,$event)">
+                      {{el.authname}}
+                    </el-checkbox>
+                  </div>
+                  <div class="genreList" v-else-if="item.alllimits == 1">
+                    <el-checkbox v-model="el.mychecked"
+                                 v-for="(el,dl) in item.auth1"
+                                 :key="dl"
+                                 :label="item.authids"
+                                 @change="CheckedCities(index,el.authid,$event)">
+                      {{el.authname}}
+                    </el-checkbox>
+                  </div>
+                </div>
               </div>
               <!-- 进度查看结束 -->
             </div>
@@ -147,10 +178,7 @@
       </div>
 
     </div>
-
-
   </div>
-
 </template>
 <script>
   import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
@@ -161,21 +189,21 @@
   import {Axios} from './../../../api/axios'
   import {Session} from './../../../api/axios'
 
-
   export default {
-
     data() {
       return {
         array: [],
-        checked: false,
         dataList: [],
-        checkList: [],
         roleList: [],
-        mark: 0,
-        roleid: '',
-        roledesc: '',
-        rolename: '',
-        authid: '',
+        roleData: {},
+        editList: {
+          mark: 0,
+          roleid: '',
+          roledesc: '',
+          rolename: '',
+        },
+        authidList: '',
+
         compile: {
           name: '',
           describe: '',
@@ -200,48 +228,174 @@
     },
     methods: {
       init() {
-        this.roleList = this.$route.query.roleList ? this.$route.query.roleList : [];
-        this.mark = this.$route.query.mark ? this.$route.query.mark : 0;
-        this.roledesc = this.$route.query.roledesc ? this.$route.query.roledesc : '';
-        this.rolename = this.$route.query.rolename ? this.$route.query.rolename : '';
-        this.rolename1 = this.$route.query.rolename ? this.$route.query.rolename : '';
-        this.roleid = this.$route.query.roleid ? this.$route.query.roleid : '';
         this.jurisdictionList();
       },
       // 编辑
       edit() {
-        this.roleList.length && this.roleList.forEach((item, index) => {
-          this.array.forEach((el, dt) => {
-            if (item.authname == el.authname) {
-              el.alllimits = item.alllimits;
-              el.state = item.state
-            }
+        this.roleList = JSON.parse(localStorage.getItem("roleList"))
+        this.roleData = JSON.parse(localStorage.getItem("roleData"))
+        if (this.roleData == '' || this.roleData == null) {
+        } else {
+          this.editList.mark = this.roleData.mark;
+          this.editList.roleid = this.roleData.roleid;
+          this.editList.roledesc = this.roleData.roledesc;
+          this.editList.rolename = this.roleData.rolename;
+          this.roleList.length && this.roleList.forEach((item, index) => {
+            this.array.forEach((el, dt) => {
+              if (item.authname == el.authname) {
+                el.alllimits = item.alllimits;
+                el.state = item.state;
+                el.isIndeterminate = true;
+                el.mychecked = item.state == 1 ? true : false
+              }
+              item.auth.length && item.auth.forEach((list) => {
+                if (item.alllimits == 0) {
+                  el.auth.length && el.auth.forEach((data, ind) => {
+                    if (list.authid == data.authid) {
+                      el.isIndeterminate = true;
+                      data.mychecked = list.state == 1 ? true : false
+                    }
+                  })
+                } else {
+                  el.auth1.length && el.auth1.forEach((data, ind) => {
+                    if (list.authid == data.authid) {
+                      el.isIndeterminate = true;
+                      data.mychecked = list.state == 1 ? true : false
+                    }
+                  })
+                }
+              })
+            })
           })
-        })
+        }
+        console.log(this.editList);
+        console.log(this.array);
       },
       //下拉框选择
       choice(index) {
-        var compare = function (x, y) {//比较函数
-          if (x < y) {
-            return -1;
-          } else if (x > y) {
-            return 1;
-          } else {
-            return 0;
+        // console.log(index);
+        let nub = 0;
+        if (this.array[index].alllimits == 0) {
+          this.array[index].auth.forEach(item => {
+            if (item.mychecked == true) {
+              nub++;
+            }
+            if (nub > 0) {
+              this.array[index].mychecked = true;
+            } else {
+              this.array[index].mychecked = false;
+            }
+          })
+        } else if (this.array[index].alllimits == 1) {
+          this.array[index].auth1.forEach(el => {
+            if (el.mychecked == true) {
+              nub++;
+            }
+            if (nub > 0) {
+              this.array[index].mychecked = true;
+            } else {
+              this.array[index].mychecked = false;
+            }
+          })
+        }
+      },
+      // 父级选择
+      CheckAll(index, e) {
+        this.array[index].mychecked = e;
+        // this.$set(this.array[index], 'mychecked', e)
+        if (e == false) {
+          this.array[index].isIndeterminate = false //去掉不确定状态
+
+        }
+        var childrenArray = this.array[index].auth;
+        var childrenArray1 = this.array[index].auth1;
+        if ( this.array[index].alllimits == 0) {
+          if (childrenArray) {
+          for (var i = 0, len = childrenArray.length; i < len; i++) {
+            childrenArray[i].mychecked = e;
+            // this.$set(childrenArray[i], 'mychecked', e)
           }
         }
-        this.checkList.map(Number).sort(compare);
-        this.checkList.sort(compare);
-        this.checkList.splice(index, 1)
-        this.handleCheckAllChange();
+        }else {
+          if (childrenArray1) {
+          for (var i = 0, len = childrenArray1.length; i < len; i++) {
+            childrenArray1[i].mychecked = e;
+            // this.$set(childrenArray[i], 'mychecked', e)
+          }
+        }
+        }
       },
-      // 复选框选中
-      handleCheckAllChange() {
-        this.authid = this.checkList.join(",");
+      //子级选择
+      CheckedCities(index, sonID, e) {
+        let childrenArray = this.array[index].alllimits == 0 ? this.array[index].auth : this.array[index].auth1;
+        let tickCount = 0, unTickCount = 0, len = childrenArray.length
+        for (var i = 0; i < len; i++) {
+          if (sonID == childrenArray[i].authid) {
+            // childrenArray[i].mychecked = e;// 错误写法，不是响应性的，页面DOM不会渲染
+            let obj = childrenArray[i];
+            obj.mychecked = e;
+            this.$set(childrenArray, i, obj);
+          }
+          if (childrenArray[i].mychecked == true) {
+            tickCount++
+          } else if (childrenArray[i].mychecked == false) {
+            unTickCount++
+          }
+        }
+        if (tickCount == len) {//子级全勾选
+          this.array[index].mychecked = true
+          // this.$set(this.array[index], 'mychecked', true)
+          this.array[index].isIndeterminate = false
+        } else if (unTickCount == len) {//子级全不勾选
+          this.array[index].mychecked = false
+          // this.$set(this.array[index], 'mychecked', false)
+          this.array[index].isIndeterminate = false
+        } else {
+          this.array[index].mychecked = true;
+          // this.$set(this.array[index], 'mychecked', true)
+          this.array[index].isIndeterminate = true //添加不确定状态
+        }
       },
       //保存
       _getRoleDetails() {
-        if (this.mark == 0) {
+        //判断选中的权限
+        if (this.array) {
+          let authid = [];
+          for (var i = 0, len = this.array.length; i < len; i++) {
+            if (this.array[i].mychecked == true) {
+              if (this.array[i].alllimits == 0) {
+                authid.push(this.array[i].authid)
+              } else {
+                authid.push(this.array[i].authids)
+              }
+
+            }
+            if (this.array[i].alllimits == 0) {
+              if (this.array[i].auth && this.array[i].auth.length > 0) {
+                var sonPermissionArray = this.array[i].auth
+                for (var j = 0, leng = sonPermissionArray.length; j < leng; j++) {
+                  if (sonPermissionArray[j].mychecked == true) {
+                    authid.push(sonPermissionArray[j].authid);
+                  }
+                }
+              }
+            } else if (this.array[i].alllimits == 1) {
+              if (this.array[i].auth1 && this.array[i].auth1.length > 0) {
+                var sonPermissionArray = this.array[i].auth1
+                for (var j = 0, leng = sonPermissionArray.length; j < leng; j++) {
+                  if (sonPermissionArray[j].mychecked == true) {
+                    authid.push(sonPermissionArray[j].authid);
+                  }
+                }
+              }
+            }
+
+          }
+          this.authidList = authid.join(',');
+        }
+        console.log(this.authidList);
+        if (this.editList.mark == 0) {
+          console.log(0);
           if (this.compile.name == '') {
             this.$message.error('请输入角色姓名!');
           } else {
@@ -251,7 +405,7 @@
               "uid": sessionStorage.getItem('userid'),
               "companyid": sessionStorage.getItem('companyid'),
               "roleid": '',
-              "authid": this.authid, /*权限数组*/
+              "authid": this.authidList, /*权限数组*/
               "rolename": this.compile.name,
               "roledesc": this.compile.describe,
             }
@@ -273,8 +427,8 @@
             })
           }
 
-        } else if (this.mark == 1) {
-          if (this.rolename == '') {
+        } else if (this.editList.mark == 1) {
+          if (this.editList.rolename == '') {
             this.$message.error('请输入角色姓名!');
           } else {
             this.loading = true
@@ -282,10 +436,10 @@
               "api": "roleupdate",
               "companyid": sessionStorage.getItem('companyid'),
               "uid": sessionStorage.getItem('userid'),
-              "roleid": this.roleid,
-              "authid": this.authid, /*权限数组*/
-              "rolename": this.rolename == this.rolename1 ? "" : this.rolename,
-              "roledesc": this.roledesc,
+              "roleid": this.editList.roleid,
+              "authid": this.authidList, /*权限数组*/
+              "rolename": this.editList.rolename == this.roleData.rolename ? "" : this.editList.rolename,
+              "roledesc": this.editList.roledesc,
             }
             Axios(reqBody, 'user').then((res) => {
               console.log(res)
@@ -294,7 +448,8 @@
                 this.$router.push({
                   path: 'role',
                 })
-
+                localStorage.removeItem("roleList")
+                localStorage.removeItem("roleData")
               } else {
                 if (res.state == 10002) {
                   this.checkList = []
@@ -308,7 +463,9 @@
       },
       // 返回
       onBack() {
-        this.$router.back(-1)
+        this.$router.back(-1);
+        localStorage.removeItem("roleList")
+        localStorage.removeItem("roleData")
       },
       //权限列表
       jurisdictionList() {
@@ -323,29 +480,41 @@
         Axios(reqBody, 'user').then((res) => {
           console.log(res)
           if (res.state == 10001) {
+            let arrayData = [];
             this.dataList = res.data;
             this.dataList.forEach((item, index) => {
               if (index % 2 == 0) {
-                this.array.push({
+                item.auth.forEach((it, el) => {
+                  it.mychecked = false;
+                });
+                arrayData.push({
                   alllimits: item.alllimits,
                   authid: item.authid,
                   authname: item.authname,
                   describes: item.describes,
-                  state: item.state,
+                  auth: item.auth,
+                  mychecked: false,
+                  isIndeterminate: false,
+                  state: '',
                 })
               } else {
-                this.array.forEach((el, ind) => {
+                arrayData.forEach(el => {
+                  item.auth.forEach(it => {
+                    it.mychecked = false
+                  });
                   if (item.authname === el.authname) {
                     el.authids = item.authid;
+                    el.auth1 = item.auth;
                   }
                 })
               }
             })
+            this.array = arrayData;
             this.edit();
-            // console.log(this.array);
+
           } else {
             if (res.state == 10002) {
-              this.checkList = []
+              this.dataList = []
             }
             this.$message.error(res.msg);
           }

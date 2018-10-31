@@ -27,9 +27,12 @@
     </div>
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">应收总金额：</div>
-        <div class="floatLeft infoItemContent">{{infoData.returnedmoney?infoData.returnedmoney+'元':'待填写'}}</div>
+        <div class="floatLeft infoItemContent">{{infoData.returnedmoney?infoData.returnedmoney+'元':infoData.bargainsum+'元'}}</div>
     </div>
-
+    <div class="infoItem clearfix">
+        <div class="floatLeft infoItemTitle">项目状态：</div>
+        <div class="floatLeft infoItemContent">{{infoData.status==0?'已完成':'进行中'}}</div>
+    </div>
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">客户名称：</div>
         <div class="floatLeft infoItemContent">{{infoData.custmername?infoData.custmername:'待填写'}}</div>

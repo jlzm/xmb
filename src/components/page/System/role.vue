@@ -66,6 +66,9 @@
                 <el-tooltip class="item" effect="dark" content="角色详情" placement="top-end">
                   <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view"></el-button>
                 </el-tooltip>
+                <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
+                  <el-button @click="onCompileVisible(scope.row)" type="success" icon="el-icon-edit-outline"></el-button>
+                </el-tooltip>
                 <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
                   <el-button type="danger" @click="onDelete(scope.row)" icon="el-icon-delete"></el-button>
                 </el-tooltip>
@@ -167,6 +170,10 @@
             roleid: row.roleid
           }
         })
+      },
+      //编辑
+      onCompileVisible(row){
+        console.log(row);
       },
       //删除
       onDelete(row) {

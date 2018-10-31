@@ -37,11 +37,7 @@
                         tooltip-effect="dark"
                         style="width: 100%"
                         @selection-change="handleSelectionChange">
-                        <el-table-column
-                        type="selection"
-                        align="center"
-                        width="55">
-                        </el-table-column>
+                     
                         <el-table-column
                         type="index"
                         label="序号"
@@ -61,26 +57,13 @@
                         prop="custmername"
                         label="客户名称"
                         align="center"
-                        width="280">
-                        </el-table-column>
-                     
-                        <el-table-column
-                        prop="bargainsum"
-                        label="项目总金额"
-                        align="center"
-                        width="140">
-                            <template slot-scope="scope">
-                                <span>{{!scope.row.bargainsum?'待填写':'￥'+scope.row.bargainsum}}</span>
-                            </template>
+                        width="200">
                         </el-table-column>
                         <el-table-column
-                        prop="totalamount"
-                        label="应收金额"
+                        prop="staffname"
+                        label="项目经理"
                         align="center"
-                        width="140">
-                            <template slot-scope="scope">
-                                <span>{{!scope.row.totalamount?'待填写':'￥'+scope.row.totalamount}}</span>
-                            </template>
+                        width="80">
                         </el-table-column>
                         <el-table-column
                         prop="projectstarttime1"
@@ -91,28 +74,69 @@
                                 <span>{{!scope.row.projectstarttime1?'待填写':scope.row.projectstarttime1}}</span>
                             </template>
                         </el-table-column>
+                     
+
                         <el-table-column
                         prop="appointedtime1"
-                        label="项目完成时间"
+                        label="约定完成时间"
                         align="center"
-                        width="140">
+                        width="120">
                             <template slot-scope="scope">
                                 <span>{{!scope.row.appointedtime1?'待填写':scope.row.appointedtime1}}</span>
                             </template>
                         </el-table-column>
+                         <el-table-column
+                        prop=""
+                        label="当前进度"
+                        align="center"
+                        width="180">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.updatedescribe?'待填写':scope.row.updatedescribe}}</span>
+                            </template>
+                        </el-table-column>
                         <el-table-column
-                        prop="staffname"
-                        label="项目经理"
+                        prop=""
+                        label="添加人"
+                        align="center"
+                        width="80">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.operator?'待填写':scope.row.operator}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                        prop=""
+                        label="添加时间"
                         align="center"
                         width="100">
                             <template slot-scope="scope">
-                                <span>{{!scope.row.staffname?'待填写':scope.row.staffname}}</span>
+                                <span>{{!scope.row.addtime?'待填写':scope.row.addtime}}</span>
+                            </template>
+                        </el-table-column>
+                        
+                        
+                       
+                        <el-table-column
+                      
+                        label="项目状态"
+                        align="center"
+                        width="80">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.status==0?'未完成':'已完成'}}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column
+                      
+                        label="完成时间"
+                        align="center"
+                        width="120">
+                            <template slot-scope="scope">
+                                <span>{{scope.row.finishtime?scope.row.finishtime:'--'}}</span>
                             </template>
                         </el-table-column>
                         <el-table-column
                         fixed="right"
                         label="操作"
-                        width="200"
+                        width="180"
                         align="center">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
@@ -254,12 +278,13 @@ export default {
     getProjectList(page){
         this.loading = true
         let reqBody = {
-            "api": "getprojectlist",
+            "api": "getsmlist",
             "searchname": this.searchData.antistop,
             "companyid": sessionStorage.getItem('companyid'),
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['rate'],
             "page":page,
+            "status":-1,
             "pagesize":this.pageSize
         }
 
@@ -287,6 +312,7 @@ export default {
             "api": "addprojectrate",
             "uid": sessionStorage.getItem('userid'),
             "projectid": this.optProjectid,
+            "companyid": sessionStorage.getItem('companyid'),
             "updatedescribe":this.updatedescribe
         }
 

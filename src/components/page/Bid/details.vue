@@ -293,15 +293,15 @@
                 <el-form-item label="项目名称">
                     <el-input v-model="form.projectname" disabled></el-input>
                 </el-form-item>
-                <el-form-item label="投标预算金额">
+                <el-form-item label="投标预算金额" :show-message='false' :required='true'>
                     <el-input type="number" v-model="form.bindsum" :controls="false"></el-input>
                     <span>元</span>
                 </el-form-item>
-                <el-form-item label="标书购买截止时间">
-                    <el-date-picker v-model="form.binddocumenttime" value-format="yyyy-MM-dd HH:mm:ss" type="datetime" placeholder="选择日期"></el-date-picker>
+                <el-form-item label="标书购买截止时间" :show-message='false' :required='true'>
+                    <el-date-picker v-model="form.binddocumenttime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
                 </el-form-item>
-                <el-form-item label="标书投递截止时间">
-                    <el-date-picker v-model="form.bindendtime" value-format="yyyy-MM-dd HH:mm:ss" type="datetime" placeholder="选择日期"></el-date-picker>
+                <el-form-item label="标书投递截止时间" :show-message='false' :required='true'>
+                    <el-date-picker v-model="form.bindendtime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
                 </el-form-item>
                 <el-form-item label="标书购买">
                     <el-select v-model="form.binddocumentis" placeholder="请选择">
@@ -350,20 +350,30 @@
         <div>
             <el-upload
             multiple
+            ref="upload"
             class="upload-demo"
             :action="exportUrl"
-            :on-remove = "handleRemove"
+            :on-error="handleError"
+            :data="uploadData"
+            :auto-upload="false"
+        
             :file-list="fileListData"
             :on-success="handleSuccess"
+          
+         
             >
             <el-button size="small" type="primary">点击上传</el-button>
             </el-upload>
         </div>
         <span slot="footer" class="dialog-footer newCustmer-dialog-footer">
             <el-button @click="addFileVisible = false">取 消</el-button>
-            <el-button type="primary" @click="addFile">确 定</el-button>
+            <el-button type="primary" @click="submitUpload">确 定</el-button>
+            <!-- addFile -->
+            
         </span>
         </el-dialog>
+
+
         <el-dialog title="在线浏览"
         :visible.sync="iframeVisible"
         width="90%"
@@ -419,9 +429,11 @@ export default {
         addFileVisible:false,
         fileListStr:'',
         fileListName:'',
+        fileListSize:'',
         fileListData:[],
-        exportUrl:Session.exportUrl+'index/saveFile',
-
+        successLength:0,
+        exportUrl:Session.exportUrl+'saveFile',
+        uploadData:{},
 
         multipleSelection: [],
         formulaList:{ //编辑栏按钮数
@@ -495,12 +507,16 @@ export default {
     vFormulaBar,vParticularsTab,vProjectInfo,vBidInfo
   },
   created(){
+    this.uploadData = {
+        "companyid": sessionStorage.getItem('companyid'),
+        "projectid":this.$route.query.id,
+    }
     this._getSellThreadInfo()
     this._getBinInfo()
   },
   methods:{
     handleSuccess(response, file, fileList){
-        console.log(fileList);
+        //console.log(response,fileList);
         
         if(this.fileListStr){
             this.fileListStr = this.fileListStr + ',' + response.fileUrl
@@ -512,13 +528,27 @@ export default {
         }else{
             this.fileListName = response.fileName
         }
-
+        if(this.fileListSize){
+            this.fileListSize = this.fileListSize + ',' + response.filesize
+        }else{
+            this.fileListSize = response.filesize
+        }
+        if(response.fileUrl){
+            this.successLength = this.successLength+1
+        }
+        if(this.successLength== fileList.length){
+            this.successLength = 0
+           this.addFile()
+        }
+       
         
+        console.log(fileList.length)
     },
     handleRemove(file, fileList) {
         console.log(fileList);
         this.fileListName=''
         this.fileListStr = ''
+        this.fileListSize = ''
         for(let i=0;i<fileList.length;i++){
             if(fileList[i].response){
                 
@@ -533,9 +563,19 @@ export default {
                     this.fileListName = fileList[i].response.fileName
                 }
 
+                if(this.fileListSize){
+                    this.fileListSize = this.fileListSize + ',' + fileList[i].response.filesize
+                }else{
+                    this.fileListSize = fileList[i].response.filesize
+                }
+
             }
         }
     },
+    handleError(response, file, fileList){
+        console.log(response)
+    },
+  
 
     getFormulaBar(res){
         if(res=='compile'){
@@ -561,7 +601,7 @@ export default {
             this.fileListData = []
             this.fileListName=''
             this.fileListStr = ''
-
+            this.fileListSize = ''
             this.addFileVisible = true
         }
     },
@@ -706,6 +746,10 @@ export default {
     //编辑
     updatebin(){
         let form = this.form
+        if(!form.bindsum||!form.binddocumenttime||!form.bindendtime){
+            this.$message.error('请填写完整信息')
+            return false
+        }
         let reqBody = {
             "api": "updatebin",
             "id": this.$route.query.id,
@@ -746,6 +790,7 @@ export default {
                  "api": "addbinddocument",
                 "fileurl": this.fileListStr,
                 "filename": this.fileListName,
+                "filesize": this.fileListSize,
                 "userid": sessionStorage.getItem('userid'),
                 "bindid":this.$route.query.id,
 
@@ -758,13 +803,14 @@ export default {
                 "filename": this.fileListName,
                 "userid": sessionStorage.getItem('userid'),
                 "bindid":this.$route.query.id,
-
+                "filesize":this.fileListSize
             }
         }
         Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
                 this.$message.success('添加成功');
+                this.successLength = 0
                 this.addFileVisible = false
                 this.fileListData = []
                 this._getSellThreadInfo()
@@ -823,6 +869,10 @@ export default {
         this.iframeUrl = Session.browse+encodeURIComponent(url)
         this.iframeVisible = true
     },
+    submitUpload(){
+        this.$refs.upload.submit()
+       
+    }
     
     
   }

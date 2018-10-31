@@ -111,10 +111,12 @@
             </el-form> -->
             <el-upload
             multiple
+            ref="upload"
             class="upload-demo"
             :action="exportUrl"
-            :headers = "upHeaders"
-            :on-remove = "handleRemove"
+            :data = "uploadData"
+            :auto-upload="false"
+        
             :file-list="fileListData"
             :on-success="handleSuccess"
             >
@@ -123,7 +125,7 @@
         </div>
         <span slot="footer" class="dialog-footer newCustmer-dialog-footer">
             <el-button @click="addFileVisible = false">取 消</el-button>
-            <el-button type="primary" @click="addFile">确 定</el-button>
+            <el-button type="primary" @click="submitUpload">确 定</el-button>
         </span>
         </el-dialog>
         
@@ -164,15 +166,14 @@ export default {
         fileListStr:'',
         fileListName:'',
         filesize:'',
+        successLength:0,
         iframeVisible:false,
         projectname:'',
         iframeUrl:'',
-        upHeaders:{
-            Authorization:'{ api: "saveFile",uid:'+sessionStorage.getItem('userid')+'}'
-                
-            
+        uploadData:{
+ 
         },
-        exportUrl:Session.exportUrl+'index/saveFile',
+        exportUrl:Session.exportUrl+'saveFile',
         multipleSelection: [],
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
@@ -232,6 +233,10 @@ export default {
     vFormulaBar,vParticularsTab,vProjectInfo,vBidInfo
   },
   created(){
+    this.uploadData = {
+        "companyid": sessionStorage.getItem('companyid'),
+        "projectid":this.$route.query.id,
+    }
     
     this._getFileTypeList()
     
@@ -255,6 +260,13 @@ export default {
             
         }else{
             this.filesize = response.filesize
+        }
+        if(response.fileUrl){
+            this.successLength = this.successLength+1
+        }
+        if(this.successLength== fileList.length){
+            this.successLength = 0
+           this.addFile()
         }
 
         
@@ -337,7 +349,11 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "filetypeid":this.fileTypeList[idx].filetypeid
         }
-        
+        this.uploadData = {
+            "companyid": sessionStorage.getItem('companyid'),
+            "projectid":this.$route.query.id,
+            "typeid":this.fileTypeList[idx].filetypeid
+         }
         Axios(reqBody,'project',this.fileTypeList[idx].filetypeid).then((res) => {
             console.log(res)
             this.fileIndex = idx
@@ -375,7 +391,7 @@ export default {
     //删除文件
     fileremove(fileid){
         let reqBody = {
-            "api": "fileremove",
+            "api": "updatefilestatus",
             "fileid":fileid
         }
         Axios(reqBody,'project').then((res) => {
@@ -406,8 +422,8 @@ export default {
             }
         }
         let reqBody = {
-            "api": "filebatchremove",
-            "ids":ids
+            "api": "updatefilestatus",
+            "fileid":ids
         }
         Axios(reqBody,'project').then((res) => {
             console.log(res)
@@ -446,6 +462,7 @@ export default {
                 this.fileListStr = ''
                 this.fileListName = ''
                 this.filesize = ''
+                this.successLength = 0
                 this.addFileVisible = false
                 this._getFileList(this.fileIndex)
 
@@ -456,6 +473,10 @@ export default {
         })
         console.log(this.fileListName)
     },
+    submitUpload(){
+        this.$refs.upload.submit()
+       
+    }
     
   }
 }

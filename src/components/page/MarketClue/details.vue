@@ -35,7 +35,8 @@
 
                     </div>
                     <div class="pad20"  v-if="threadInfo.sellThreadRates&&threadInfo.sellThreadRates.length<=0">
-                        <img class="notAvailable"  v-lazy="{src:'static/img/notAvailable.png'}" alt="">
+                        <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                        <div class="notText">暂无跟进记录</div>
                     </div>
                 </div>
 

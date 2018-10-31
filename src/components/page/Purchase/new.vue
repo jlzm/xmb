@@ -34,14 +34,16 @@
                     <div class="floatLeft addVoucherTitle">添加图片</div>
                     <div class="floatLeft addVoucherContent">
                         <el-upload
-                        action="https://jsonplaceholder.typicode.com/posts/"
-                        :auto-upload="false"
+                        :action="imageUrl"
+                        
                         multiple
                         list-type="picture-card"
                         :limit="9"
                         :on-exceed="handleExceed"
-                        :on-change="imgChange"
-                        :on-remove="handleRemoveImg">
+                        :on-remove = "handleRemoveImg"
+                        :on-success="handleSuccessImg"
+                     
+                        >
                         <i class="el-icon-plus"></i>
                         </el-upload>
                     </div>
@@ -107,7 +109,9 @@ export default {
             
         },
         remark:'',
-        exportUrl:Session.exportUrl+'index/saveFile',
+        imageUrl:Session.exportUrl+'saveImage',
+        exportUrl:Session.exportUrl+'saveFile',
+        imagepc:'',
         multipleSelection: [],
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
@@ -155,11 +159,41 @@ export default {
     handleSelectionChange(val) {
         this.multipleSelection = val;
     },
+    //图片上传处理
+    handleRemoveImg(file, fileList) {
+        this.imagepc = ''
+        console.log(fileList)
+        for(let i=0;i<fileList.length;i++){
+            if(fileList[i].response){
+                if(this.imagepc){
+                    this.imagepc = this.imagepc+','+fileList[i].response.fileUrl
+                }else{
+                    this.imagepc  = fileList[i].response.fileUrl
+                }
+            }
+        }
+    },
+    handleSuccessImg(response, file, fileList){
+        if(file.response){
+            if(this.imagepc){
+                this.imagepc = this.imagepc+','+file.response.fileUrl
+            }else{
+                this.imagepc  = file.response.fileUrl
+            }
+        }
+        
+        console.log(file)
+    },
+    handleExceed(files, fileList) {
+        this.$message.warning(`最多选择9张图片`);
+    },
+
     handleSuccess(response, file, fileList){
         console.log(fileList);
         let fileObj = {
             fileurl:response.fileUrl,
-            filename:response.fileName
+            filename:response.fileName,
+            filesize:response.filesize
         }
         this.addPurchaseData.file.push(fileObj)
     },
@@ -171,66 +205,19 @@ export default {
             if(fileList[i].response){
                 let fileObj = {
                     fileurl:fileList[i].response.fileUrl,
-                    filename:fileList[i].response.fileName
+                    filename:fileList[i].response.fileName,
+                    filesize:fileList[i].response.filesize
                 }
                 this.addPurchaseData.file.push(fileObj)
 
             }
         }
     },
-    handleExceed(files, fileList) {
-        this.$message.warning(`最多选择9张图片`);
-    },
 
 
-
-    imgChange(file, fileList){
-        console.log(file)
-        for(let i=0;i<fileList.length;i++){
-            if(fileList[i].size){
-                const isLt2M = fileList[i].size / 1024  < 200;
-                if (!isLt2M) {
-                    this.$message.error('上传图片大小不能超过 200kb!');
-                    fileList.splice(i,1); 
-                    
-                   
-                }
-            }
-            
-        }
-        this.initBase(file.url)
-        
-        
-    },
-    handleRemoveImg(file, fileList) {
-        console.log(file, fileList);
-        this.addPurchaseData.purchaseurl = ''
-        for(let i=0;i<fileList.length;i++){
-            this.initBase(fileList[i].url)
-        }
-    },
-    initBase(url){
-        let that = this
-        fetch(url).then(data=>{
-            const blob = data.blob();
-            return blob;
-        }).then(blob=>{
-            let reader = new window.FileReader();
-            
-            reader.onloadend = function() {
-                const data = reader.result;
-                if(that.addPurchaseData.purchaseurl){
-                    that.addPurchaseData.purchaseurl = that.addPurchaseData.purchaseurl+','+data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                }else{
-                    that.addPurchaseData.purchaseurl = data.replace(/^data:image\/(png|jpg|jpeg);base64,/, "")
-                }
-                
-
-            };
-
-            reader.readAsDataURL(blob);
-        })
-    },
+    
+   
+    
 
     addPurchaseArr(){
         this.purchaseArr.push({
@@ -298,6 +285,7 @@ export default {
             "purchaseurl": this.addPurchaseData.purchaseurl,
             "remark": this.remark,
             "companyid": sessionStorage.getItem('companyid'),
+            "imagepc":this.imagepc
         }
 
         Axios(reqBody,'index').then((res) => {

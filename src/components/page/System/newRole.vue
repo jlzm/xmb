@@ -24,8 +24,8 @@
           <div class="sectionBox">
             <div class="title">角色详情</div>
             <div class="padTb10">
-              <div class="sectionItem">角色名称：{{roleList.rolename}}</div>
-              <div class="sectionItem">角色描述：{{roleList.roledesc}}</div>
+              <div class="sectionItem">角色名称：{{roleData.rolename}}</div>
+              <div class="sectionItem">角色描述：{{roleData.roledesc}}</div>
 
             </div>
           </div>
@@ -51,7 +51,7 @@
                     </el-select>
                   </div>
                   <div class="genreList">
-                    <div class="itemGenre">{{item.describes}}</div>
+                    <span class="itemGenre" v-for="el in item.auth" v-if="el.state == 1">拥有{{el.authname}}权限；</span>
                   </div>
                 </div>
               </div>
@@ -86,6 +86,8 @@
         roleid: null,
         roleList: [],
         newRoleList: [],
+        roleData:{
+        },
         searchData: {
           antistop: '',
           area: '',
@@ -110,20 +112,19 @@
     methods: {
       init() {
         this.roleid = this.$route.query.roleid;
+        this.roleData.mark = 1;
       },
       // 返回
       onBack() {
         this.$router.back(-1)
       },
       newRole() {
+
+        localStorage.setItem("roleList", JSON.stringify(this.roleList))
+        localStorage.setItem("roleData", JSON.stringify(this.roleData))
         this.$router.push({
           path: 'compileRole',
           query: {
-            roleList: this.roleList,
-            roledesc:this.roleList.roledesc,
-            roleid:this.roleList.roleid,
-            rolename:this.roleList.rolename,
-            mark:1
           }
         })
       },
@@ -139,14 +140,15 @@
           console.log(res)
           if (res.state == 10001) {
             /*拿到角色的权限*/
-            res.data.authid.forEach((item, index) => {
+            res.data.authid.forEach((item) => {
               if (item.state == 1) {
                 this.roleList.push({
                   alllimits: item.alllimits,
                   authid: item.authid,
                   authname: item.authname,
                   describes: item.describes,
-                  state: item.state
+                  state: item.state,
+                  auth: item.auth
                 })
               }
             })
@@ -157,14 +159,16 @@
                   authid: item.authid,
                   authname: item.authname,
                   describes: item.describes,
-                  state: item.state
+                  state: item.state,
+                  auth: item.auth
                 })
               }
             })
             this.roleList.push.apply(this.roleList, this.newRoleList);
-            this.roleList.roledesc = res.data.roledesc;
-            this.roleList.roleid = res.data.roleid;
-            this.roleList.rolename = res.data.rolename
+            this.roleData.roledesc = res.data.roledesc;
+            this.roleData.roleid = res.data.roleid;
+            this.roleData.rolename = res.data.rolename;
+            console.log(this.roleList);
           } else {
             if (res.state == 10002) {
               this.purchaseTypeList = []
@@ -261,6 +265,8 @@
         border-bottom 1px solid #ddd
         font-size 14px
         color #666
+        margin-left 10px
+        border-bottom none
       .itemGenre:last-child
         border-bottom none
 </style>

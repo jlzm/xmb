@@ -22,7 +22,6 @@
                         <span class="btnTitle">{{item.title}}</span>
                     </div> 
                 </div>
-
             </div>
             <div class="contentBox clearfix padTb5 ">
                 <div class="" v-loading="loading">
@@ -96,7 +95,7 @@
         </div>
 
         <!-- 新建待办 -->
-            <el-dialog
+        <el-dialog
             :title="dialogTitle"
             :visible.sync="dialogVisible"
             width="60%"
@@ -134,8 +133,8 @@
                                 </el-form-item>
                                 
                                 <el-form-item>
-                                    <el-button type="primary" @click="_establish">立即创建</el-button>
-
+                                    <el-button @click="detailModify" v-if="modify==true" type="primary">确认修改</el-button>
+                                    <el-button @click="_establish" v-else type="primary">立即创建</el-button>
                                 </el-form-item>
                             </el-form>
                         </div>
@@ -162,7 +161,6 @@
                         </div>
                     </el-col>
                 </el-row>
-
             </div>
         </el-dialog>
         <!-- <el-dialog title="新建待办" :visible.sync="dialogVisible" width="60%">
@@ -188,6 +186,14 @@
                         </el-col>
                         <el-col :span=12 class="tar vam">
                             <div class="particulars-title-right dib">
+                                <!-- 编辑待办 -->
+                                <i @click="_editDetail" class="iconBox-particulars cp">
+                                    <img  v-lazy="'static/img/backlogIcon/gray_editor.png'" alt="">
+                                </i>
+                                <!-- 删除此条待办 -->
+                                <i class="iconBox-particulars cp">
+                                    <img  v-lazy="'static/img/backlogIcon/gray-delet.png'" alt="">
+                                </i>
                                 <!-- 关闭弹出层 -->
                                 <i class="iconBox-particulars cp" @click="show = false">
                                     <img  v-lazy="'static/img/backlogIcon/gray_error.png'" alt="">
@@ -321,9 +327,8 @@ import vProjectInfo from "../../common/ProjectInfo.vue"; //项目信息
 import vBidInfo from "../../common/BidInfo.vue"; //招投标信息
 
 import { Axios } from "./../../../api/axios";
-import { Session } from "./../../../api/axios";
 
-import comment from '../../../mixins/upcoming/comment.vue'
+import comment from '../../../mixins/upcoming/comment.vue';
 
 // css
 import "../../../assets/stylus/upcoming/details.styl";
@@ -352,7 +357,6 @@ export default {
                 taskuserid: ""
             },
             departList: [], //部门级人员列表
-
             departShow: true, //显示判断
             deptIndex: 0, //选择部门下标
             taskuserName: "", //新建人员名称
@@ -361,11 +365,47 @@ export default {
             deptInitData: [], //部门处理后列表
             deptChecked: [],
             departArr: [],
-            staffModel: []
+            staffModel: [],
+            modify: false
         };
     },
     
     methods: {
+        //   确认修改
+        detailModify () {
+            this.dialogVisible = false;
+            this.modify = false;
+        },
+
+        // 编辑详情
+        _editDetail(taskid) {
+            this.modify = true;
+            this.show = false;
+            this.dialogVisible = true;
+            let _newTaskuser = {
+                name: "",
+                id: ""
+            };
+            console.log('this.backlogDetail:', this.backlogDetail);
+            let detailUser = this.backlogDetail.userlist;
+            detailUser.forEach(item => {
+                if(_newTaskuser.name) {
+                    _newTaskuser.name += `,${item.staffname}`;
+                    _newTaskuser.id += `,${item.userid}`;
+                } else {
+                    _newTaskuser.name = `${item.staffname}`;
+                    _newTaskuser.id = `${item.userid}`;
+                }
+            });
+            this.taskuserName = _newTaskuser.name;
+            this.taskuserId = _newTaskuser.id;
+            this.newIssue.taskdescribe = this.backlogDetail.taskdescribe;
+            this.newIssue.createtime = this.backlogDetail.createtime;
+            this.newIssue.endtime = this.backlogDetail.endtime;
+            this.newIssue.flag = this.backlogDetail.flag;
+            this._getDepartList(); 
+        },
+
         // 获取待办列表
         _getMyBacklogList(page) {
             let reqBody = {
@@ -380,7 +420,6 @@ export default {
         },
 
         // 获取待办详情
-
         myIssueDetail(taskid, show) {
             let reqBody = {
                 api: "myIssuedetail",
@@ -399,10 +438,32 @@ export default {
             let reqBody = {
                 api: "myIssuedetail",
                 taskid: taskid
-            };
-            this.issueDetail(reqBody, show)
+            }
+            this.atTaskid = taskid;
+            this.toDoDetail(reqBody, show);
         },
-        
+
+        // 待办确认完成
+        onConfirm(taskType) {
+            let reqBody = {
+                api: "complete",
+                userid: sessionStorage.getItem("userid"),
+                taskid: this.atTaskid,
+                type: taskType
+            };
+            Axios(reqBody, "user").then(res => {
+                console.log(res);
+                if (res.state == 10001) {
+                    this.$message.success(res.msg);
+                    this.show = false;
+                } else {
+                    if (res.state == 10002) {
+                    }
+                    this.$message.error(res.msg);
+                }
+            });
+        },
+
         // 回车发送评论
         handlerMultiEnter (taskid, e){
             let code = e.keyCode,
@@ -430,7 +491,7 @@ export default {
 
             this.onRecordAdd(reqBody, taskid).then(res => {
                 this._getMyBacklogList(1);
-                this.myIssueDetail(taskid, true)
+                this.myIssueDetail(taskid, true);
             })
         },
 
@@ -470,8 +531,6 @@ export default {
                 companyid: sessionStorage.getItem("companyid")
             };
             this.establish(reqBody).then(res => {
-                console.log('1:', 1);
-                
                 this._getMyBacklogList(1);
             })
         },
@@ -684,7 +743,6 @@ export default {
         width 100%
 
 
-
 // New
 
 // 更改
@@ -705,7 +763,5 @@ export default {
     margin-right 20px
     .iconBox
         margin-right 10px
-
-
 
 </style>

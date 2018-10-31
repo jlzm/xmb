@@ -229,6 +229,7 @@ export default {
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['file'],
             "page":page,
+            "status":-1,
             "pagesize":this.pageSize
         }
 
