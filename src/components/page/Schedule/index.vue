@@ -140,11 +140,11 @@
                         align="center">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
-                                    <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.rate.query" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
 
                                 <el-tooltip class="item" effect="dark" content="添加进度节点" placement="top-end">
-                                    <el-button type="success" icon="el-icon-tickets"  @click="addDialog(scope.row)" ></el-button>
+                                    <el-button type="success" v-if="jurisdiction.rate.add" icon="el-icon-tickets"  @click="addDialog(scope.row)" ></el-button>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
@@ -217,13 +217,15 @@ export default {
         updatedescribe:'',
         addDialogVisible:false,
         limits:JSON.parse(sessionStorage.getItem('limits')),
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
                 {
                     title:'编辑',
                     clickEvent:'compile',
-                    icon:'icon-iconfontedit'
+                    icon:'icon-iconfontedit',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.save
                 }
 
             ],

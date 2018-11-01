@@ -68,6 +68,8 @@
                     sessionStorage.removeItem('ms_username')
                     sessionStorage.removeItem('fauths')
                     sessionStorage.removeItem('limits')
+                    sessionStorage.removeItem('jurisdiction')
+                    
                     this.$router.replace('/login');
                 }
             },

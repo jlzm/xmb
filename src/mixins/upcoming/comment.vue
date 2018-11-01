@@ -81,9 +81,10 @@ export default {
         },
 
         // 获取所有部门和对应人员
-        getDepartList(reqBody) {
-            Axios(reqBody, "user")
+        getDepartList(reqBody, participantsList) {
+          return  Axios(reqBody, "user")
                 .then(res => {
+                    let treeId = 0;
                     console.log(res.data);
                     if (res.state == 10001) {
                         this.departList = res.data.dept;
@@ -93,29 +94,51 @@ export default {
                         }
                         this.$message.error(res.msg);
                     }
+                    
                     this.departList.forEach(deap => {
-                        deap.treeName =
-                            deap.deptname + ` (${deap.deptnumber}人)`;
+                    // 自定义对象属性
+                        deap.treeName = deap.deptname + ` (${deap.deptnumber}人)`;
+                        deap.treeId = ++treeId;
                         if (deap.deptnumber == 0) {
                             deap.disabled = true;
                         }
                         if (deap.userlist) {
-                            let userId = 0;
                             deap.userlist.forEach(user => {
-                                // console.log('user:', user);
+                                // 自定义对象属性
                                 user.treeName = user.staffname;
+                                user.treeId = ++treeId;
                             });
+                            
                         }
                     });
-                    // console.log('this.departList:', this.departList);
-                    // this.addCheckid();
-                })
-                .then(res => {
+                    if(participantsList) {
+                        this.reselection(this.departList, participantsList)
+                }
+                }).then(res => {
                     // 待数据加载完毕，打开新建弹出层
                     this.dialogVisible = true;
-                    // this.setCheckedNodes();
-                    // this.loading = false;
-                });
+                    console.log('this.departList:', this.departList);
+                    // this.addCheckid();
+                })
+        },
+
+        // 回选
+        reselection(mainObj, filterObj) {
+            this.checkedDeparList = [];
+            mainObj.forEach(main1 => {
+                        if(main1.userlist) {
+                            main1.userlist.forEach(main2 => {
+                                filterObj.forEach(filter1 => {
+                                    if(main2.userid == filter1.userid) {
+                                        // this.expandedDeparList = main2.treeId;
+                                        this.checkedDeparList.push(main2.treeId);
+                                    }
+                                })
+                            })
+                        }
+                    })
+                    
+                    console.log('this.checkedDeparList:', this.checkedDeparList);
         },
 
         loadNode(node, resolve) {
@@ -183,7 +206,7 @@ export default {
                 console.log(res);
                 if (res.state == 10001) {
                     if (!show) {
-                        this.show = !this.show;
+                        this.show = true;
                     }
 
                     this.backlogDetail = res.data;

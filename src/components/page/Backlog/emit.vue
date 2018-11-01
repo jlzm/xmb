@@ -1,5 +1,5 @@
 <template>
-    <div class="backlog">
+    <div class="backlog"  @click="hideToDodetail">
         <div class="listBox" >
             <div class="operationBox clearfix">
                 <div class="floatLeft leftBox clearfix">
@@ -25,7 +25,7 @@
             </div>
             <div class="contentBox clearfix padTb5 ">
                 <div class="" v-loading="loading">
-                    <div class="bgWhite backlogItem cp" v-for="(item,index) in toDoList" :key="index" @click="myIssueDetail(item.taskid)">
+                    <div class="bgWhite backlogItem cp" ref="toDoList" v-for="(item,index) in toDoList" :key="index" @click="myIssueDetail(item.taskid)">
                         <div class="backlogItemTitle">
                             <!-- 修改 -->
                            <el-row>
@@ -51,14 +51,14 @@
                         <!--New 修改 -->
                         <div class="backlogItemContent">
                             <div class="content-desc">{{item.taskdescribe}}</div>
-                            <div class="backlog-backlog-bottom-items">
+                            <div class="backlog-bottom-items">
 
                                 <!-- 发起人 -->
                                 <div class="dib backlog-bottom-item">
                                     <i class="iconBox">
                                         <img v-lazy="'static/img/backlogIcon/initiator.png'"  alt="">
                                     </i>
-                                    <span class="backlog-bottom-txt vam">我发起的</span>
+                                    <span class="backlog-bottom-txt vam">我发出的</span>
                                 </div>
 
                                 <!-- 待办截止时间 -->
@@ -151,8 +151,11 @@
                                 <div class="departmentItem">
                                      <el-tree :data="departList" 
                                     :load="loadNode" 
-                                    show-checkbox 
-                                    node-key="id" ref="tree"
+                                    show-checkbox
+                                    :default-expanded-keys="expandedDeparList"
+                                    :default-checked-keys="checkedDeparList"
+                                    node-key="treeId" 
+                                    ref="tree"
                                     @check="handleCheckChange" 
                                     :props="defaultProps">
                                     </el-tree>
@@ -168,7 +171,7 @@
         </el-dialog> -->
         <!-- 待办详情 -->
         <transition name="el-zoom-in-top">
-            <div v-show="show" class="particulars">
+            <div v-show="show" ref="toDoDetail" class="particulars">
                 <!-- 容器 -->
 
                 <!-- 修改 -->
@@ -277,7 +280,7 @@
                                 <img  v-lazy="'static/img/backlogIcon/comments_20.png'" alt="">
                             </i>
                             <span class="particulars-content-titleTxt" style="margin-right:5px">评论</span>
-                            <span class="particulars-content-titleTxt">({{backlogDetail.taskrecordlist && backlogDetail.taskrecordlist.length}})</span>
+                            <span class="particulars-content-titleTxt">({{backlogDetail.taskrecordlist && backlogDetail.taskrecordlist.length || 0}})</span>
                         </div>
                         <div class="particulars-comment-items">
                             <el-row :gutter="20" v-for="(item,index) in backlogDetail.taskrecordlist" :key="index" class="particulars-comment-item">
@@ -287,7 +290,7 @@
                                     </div>
                                 </el-col>
                                 <el-col :span="21">
-                                    <div class="marT20">
+                                    <div class="comment-item-content">
                                         <el-row class="comment-item-title">
                                         <el-col :span="12">{{item.staffname}}</el-col>
                                         <el-col :span="12" class="tar">{{item.updatetime}}</el-col>
@@ -336,10 +339,10 @@ import "../../../assets/stylus/upcoming/details.styl";
 export default {
     mixins: [comment],
     created() {
-        // this._getMyBacklogList(1);
+        this._getMyBacklogList(1);
     },
     mounted() {
-        this._getMyBacklogList(1);
+        // this._getMyBacklogList(1);
         // this._getDepartList();
     },
     data() {
@@ -357,6 +360,8 @@ export default {
                 taskuserid: ""
             },
             departList: [], //部门级人员列表
+            expandedDeparList: [], //回选展开
+            checkedDeparList: [], //回选人员
             departShow: true, //显示判断
             deptIndex: 0, //选择部门下标
             taskuserName: "", //新建人员名称
@@ -371,6 +376,21 @@ export default {
     },
     
     methods: {
+        // 隐藏待办详情
+        hideToDodetail(e) { 
+        let toDoList = this.$refs.toDoList;
+        let toDoDetail = this.$refs.toDoDetail && !this.$refs.toDoDetail.contains(e.target);
+        let detailShow = true;
+        toDoList.forEach(item => {
+            if(item.contains(e.target)) {
+                detailShow = false
+            }
+            return detailShow
+        });
+            if (detailShow && toDoDetail) { 
+                this.show = false;
+            }
+        },
         //   确认修改
         detailModify () {
             this.dialogVisible = false;
@@ -403,7 +423,8 @@ export default {
             this.newIssue.createtime = this.backlogDetail.createtime;
             this.newIssue.endtime = this.backlogDetail.endtime;
             this.newIssue.flag = this.backlogDetail.flag;
-            this._getDepartList(); 
+
+            this._getDepartList(this.backlogDetail.userlist);
         },
 
         // 获取待办列表
@@ -417,6 +438,17 @@ export default {
                 search: this.searchData.antistop
             };
             this.getToDoList(reqBody);
+        },
+
+                // 获取部门和人员
+        _getDepartList (participantsList) {
+            let reqBody = {
+                api: "departlist",
+                companyid: sessionStorage.getItem("companyid"),
+                page: 1,
+                pagesize: "30"
+            }
+            this.getDepartList(reqBody, participantsList)
         },
 
         // 获取待办详情
@@ -495,16 +527,7 @@ export default {
             })
         },
 
-        // 获取部门和人员
-        _getDepartList () {
-            let reqBody = {
-                api: "departlist",
-                companyid: sessionStorage.getItem("companyid"),
-                page: 1,
-                pagesize: "30"
-            }
-            this.getDepartList(reqBody);
-        },
+
 
         // 打开新建待办弹出层
         _openNewBacklog() {
@@ -604,23 +627,6 @@ export default {
     .breadcrumb
         padding-bottom 10px
         border-bottom 2px solid #ddd
-    .backlogItem
-        // border:1px solid #ddd
-        margin-bottom 10px
-        .backlogItemContent
-            padding:20px 20px
-            font-size 14px
-            color #666
-            .backlog-backlog-bottom-items
-                padding-top 15px
-                .backlog-bottom-item
-                    margin-right 20px
-                    font-size 0
-                    color #666
-                    .iconBox
-                        margin-right 10px
-                    .backlog-bottom-txt
-                        font-size 14px
         .back-endt-time
             font-size 14px
             color #666

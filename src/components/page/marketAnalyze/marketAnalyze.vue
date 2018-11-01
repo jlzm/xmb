@@ -1,6 +1,6 @@
 <template>
     <div class="marketAnalyze">
-        <div class="operationBox">
+        <div class="operationBox" v-if="jurisdiction.sellanalysis.query">
             <el-row>
                 <el-col :span="9">
                     <div class="clearfix">
@@ -55,19 +55,19 @@
         </div>
         <div v-if="tabIndex==0">
             <el-row :gutter="11">
-                <el-col :span="8">
+                <!-- <el-col :span="8">
                     <div class="bgWhite">
                         <div class="chartTitle">销售线索数量</div>
                         <ve-chart v-if="marketNumberData.rows" :data="marketNumberData" :settings="chartSettings" :colors="colors"></ve-chart>
                     </div>
-                </el-col>
-                <el-col :span="8">
+                </el-col> -->
+                <el-col :span="12">
                     <div class="bgWhite">
                         <div class="chartTitle">销售线索金额</div>
                         <ve-chart :data="marketMoneyData" :settings="chartSettings" :colors="colors"></ve-chart>
                     </div>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="12">
                     <div class="bgWhite">
                         <div class="chartTitle">销售线索状态</div>
                         <ve-chart :data="marketStateData" :settings="chartSettings" :colors="colors"></ve-chart>
@@ -79,21 +79,21 @@
 
         <div v-if="tabIndex==1">
             <el-row :gutter="11">
-                <el-col :span="8">
+                <!-- <el-col :span="8">
                     <div class="bgWhite">
                         <div class="chartTitle">招投标阶段数量</div>
                         <ve-chart v-if="binNumberData.rows" :data="binNumberData"  :settings="chartSettings" :colors="colors"></ve-chart>
                     </div>
-                </el-col>
-                <el-col :span="8">
+                </el-col> -->
+                <el-col :span="12">
                     <div class="bgWhite">
-                        <div class="chartTitle">销售线索金额</div>
+                        <div class="chartTitle">招投标项目金额</div>
                         <ve-chart :data="binMoneyData" :settings="chartSettings" :colors="colors"></ve-chart>
                     </div>
                 </el-col>
-                <el-col :span="8">
+                <el-col :span="12">
                     <div class="bgWhite">
-                        <div class="chartTitle">销售线索状态</div>
+                        <div class="chartTitle">招投标项目状态</div>
                         <ve-chart :data="binStateData" :settings="chartSettings" :colors="colors"></ve-chart>
                     </div>
                 </el-col>
@@ -160,6 +160,7 @@ export default {
                 label: '条形图'
             },
         ],
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         chartSettings:{
             type: this.ChartType ,
             selectedMode:'single',
@@ -205,17 +206,17 @@ export default {
     }
   },
   created(){
-        this.getSellanalysisnum()
+       // this.getSellanalysisnum()
         this.getSellanalysisMoney()
         this.getSellanalysisState()
 
-        this.getBinanalysisNum()
+        //this.getBinanalysisNum()
         this.getBinanalysisMoney()
         this.getBinanalysisState()
 
-        this.getprojectzcmoneytotal()
-        this.getreturnmonettotal()
-        this.getzcandreturnana()
+        // this.getprojectzcmoneytotal()
+        // this.getreturnmonettotal()
+        // this.getzcandreturnana()
   },
   methods:{
     onTabCut(idx){
@@ -228,11 +229,11 @@ export default {
             this.endtime = this.datePicke[1]
         }
         if(this.tabIndex==0){
-            this.getSellanalysisnum()
+            //this.getSellanalysisnum()
             this.getSellanalysisMoney()
             this.getSellanalysisState()
         }else if(this.tabIndex==1){
-            this.getBinanalysisNum()
+            //this.getBinanalysisNum()
             this.getBinanalysisMoney()
             this.getBinanalysisState()
         }
@@ -300,25 +301,37 @@ export default {
     //销售线索状态分析
     getSellanalysisState(){
         let reqBody = {
-            "api": "getsellanalysisstate",
+            "api": "getsellstatemoney",
             "companyid": sessionStorage.getItem('companyid'),
             "starttime": this.starttime,
             "endtime": this.endtime,
             "daynum":this.daynum
         }
         Axios(reqBody,'index').then((res) => {
-            
+            console.log(res)
             if(res.state==10001){
+                
                 let rows = [
-                    {
-                        "名称":'转入招投标',
-                        "状态":res.data.sellstateone
-                    },
-                    {
-                        "名称":'取消跟进',
-                        "状态":res.data.sellstatethree
-                    } 
+                   
                 ]
+                for(let i=0;i<res.data.analysis.length;i++){
+                    if(res.data.analysis[i].state==0){
+                        rows.push({
+                            "名称":'销售线索',
+                            "状态":res.data.analysis[i].money
+                        })
+                    }else if(res.data.analysis[i].state==1){
+                        rows.push({
+                            "名称":'转入招投标',
+                            "状态":res.data.analysis[i].money
+                        })
+                    }else if(res.data.analysis[i].state==3){
+                        rows.push({
+                            "名称":'取消跟进',
+                            "状态":res.data.analysis[i].money
+                        })
+                    }
+                }
                  this.marketStateData.rows = rows
             }else{
                 this.$message.error(res.msg);
@@ -392,7 +405,7 @@ export default {
     //招投标状态分析
     getBinanalysisState(){
         let reqBody = {
-            "api": "getbinanalysisstate",
+            "api": "getbinstatemoney",
             "companyid": sessionStorage.getItem('companyid'),
             "starttime": this.starttime,
             "endtime": this.endtime,
@@ -402,15 +415,31 @@ export default {
             console.log(res)
             if(res.state==10001){
                 let rows = [
-                    {
-                        "名称":'中标数量',
-                        "状态":res.data.bindsum
-                    },
-                    {
-                        "名称":'未中标数量',
-                        "状态":res.data.nobindsum
-                    } 
+                   
                 ]
+                 for(let i=0;i<res.data.analysis.length;i++){
+                    if(res.data.analysis[i].state==0){
+                        rows.push({
+                            "名称":'投标中',
+                            "状态":res.data.analysis[i].money
+                        })
+                    }else if(res.data.analysis[i].state==1){
+                        rows.push({
+                            "名称":'未中标',
+                            "状态":res.data.analysis[i].money
+                        })
+                    }else if(res.data.analysis[i].state==2){
+                        rows.push({
+                            "名称":'已中标',
+                            "状态":res.data.analysis[i].money
+                        })
+                    }else if(res.data.analysis[i].state==3){
+                        rows.push({
+                            "名称":'未投标',
+                            "状态":res.data.analysis[i].money
+                        })
+                    }
+                }
                  this.binStateData.rows = rows
                  console.log(this.binStateData)
             }else{

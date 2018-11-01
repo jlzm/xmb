@@ -27,12 +27,12 @@
                             </div>
                         </el-form-item>
 
-                        <el-form-item>
+                        <el-form-item v-if="jurisdiction.purchase.add">
                             <div class="leftBtn btn"  @click="onAdd">
                                 <span class="btnTitle">添加采购记录</span>
                             </div>
                         </el-form-item>
-                        <el-form-item>
+                        <el-form-item v-if="jurisdiction.purchase.query">
                             <div class="leftBtn btn" @click="exportworkorder()" >
                                 <span class="btnTitle">导出</span>
                             </div>
@@ -41,7 +41,7 @@
                     
                 </div>
                 <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"   >
+                    <div class="rightBtn btn" v-if="item.limits" v-for="(item,index) in formulaList.right" :key="index"   >
                         <i class="iconfont marR5" :class="[item.icon]"></i>
                         <span class="btnTitle">{{item.title}}</span>
                     </div> 
@@ -101,7 +101,7 @@
                         align="center"
                         width="140">
                             <template slot-scope="scope">
-                                <span>{{!scope.row.sum?'待填写':'￥'+scope.row.sum}}</span>
+                                <span>{{!scope.row.sum?'待填写':'￥'+scope.row.sum1}}</span>
                             </template>
                         </el-table-column>
                         <el-table-column
@@ -128,20 +128,20 @@
                         fixed="right"
                         label="操作"
                         width="260"
-                        align="center">
+                        align="center" v-if="jurisdiction.purchase.query||jurisdiction.purchase.save||jurisdiction.purchase.remove">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="详情" placement="top-end">
-                                    <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.purchase.query" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
                                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                    <el-button  type="success" icon="el-icon-edit-outline" @click="openCompile(scope.row)"></el-button>
+                                    <el-button  type="success" icon="el-icon-edit-outline" v-if="jurisdiction.purchase.save" @click="openCompile(scope.row)"></el-button>
                                 </el-tooltip>
                                 <!-- <el-tooltip class="item" effect="dark" content="下载" placement="top-end">
                                     <el-button @click="onDetails(scope.row)" type="warning" icon="el-icon-download" ></el-button>
                                 </el-tooltip> -->
                                 
                                 <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
-                                    <el-button type="danger" icon="el-icon-delete"  @click="onDelete(scope.row)" ></el-button>
+                                    <el-button type="danger" icon="el-icon-delete"  v-if="jurisdiction.purchase.remove"  @click="onDelete(scope.row)" ></el-button>
                                 </el-tooltip>
                                 
                             </template>
@@ -286,7 +286,8 @@ export default {
                 {
                     title:'编辑',
                     clickEvent:'compile',
-                    icon:'icon-iconfontedit'
+                    icon:'icon-iconfontedit',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.save
                 }
 
             ],
@@ -294,6 +295,7 @@ export default {
                
             ]
         },
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         limits:JSON.parse(sessionStorage.getItem('limits')),
         // 编辑数据
         compileVisible:false,

@@ -100,26 +100,29 @@ export default {
         changeDialogVisible:false,
         record:'',
         radioState:'1',
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
                 {
                     title:'编辑',
                     clickEvent:'compile',
-                    icon:'icon-iconfontedit'
-                }
-
+                    icon:'icon-iconfontedit',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).sellthreacd.save
+                } 
             ],
             right:[
                 {
                     title:'添加跟进记录',
                     clickEvent:'addRecord',
-                    icon:'icon-jia'
+                    icon:'icon-jia',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).sellthreacd.add
                 },
                 {
                     title:'更改项目状态',
                     clickEvent:'changeState',
-                    icon:'icon-bianji'
+                    icon:'icon-bianji',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).sellthreacd.save
                 }
             ]
         },

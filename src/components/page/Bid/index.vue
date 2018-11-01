@@ -28,7 +28,7 @@
                     
                 </div>
                 <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"  @click="getFormulaBar(item.clickEvent)" >
+                    <div class="rightBtn btn" v-if="item.limits" v-for="(item,index) in formulaList.right" :key="index"  @click="getFormulaBar(item.clickEvent)" >
                         <i class="iconfont marR5" :class="[item.icon]"></i>
                         <span class="btnTitle">{{item.title}}</span>
                     </div> 
@@ -36,6 +36,21 @@
             </div> 
             <div class="contentBox clearfix bgWhite padTb10">
                 <div class="pad20 bgWhite">
+                    <el-row :gutter="20" class="marB20" >
+                        <el-col :span="12">
+                            <div class="textCenter" v-if="tableData.mothsummoney">
+                                <div class="marB10 fbold color666">本月金额</div>
+                                <div class="color666">￥{{tableData.mothsummoney}}</div>
+                            </div>
+                            </el-col>
+                        <el-col :span="12">
+                            <div class="textCenter" v-if="tableData.yearsummoney">
+                                <div class="marB10 fbold color666">年度金额</div>
+                                <div class="color666">￥{{tableData.yearsummoney}}</div>
+                            </div>
+                        </el-col>
+                    
+                    </el-row>
                     <!-- 投标文件开始 -->
                     <el-table
                         ref="multipleTable"
@@ -80,7 +95,7 @@
                         align="center"
                         width="140">
                             <template slot-scope="scope">
-                                <span>{{!scope.row.bindsum?'待填写':'￥'+scope.row.bindsum}}</span>
+                                <span>{{!scope.row.bindsum?'待填写':'￥'+scope.row.bindsum1}}</span>
                             </template>
                         </el-table-column>
 
@@ -129,16 +144,17 @@
                         fixed="right"
                         label="操作"
                         width="200"
-                        align="center">
+                        align="center"
+                        v-if="jurisdiction.bin.query||jurisdiction.bin.save">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
-                                    <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.bin.query" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
                                  <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                    <el-button type="success" icon="el-icon-edit"  @click="onCompile(scope.row)" ></el-button>
+                                    <el-button type="success" icon="el-icon-edit" v-if="jurisdiction.bin.save"   @click="onCompile(scope.row)" ></el-button>
                                 </el-tooltip>
                                 <el-tooltip class="item" effect="dark" content="更改项目状态" placement="top-end" >
-                                    <el-button type="warning" icon="el-icon-refresh" @click="onChangeDialogVisible(scope.row)"></el-button>
+                                    <el-button type="warning" icon="el-icon-refresh" v-if="jurisdiction.bin.save"  @click="onChangeDialogVisible(scope.row)"></el-button>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
@@ -286,24 +302,21 @@ export default {
         sellStatus:'-1',
         tableData: [],
         limits:JSON.parse(sessionStorage.getItem('limits')),
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         multipleSelection: [],
         pageSize:10,
         page:1,
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
-                {
-                    title:'编辑',
-                    clickEvent:'compile',
-                    icon:'icon-iconfontedit'
-                }
-
+               
             ],
             right:[
                 {
                     title:'导出',
                     clickEvent:'export',
-                    icon:'icon-jia'
+                    icon:'icon-jia',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.query
                 }
             ]
         }

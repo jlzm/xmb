@@ -97,14 +97,14 @@
                                     align="center">
                                         <template slot-scope="scope">
                                             <el-tooltip class="item" effect="dark" content="用户详情" placement="top-end">
-                                                <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                                <el-button @click="onDetails(scope.row)" v-if="jurisdiction.bin.query"  type="primary" icon="el-icon-view" ></el-button>
                                             </el-tooltip>
                                             
                                             <el-tooltip class="item" effect="dark" content="解除冻结" placement="top-end">
-                                                <el-button type="success" icon="el-icon-upload2"  @click="onAffirm(scope.row.fileurl)" ></el-button>
+                                                <el-button type="success" icon="el-icon-upload2" v-if="jurisdiction.bin.query"  @click="onAffirm(scope.row.fileurl)" ></el-button>
                                             </el-tooltip>
                                             <el-tooltip class="item" effect="dark" content="删除" placement="top-end" >
-                                                <el-button type="danger" icon="el-icon-delete" @click="onAffirm(scope.row.id)"></el-button>
+                                                <el-button type="danger" icon="el-icon-delete" v-if="jurisdiction.bin.remove" @click="onAffirm(scope.row.id)"></el-button>
                                             </el-tooltip>
                                         </template>
                                     </el-table-column>
@@ -158,13 +158,13 @@
                                         <template slot-scope="scope">
                                             
                                             <el-tooltip class="item" effect="dark" content="查看" placement="top-end">
-                                                <el-button type="primary" icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
+                                                <el-button type="primary" icon="el-icon-view"  v-if="jurisdiction.bin.query"  @click="onExamine(scope.row.fileurl)" ></el-button>
                                             </el-tooltip>
                                             <el-tooltip class="item" effect="dark" content="下载" placement="top-end">
-                                                <el-button type="success" icon="el-icon-upload"  @click="onDownload(scope.row.fileurl)" ></el-button>
+                                                <el-button type="success" icon="el-icon-upload" v-if="jurisdiction.bin.query"  @click="onDownload(scope.row.fileurl)" ></el-button>
                                             </el-tooltip>
                                             <el-tooltip class="item" effect="dark" content="删除" placement="top-end" >
-                                                <el-button type="danger" icon="el-icon-delete" @click="deletebinddocument(scope.row.id)"></el-button>
+                                                <el-button type="danger" icon="el-icon-delete" v-if="jurisdiction.bin.remove" @click="deletebinddocument(scope.row.id)"></el-button>
                                             </el-tooltip>
                                         </template>
                                     </el-table-column>
@@ -213,17 +213,17 @@
                                     fixed="right"
                                     label="操作"
                                     width="240"
-                                    align="center">
+                                    align="center" v-if="jurisdiction.bin.query||jurisdiction.bin.query||jurisdiction.bin.query">
                                         <template slot-scope="scope">
                                             <el-tooltip class="item" effect="dark" content="查看" placement="top-end">
-                                                <el-button type="primary" icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
+                                                <el-button type="primary" icon="el-icon-view"  v-if="jurisdiction.bin.query"  @click="onExamine(scope.row.fileurl)" ></el-button>
                                             </el-tooltip>
                                             
                                             <el-tooltip class="item" effect="dark" content="下载" placement="top-end">
-                                                <el-button type="success" icon="el-icon-upload"   @click="onDownload(scope.row.fileurl)" ></el-button>
+                                                <el-button type="success" icon="el-icon-upload"  v-if="jurisdiction.bin.query"  @click="onDownload(scope.row.fileurl)" ></el-button>
                                             </el-tooltip>
                                             <el-tooltip class="item" effect="dark" content="删除" placement="top-end" >
-                                                <el-button type="danger" icon="el-icon-delete" @click="deletetenderdocument(scope.row.id)"></el-button>
+                                                <el-button type="danger" icon="el-icon-delete"  v-if="jurisdiction.bin.remove" @click="deletetenderdocument(scope.row.id)"></el-button>
                                             </el-tooltip>
                                         </template>
                                     </el-table-column>
@@ -408,6 +408,7 @@ export default {
         threadInfo:{},
         tabListIndex:0,
         binInfo:{},
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         changeDialogVisible:false,
         addDialogVisible:false,
         compileDialogVisible:false,
@@ -442,7 +443,8 @@ export default {
                 {
                     title:'编辑',
                     clickEvent:'compile',
-                    icon:'icon-iconfontedit'
+                    icon:'icon-iconfontedit',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.save
                 }
 
             ],
@@ -450,12 +452,14 @@ export default {
                 {
                     title:'添加记录',
                     clickEvent:'addRecord',
-                    icon:'icon-jia'
+                    icon:'icon-jia',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.add
                 },
                 {
                     title:'更改项目状态',
                     clickEvent:'changeState',
-                    icon:'icon-bianji'
+                    icon:'icon-bianji',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.save
                 }
             ]
         },
@@ -614,34 +618,37 @@ export default {
                     {
                         title:'添加文件',
                         clickEvent:'add',
-                        icon:'icon-jia'
+                        icon:'icon-jia',
+                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.add
                     },
                     {
                         title:'添加记录',
                         clickEvent:'addRecord',
-                        icon:'icon-jia'
+                        icon:'icon-jia',
+                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.add
                     },
                     {
                         title:'更改项目状态',
                         clickEvent:'changeState',
-                        icon:'icon-bianji'
+                        icon:'icon-bianji',
+                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.save
                     }
 
                 ]
             }else{
                 this.formulaList.right=[
                     {
-                    title:'添加记录',
-                    clickEvent:'addRecord',
-                    icon:'icon-jia'
+                        title:'添加记录',
+                        clickEvent:'addRecord',
+                        icon:'icon-jia',
+                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.add
                     },
                     {
                         title:'更改项目状态',
                         clickEvent:'changeState',
-                        icon:'icon-bianji'
+                        icon:'icon-bianji',
+                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.save
                     }
-
-
                 ]
             }
         }

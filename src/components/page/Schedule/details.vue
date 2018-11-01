@@ -133,7 +133,6 @@ import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
 
-
 export default {
   
   data () {
@@ -147,6 +146,7 @@ export default {
         progressVal:0,
         progressWidth:0,
         progressTextWidth:0,
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
@@ -215,6 +215,7 @@ export default {
             "api": "getprojectinfo",
             "id": this.$route.query.id,
             "companyid": sessionStorage.getItem('companyid'),
+            "userid": sessionStorage.getItem('userid'),
         }
         Axios(reqBody,'project').then((res) => {
             console.log(res)
@@ -255,7 +256,8 @@ export default {
                     this.formulaList.right = [{
                     title:'添加进度节点',
                     clickEvent:'addprojectrate',
-                    icon:'icon-bianji'
+                    icon:'icon-bianji',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
                 }]
                 }
             }else{

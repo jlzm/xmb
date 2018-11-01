@@ -1,5 +1,5 @@
 <template>
-    <div class="backlog">
+    <div class="backlog" @click="hideToDodetail">
         <div class="listBox" >
             <div class="operationBox clearfix">
                 <div class="floatLeft leftBox clearfix">
@@ -20,7 +20,7 @@
             </div>
             <div class="contentBox clearfix padTb5 ">
                 <div class="" v-loading="loading">
-                    <div class="bgWhite backlogItem cp" v-for="(item,index) in toDoList" :key="index" @click="MyBacklogDetail(item.taskid)">
+                    <div class="bgWhite backlogItem cp" ref="toDoList" v-for="(item,index) in toDoList" :key="index" @click="MyBacklogDetail(item.taskid)">
                         <div class="backlogItemTitle">
                             <!-- 修改 -->
                            <el-row :gutter="20">
@@ -29,10 +29,9 @@
                                         type="error"
                                         :closable="false"
                                         center>
-                                        <img v-if="item.state==0 && item.flag!=0" v-lazy="'static/img/backlogIcon/urgency.png'" alt="">
-                                        <img v-else-if="item.state==0 && item.flag==0" v-lazy="'static/img/backlogIcon/general.png'" alt="">
-                                        <img v-else-if="item.state==1" v-lazy="'static/img/backlogIcon/complete.png'" alt="">
-                                        <img v-else v-lazy="'static/img/backlogIcon/complete.png'" alt="">
+                                        <img v-if="item.state==0 && item.flag==1 && item.mystate == 0" v-lazy="'static/img/backlogIcon/urgency.png'" alt="">
+                                        <img v-else-if="item.state==0 && item.flag==0 && item.mystate == 0" v-lazy="'static/img/backlogIcon/general.png'" alt="">
+                                        <img v-else-if="item.mystate == 2" v-lazy="'static/img/backlogIcon/complete.png'" alt="">
                                     </div>
                                 </el-col>
                                 <!-- 修改 -->
@@ -93,7 +92,7 @@
 
         <!-- 待办弹出框 -->
         <transition name="el-zoom-in-top">
-            <div @click="test"  v-show="show" class="particulars">
+            <div ref="toDoDetail" v-if="show" class="particulars">
                 <!-- 容器 -->
 
                 <!-- 修改 -->
@@ -173,7 +172,7 @@
                             <el-row >
                                 <el-col :span="4" v-for="(item,index) in backlogDetail.userlist" :key="index" class="particulars-personnel-item">
                                     <div class="personnel-avatar">
-                                        <img class="personnelImg" v-lazy="{src:item.portrait,error:'static/img/portrait.png'}"  alt="">
+                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = '../../../static/img/portrait.png'"  alt="">
                                     </div>
                                     <i class="accomplish-icon" v-if="item.state == 2">
                                         <img v-lazy="'static/img/do_complete.png'"  alt="">
@@ -192,7 +191,7 @@
                                 <img  v-lazy="'static/img/backlogIcon/comments_20.png'" alt="">
                             </i>
                             <span class="particulars-content-titleTxt" style="margin-right:5px">评论</span>
-                            <span class="particulars-content-titleTxt">({{backlogDetail.taskrecordlist && backlogDetail.taskrecordlist.length}})</span>
+                            <span class="particulars-content-titleTxt">({{backlogDetail.taskrecordlist && backlogDetail.taskrecordlist.length || 0}})</span>
                         </div>
                         <div class="particulars-comment-items">
                             <el-row :gutter="20" v-for="(item,index) in backlogDetail.taskrecordlist" :key="index" class="particulars-comment-item">
@@ -250,11 +249,17 @@ import comment from '../../../mixins/upcoming/comment.vue';
 export default {
     mixins: [comment],
         created(){
-            // this._getMyBacklogList(1)
+    //         // this._getMyBacklogList(1)
+    //         document.addEventListener('click',(e)=>{
+    //         console.log(this.$refs.toDodetail.contains(e.target));
+    //         if(!this.$refs.toDodetail.contains(e.target)){
+    //             this.show = false;
+    //     }
+    // })
         },
-        mounted() {
-            this._getMyBacklogList(1);
-        },
+    mounted() {
+        this._getMyBacklogList(1);
+    },
     components:{
         vParticularsTab,vProjectInfo,vBidInfo
     },
@@ -286,10 +291,20 @@ export default {
     },
 
     methods:{
-        test(e) {
-            console.log('1:', 1);
-            
-            this.show = false;
+        // 隐藏待办详情
+        hideToDodetail(e) { 
+        let toDoList = this.$refs.toDoList;
+        let toDoDetail = this.$refs.toDoDetail && !this.$refs.toDoDetail.contains(e.target);
+        let detailShow = true;
+        toDoList.forEach(item => {
+            if(item.contains(e.target)) {
+                detailShow = false
+            }
+            return detailShow
+        });
+            if (detailShow && toDoDetail) { 
+                this.show = false;
+            }
         },
         getFormulaBar(res){
             console.log(res)

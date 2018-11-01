@@ -73,14 +73,14 @@
                                     align="center">
                                         <template slot-scope="scope">
                                             <el-tooltip class="item" effect="dark" content="查看" placement="top-end">
-                                                <el-button type="primary" icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
+                                                <el-button type="primary" v-if="jurisdiction.file.query"  icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
                                             </el-tooltip>
                                             <el-tooltip class="item" effect="dark" content="下载" placement="top-end">
-                                                <el-button type="success" icon="el-icon-download"  @click="fileDownload(scope.row)" ></el-button>
+                                                <el-button type="success" v-if="jurisdiction.file.query" icon="el-icon-download"  @click="fileDownload(scope.row)" ></el-button>
                                             </el-tooltip>
 
                                             <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
-                                                <el-button type="danger" icon="el-icon-delete"  @click="fileremove(scope.row.fileid)" ></el-button>
+                                                <el-button type="danger"  v-if="jurisdiction.file.remove" icon="el-icon-delete"  @click="fileremove(scope.row.fileid)" ></el-button>
                                             </el-tooltip>
                                             
                                         </template>
@@ -174,6 +174,7 @@ export default {
  
         },
         exportUrl:Session.exportUrl+'saveFile',
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         multipleSelection: [],
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
@@ -181,18 +182,21 @@ export default {
                 {
                     title:'添加文件',
                     clickEvent:'add',
-                    icon:'icon-iconfontedit'
+                    icon:'icon-iconfontedit',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).file.add
                 }
             ],
             right:[
                 {
                     title:'下载文件',
                     clickEvent:'download',
-                    icon:'icon-download'
+                    icon:'icon-download',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).file.query
                 },{
                     title:'删除文件',
                     clickEvent:'del',
-                    icon:'icon-delete'
+                    icon:'icon-delete',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.remove
                 }
             ]
         },
@@ -509,6 +513,8 @@ export default {
                     width 32px
                     height 32px
                     margin-right 10px
+                    background  url('../../../../static/img/folder.png')  
+                    background-size 100% 100%
                 .fileText
                     color #4c97ff
     .iframe

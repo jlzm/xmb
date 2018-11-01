@@ -14,7 +14,7 @@
                             </div>
                             <div class="item">
                                 <span class="label">采购金额：</span>
-                                <span>{{purchaseInfo.sum}}元</span>
+                                <span>{{purchaseInfo.sum1}}元</span>
                             </div>
                             <div class="item">
                                 <span class="label">经手人：</span>
@@ -91,11 +91,11 @@
                                            
                                             
                                             <el-tooltip class="item" effect="dark" content="下载" placement="top-end">
-                                                <el-button type="success" icon="el-icon-download"  @click="onDownload(scope.row)" ></el-button>
+                                                <el-button type="success" v-if="jurisdiction.purchase.query" icon="el-icon-download"   @click="onDownload(scope.row)" ></el-button>
                                             </el-tooltip>
 
                                             <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
-                                                <el-button type="danger" icon="el-icon-delete"  @click="onDel(scope.row.id)" ></el-button>
+                                                <el-button type="danger"  v-if="jurisdiction.purchase.remove" icon="el-icon-delete"  @click="onDel(scope.row.id)" ></el-button>
                                             </el-tooltip>
                                             
                                         </template>
@@ -183,6 +183,7 @@ export default {
         fileListSize:'',
         successLength:0,
         multipleSelection: [],
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
@@ -194,7 +195,8 @@ export default {
                 {
                     title:'添加文件',
                     clickEvent:'addFile',
-                    icon:'icon-iconfontedit'
+                    icon:'icon-iconfontedit',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.add
                 }
 
             ],
@@ -202,11 +204,13 @@ export default {
                 {
                     title:'下载文件',
                     clickEvent:'download',
-                    icon:'icon-bianji'
+                    icon:'icon-bianji',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.query
                 },{
                     title:'删除文件',
                     clickEvent:'delFile',
-                    icon:'icon-jia'
+                    icon:'icon-jia',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.remove
                 }
             ]
         },

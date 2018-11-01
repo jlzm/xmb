@@ -6,13 +6,13 @@
                 <i class="icon-fanhui1 iconfont marR5"></i>
                 <span class="btnTitle">返回</span>
             </div>
-            <div class="leftBtn btn" v-for="(item,index) in formulaList.left" :key="index"   @click="onFormulaBar(item.clickEvent)">
+            <div class="leftBtn btn" v-if="item.limits!=0&&item.limits" v-for="(item,index) in formulaList.left" :key="index"   @click="onFormulaBar(item.clickEvent)">
                 <i class="iconfont marR5" :class="[item.icon]"></i>
                 <span class="btnTitle">{{item.title}}</span>
             </div>
         </div>
         <div class="floatRight rightBox clearfix">
-            <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"   @click="onFormulaBar(item.clickEvent)">
+            <div class="rightBtn btn" v-if="item.limits!=0&&item.limits"  v-for="(item,index) in formulaList.right" :key="index"   @click="onFormulaBar(item.clickEvent)">
                 <i class="iconfont marR5" :class="[item.icon]"></i>
                 <span class="btnTitle">{{item.title}}</span>
             </div> 
@@ -29,13 +29,14 @@ export default {
     },
     props: ['formulaList'],
     created(){
-           
+           console.log(this.formulaList)
     },
     methods:{
         onFormulaBar(clickEvent){
             this.$emit('formulaBarRoutes', clickEvent);
         },
         returnPage(){
+            
             this.$router.go(-1);//返回上一层
         }
     }

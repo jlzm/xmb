@@ -23,11 +23,11 @@
 
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">合同签订金额：</div>
-        <div class="floatLeft infoItemContent">{{infoData.bargainsum?infoData.bargainsum+'元':'待填写'}}</div>
+        <div class="floatLeft infoItemContent">{{infoData.bargainsum?infoData.bargainsum1+'元':'待填写'}}</div>
     </div>
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">应收总金额：</div>
-        <div class="floatLeft infoItemContent">{{infoData.returnedmoney?infoData.returnedmoney+'元':infoData.bargainsum+'元'}}</div>
+        <div class="floatLeft infoItemContent">{{infoData.totalamount?infoData.totalamount+'元':infoData.bargainsum1+'元'}}</div>
     </div>
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">项目状态：</div>

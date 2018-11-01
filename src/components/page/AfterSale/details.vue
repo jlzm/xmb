@@ -56,7 +56,7 @@
                         </div>
                         <div class="infoItem clearfix">
                             <div class="floatLeft infoItemTitle">完成状态：</div>
-                            <div class="floatLeft infoItemContent">进行中</div>
+                            <div class="floatLeft infoItemContent">{{workorderInfo.workstatus==0?'进行中':'已完成'}}</div>
                         </div>
                         <div class="infoItem clearfix">
                             <div class="infoItemTitle floatLeft">描述信息：</div>
@@ -180,6 +180,78 @@
         </span>
         </el-dialog>
 
+
+        <el-dialog
+        title="编辑售后工单"
+        :visible.sync="addDialogVisible"
+        width="40%"
+        >
+        <div>
+            <div class="newContent">
+                <el-form ref="newMarketClue" :model="newMarketClue" label-width="140px">
+                    <el-form-item label="项目名称：" :show-message='false' :required='true'>
+                        <el-select v-model="newMarketClue.projectid" placeholder="请选择">
+                            <el-option
+                            v-for="(item,index) in purchaseProjectList"
+                            :key="index"
+                            :label="item.projectname"
+                            :value="item.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                   
+                    <el-form-item label="联系人姓名：" :show-message='false' :required='true'>
+                        <el-input  v-model="newMarketClue.linkman"></el-input>
+                    </el-form-item>
+                    <el-form-item label="联系电话：" :show-message='false' :required='true'>
+                        <el-input  type="number" v-model="newMarketClue.linkphone"></el-input>
+                    </el-form-item>
+                    <el-form-item label="上门地址：" :show-message='false' :required='true'>
+                        <el-input v-model="newMarketClue.projectaddress"></el-input>
+                    </el-form-item>
+                    <el-form-item label="上门时间：" :show-message='false' :required='true'>
+                        <el-date-picker
+                        v-model="newMarketClue.gettime"
+                        type="datetime"
+                        placeholder="选择上门时间"
+                        value-format="yyyy-MM-dd HH:mm"
+                        format="yyyy-MM-dd HH:mm">
+                        </el-date-picker>
+                    </el-form-item>
+                    <el-form-item label="紧急程度：" :show-message='false' :required='true'>
+                        <el-select v-model="newMarketClue.flag" placeholder="请选择">
+                            <el-option label="一般 " value="0"></el-option>
+                            <el-option label="紧急" value="1"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="服务类型：" :show-message='false' :required='true'>
+                        <el-select v-model="newMarketClue.servicetype" placeholder="请选择">
+                            <el-option label="免费" value="0"></el-option>
+                            <el-option label="收费" value="1"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="服务人员：" :show-message='false' :required='true'>
+                        <el-select v-model="newMarketClue.serviceid" multiple  placeholder="请选择">
+                            <el-option
+                            v-for="(item,index) in deptemp"
+                            :key="index"
+                            :label="item.staffname"
+                            :value="item.userid">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="描述信息：">
+                        <el-input type="textarea" :autosize="{ minRows: 8, maxRows: 30}" v-model="newMarketClue.remark"></el-input>
+                    </el-form-item>
+                </el-form>
+            </div>
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="addDialogVisible = false">取 消</el-button>
+            <el-button type="primary" @click="updateCompile">确 定</el-button>
+        </span>
+        </el-dialog>
+
     </div>
     
 </template>
@@ -210,12 +282,29 @@ export default {
 
         },
         dialogVisible: false,
+        addDialogVisible:false,
+        newMarketClue:{
+            projectid:'',
+            projectaddress:'',
+            linkman:'',
+            linkphone:'',
+            gettime:'',
+            flag:'',
+            servicetype:'',
+            serviceid:'',
+            remark:'',
+            companyid:''
+        },
         tabListIndex:0,
         workorderInfo:{},  //工单详情
         workrateList:[], //进度进程列表
         multipleSelection: [],
         proofList:[],
+        purchaseProjectList:[],
+        customerList:[],
+        deptemp:[],
         servicelist:'',
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
@@ -269,6 +358,8 @@ export default {
             this.addworkrate(0)
         }else if(res=='confirm'){
             this.addworkrate(1)
+        }else if(res=='compile'){
+            this.addDialogVisible = true
         }
         
         console.log(res)
@@ -309,7 +400,7 @@ export default {
    
     /////////
     //售后工单详情
-    _getWorkorderInfo(){
+    _getWorkorderInfo(getDeptemp){
         let reqBody = {
             "api": "getworkorderinfo",
             "workorderid":this.$route.query.workorderid,
@@ -317,19 +408,42 @@ export default {
         Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
-                
+                if(!getDeptemp){
+                     this._getCustomerList()
+                    this._getDeptemp()
+                    this._getPurchaseProjectList()
+                }
+               
                 this.workorderInfo = res.data.workorderinfo
                 this.uploadData = {
                     "companyid": sessionStorage.getItem('companyid'),
                     "projectid":res.data.workorderinfo.projectid,
                 }
+                let serviceid = []
                 let servicelist = ''
                 for(let i=0;i<res.data.servicelist.length;i++){
+                    serviceid.push(res.data.servicelist[i].userid)
                     if(servicelist){
                         servicelist = servicelist +','+res.data.servicelist[i].staffname
                     }else{
                         servicelist = res.data.servicelist[i].staffname
                     }
+                }
+                let newMarketClue = res.data.workorderinfo
+                this.newMarketClue = {
+                    "projectid":newMarketClue.projectid+'',
+                    "projectaddress":newMarketClue.projectaddress,
+                    "companyid":newMarketClue.custmerid,
+                    "linkman":newMarketClue.linkman,
+                    "userid":sessionStorage.getItem('userid'),
+                    "linkphone":newMarketClue.linkphone,                                                                                    
+                    "longitude":newMarketClue.longitude,
+                    "latitude":newMarketClue.latitude,
+                    "gettime":newMarketClue.gettime,
+                    "flag":newMarketClue.flag+'',
+                    "servicetype":newMarketClue.servicetype+'',
+                    "serviceid":serviceid,
+                    "remark":newMarketClue.remark
                 }
                 this.servicelist = servicelist
             }else{
@@ -353,26 +467,61 @@ export default {
                         {
                             title:'上传凭证',
                             clickEvent:'uploading',
-                            icon:'icon-iconfontedit'
+                            icon:'icon-iconfontedit',
+                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
                         },
                         {
                             title:'确认完成',
                             clickEvent:'confirm',
-                            icon:'icon-jia'
+                            icon:'icon-jia',
+                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
                         }
                     ]
+                    if(res.data.workstatus==1){
+                        this.formulaList.left = [
+                            
+                        ]
+                        this.formulaList.right = [
+                            {
+                                title:'上传凭证',
+                                clickEvent:'uploading',
+                                icon:'icon-iconfontedit',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                            }
+                        ]
+                    }else{
+                        this.formulaList.left = [
+                            {
+                                title:'编辑',
+                                clickEvent:'compile',
+                                icon:'icon-bianji',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
+                            }
+                        ]
+                        this.formulaList.right = [
+                            {
+                                title:'上传凭证',
+                                clickEvent:'uploading',
+                                icon:'icon-iconfontedit',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                            }
+                        ]
+                        
+                    }
                 }else if(res.data.isworkservice==1){
                     if(res.data.isaccept==0){
                         this.formulaList.right = [
                             {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit'
+                                icon:'icon-iconfontedit',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
                             },
                             {
                                 title:'接受派单',
                                 clickEvent:'reception',
-                                icon:'icon-bianji'
+                                icon:'icon-bianji',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
                             }
                         ]
                     }else if(res.data.isaccept==1){
@@ -380,15 +529,25 @@ export default {
                             {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit'
+                                icon:'icon-iconfontedit',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
                             },
                                 {
                                 title:'确认完成',
                                 clickEvent:'confirm',
-                                icon:'icon-jia'
+                                icon:'icon-jia',
+                                 limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
                             }
                         ]
                     }else if(res.data.isaccept==2){
+                        this.formulaList.right = [
+                            
+                        ]
+                    }
+                    if(res.data.workstatus==1){
+                        this.formulaList.left = [
+                           
+                        ]
                         this.formulaList.right = [
                             
                         ]
@@ -400,12 +559,14 @@ export default {
                         {
                             title:'上传凭证',
                             clickEvent:'uploading',
-                            icon:'icon-iconfontedit'
+                            icon:'icon-iconfontedit',
+                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
                         },
                         {
                             title:'确认完成',
                             clickEvent:'confirm',
-                            icon:'icon-jia'
+                            icon:'icon-jia',
+                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
                         }
                         ]
                     }else if(res.data.isaccept==2){
@@ -413,18 +574,26 @@ export default {
                             {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit'
+                                icon:'icon-iconfontedit',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
                             }
                         ]
                     }
-
-                    this.formulaList.left = [
-                        {
-                            title:'编辑',
-                            clickEvent:'compile',
-                            icon:'icon-bianji'
-                        }
-                    ]
+                    if(res.data.workstatus==0){
+                        this.formulaList.left = [
+                            {
+                                title:'编辑',
+                                clickEvent:'compile',
+                                icon:'icon-bianji',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
+                            }
+                        ]
+                    }else{
+                        this.formulaList.left = [
+                           
+                        ]
+                    }
+                    
                     
                 }
                 
@@ -501,6 +670,7 @@ export default {
             if(res.state==10001){
                 state==1? this.$message.success('完成工单'): this.$message.success('接受工单成功');
                 this._getWorkrateList()
+                this._getWorkorderInfo()
             }else{
                 this.$message.error(res.msg);
             }
@@ -511,7 +681,107 @@ export default {
           dangerouslyUseHTMLString: true,
           showConfirmButton:false
         });
-    }
+    },
+
+    //获取项目列表
+    _getPurchaseProjectList(){
+        let reqBody = {
+            "api": "getpurchaseprojectlist",
+            "companyid": sessionStorage.getItem('companyid'),
+            "searchname": ""
+
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.purchaseProjectList = res.data
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+        })
+    },
+    //获取客户列表
+    _getCustomerList(){
+        let reqBody = {
+            "api": "getcustomerlist",
+            "companyid": sessionStorage.getItem('companyid'),
+            
+
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.customerList = res.data
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+        })
+    },
+    //获取部门的所有员工
+    _getDeptemp(){
+        let reqBody = {
+            "api": "getdeptemp",
+            "companyid": sessionStorage.getItem('companyid'),
+            "searchname": "",
+            "deptid":''
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.deptemp = res.data
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+        })
+    },
+    updateCompile(){
+        
+        let newMarketClue = this.newMarketClue
+        if(!newMarketClue.projectid || !newMarketClue.projectaddress || !newMarketClue.linkman || !this.$route.query.workorderid || !newMarketClue.linkphone || !newMarketClue.gettime || newMarketClue.serviceid.length<=0){
+            this.$message.error('请填写完整信息')
+            return false
+        }
+        let serviceid = ''
+        let servicelist = newMarketClue.serviceid
+        for(let i=0;i<servicelist.length;i++){
+           if(serviceid){
+               serviceid = serviceid + ',' + servicelist[i]
+           }else{
+               serviceid = servicelist[i]
+           }
+        }
+        let reqBody = {
+            "api": "updateworkorder",
+            "projectid":newMarketClue.projectid,
+            "projectaddress":newMarketClue.projectaddress,
+            "companyid":sessionStorage.getItem('companyid'),
+            "linkman":newMarketClue.linkman,
+            "id":this.$route.query.workorderid,
+            "linkphone":newMarketClue.linkphone,    
+            "longitude":'0',
+            "latitude":'0',
+            "gettime":newMarketClue.gettime,
+            "flag":newMarketClue.flag+'',
+            "servicetype":newMarketClue.servicetype+'',
+            "serviceid":serviceid,
+            "remark":newMarketClue.remark
+
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.$message.success(res.msg);
+                this.addDialogVisible=false,
+                this._getWorkorderInfo(true)      
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+        })
+    },
     
   }
 }
@@ -593,5 +863,7 @@ export default {
                 line-height 25px
                 margin-left 20px
                 font-size 14px
+    .el-date-editor,.el-select
+        width 100%
     
 </style>

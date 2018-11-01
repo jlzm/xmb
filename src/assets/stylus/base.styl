@@ -15,7 +15,7 @@ body,
 
 body, html
 
-  font-family:'微软雅黑', 'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, sans-serif, 'Droid Sans Fallback'
+  font-family: 'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, sans-serif, 'Droid Sans Fallback'
   user-select: none
   -webkit-tap-highlight-color: transparent
   background: $color-background
@@ -31,7 +31,7 @@ video
   margin: 0
   border: none
   outline: none
-  font-family: '微软雅黑', arial,"Microsoft Yahei","Hiragino Sans GB",sans-serif,'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, 'Droid Sans Fallback'
+  font-family: arial,"Microsoft Yahei","Hiragino Sans GB",sans-serif,'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, 'Droid Sans Fallback'
   -webkit-text-size-adjust: 100%
   -ms-text-size-adjust: 100%
 a,a:hover
@@ -316,12 +316,8 @@ img
   margin-top: 20px
 .marT15
   margin-top: 15px
-.marT12
-  margin-top: 12px
 .marT10
   margin-top: 10px
-.marT8
-  margin-top: 8px
 .marT5
   margin-top: 5px
 .marL50
@@ -432,7 +428,7 @@ img
 .textCenter
   text-align center
 textarea
-  font-family: '微软雅黑', 'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, sans-serif, 'Droid Sans Fallback'
+  font-family: 'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, sans-serif, 'Droid Sans Fallback'
 // #voucher .el-upload-list--picture-card .el-upload-list__item,#voucher .el-upload--picture-card
 //   width 110px
 //   height 110px 
@@ -458,13 +454,45 @@ input[type="number"]{
 .ms-login .el-input__prefix{
   left: 20px;
 }
-
+.notAvailable{
+    display: block;
+    margin: 140px auto;
+    width: 200px;
+    height: 247px;
+}
+.notIcon{
+    display: block;
+    margin: 140px auto;
+    width: 200px;
+    height: 190px;
+    margin-bottom 30px
+}
+.notText{
+  text-align center
+  color:#999;  
+  margin-bottom 120px
+}
 .iframeVisible .el-dialog 
   overflow hidden
+.el-message-box
+    width auto
+    min-width auto
+    max-width 100%
+    overflow-y auto
+.el-message-box__wrapper
+  overflow-y auto
+.tangram-suggestion-main
+  z-index 9999
+.mapIcon
+      position absolute
+      top 0
+      right -40px 
+      display inline-block
+      width 32px
+      height 32px
+      cursor pointer
 
-
-
-// New
+  // New
   
 /* 元素显示及空格清除和字体还原 */
 .row {
@@ -596,6 +624,10 @@ input[type="number"]{
 // 栅格
 [class*="col-"], .col{
     display: inline-block;
+    font-size: 1rem;
+    /* === */
+    /* border: 1px solid #000; */
+    min-height: 20px;
 }
 
 .col-lg_5{
@@ -659,7 +691,6 @@ input[type="number"]{
 .col-lg-10{
     width: 100%;
 }
-
 .flb {
     word-wrap: break-word;
     word-break: break-all;

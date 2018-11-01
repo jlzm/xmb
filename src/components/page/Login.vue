@@ -88,14 +88,15 @@
                         sessionStorage.setItem('ms_username',res.data.username)
                         sessionStorage.setItem('fauths',JSON.stringify(res.data.fauths))
                         sessionStorage.setItem('userportrait',res.data.userportrait)
-                        
+                        let jurisdiction = {}
                         let limits ={}
                         for(let i=0;i<res.data.fauths.length;i++){
-                            
+                            jurisdiction[res.data.fauths[i].modular] = res.data.fauths[i]
                             limits[res.data.fauths[i].modular] = res.data.fauths[i].alllimits
                             console.log(limits[res.data.fauths[i].modular])
                         }
                         sessionStorage.setItem('limits',JSON.stringify(limits))
+                        sessionStorage.setItem('jurisdiction',JSON.stringify(jurisdiction))
                         let pathRedirect = '/'
                         let fauths = JSON.parse(sessionStorage.getItem('fauths'))
                         for (let i = 0; i < fauths.length; i++) {

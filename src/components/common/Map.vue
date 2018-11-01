@@ -30,8 +30,13 @@ export default {
             suggestVal:''
         }
     },
-    props: ['mapVisible'],
+    props: ['mapVisible','mapVal'],
     created(){
+        if(this.mapVal.lng){
+            this.lng = this.mapVal.lng
+            this.lat = this.mapVal.lat
+            this.addressd = this.mapVal.address
+        }
         
     },
     mounted(){
@@ -39,19 +44,31 @@ export default {
         let that = this
         // let opts = {type: BMAP_NAVIGATION_CONTROL_ZOOM} 
         // map.addControl(new BMap.NavigationControl(opts)); 自定义控件
-
+        let myValue;
         function myFun(result){
-            
-            let point = new BMap.Point(result.center.lng,result.center.lat);  // 创建点坐标  
-            map.centerAndZoom(point, 15);                 // 初始化地图，设置中心点坐标和地图级别      
+            let point
+            let pt
+            if(that.mapVal.lng){
+                point = new BMap.Point(that.mapVal.lng,that.mapVal.lat);  // 创建点坐标  
+                myValue = that.mapVal.address
+                that.suggestVal = that.mapVal.address
+                map.clearOverlays();     
+                 pt = new BMap.Point(that.mapVal.lng,that.mapVal.lat);
+                let myIcon = new BMap.Icon("static/img/location.png", new BMap.Size(32,32));
+                //https://api.map.baidu.com/images/marker_red_sprite.png
+                let marker = new BMap.Marker(pt,{icon:myIcon}); // 创建点
+                map.addOverlay(marker); // 创建点
+            }else{
+                pt = new BMap.Point(result.center.lng,result.center.lat);  // 创建点坐标  
+            }
+            map.centerAndZoom(pt, 15);                 // 初始化地图，设置中心点坐标和地图级别      
             map.enableScrollWheelZoom(true); //开启鼠标滚轮缩放 
 
             map.addControl(new BMap.NavigationControl());    
             map.addControl(new BMap.ScaleControl());    
             map.addControl(new BMap.OverviewMapControl());    
             map.addControl(new BMap.MapTypeControl()); 
-            let cityName = result.name;
-            map.setCenter(cityName);   
+             
             
         }
         let myCity = new BMap.LocalCity();
@@ -80,6 +97,8 @@ export default {
             {"input" : "suggestId"
             ,"location" : map
         });
+      
+        
         ac.addEventListener("onhighlight", function(e) {  //鼠标放在下拉列表上的事件
             let str = "";
             let _value = e.fromitem.value;
@@ -97,7 +116,7 @@ export default {
             str += "<br />ToItem<br />index = " + e.toitem.index + "<br />value = " + value;
             that.$refs.searchResultPanel.innerHTML = str;
         })
-        let myValue;
+        
         ac.addEventListener("onconfirm", function(e) {    //鼠标点击下拉列表后的事件
         let _value = e.item.value;
             myValue = _value.province +  _value.city +  _value.district +  _value.street +  _value.business;
@@ -144,7 +163,9 @@ export default {
         }
     },
     watch: {
-        
+        'mapVal':function(newData,oldData){
+            this.data = newData
+        }
     }
 }
 </script>

@@ -27,7 +27,7 @@
                     
                 </div>
                 <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"   @click="getFormulaBar(item.clickEvent)">
+                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index" v-if="item.limits!=0&&item.limits"  @click="getFormulaBar(item.clickEvent)">
                         <i class="iconfont marR5" :class="[item.icon]"></i>
                         <span class="btnTitle">{{item.title}}</span>
                     </div> 
@@ -79,7 +79,7 @@
                         align="center"
                         width="140">
                             <template slot-scope="scope">
-                                <span>{{scope.row.bargainsum==0?'待填写':'￥'+scope.row.bargainsum}}</span>
+                                <span>{{scope.row.bargainsum==0?'待填写':'￥'+scope.row.bargainsum1}}</span>
                             </template>
                         </el-table-column>
                         <el-table-column
@@ -144,11 +144,11 @@
                         align="center">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="详情" placement="top-end">
-                                    <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.project.query" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
                                 
                                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                    <el-button type="success" icon="el-icon-edit"  @click="_getProjectInfo(scope.row)" ></el-button>
+                                    <el-button type="success" icon="el-icon-edit" v-if="jurisdiction.project.save"  @click="_getProjectInfo(scope.row)" ></el-button>
                                 </el-tooltip>
                                
                             </template>
@@ -188,6 +188,7 @@
                 </el-form-item>
                 <el-form-item label="合同签订金额" :show-message='false' :required='true'>
                     <el-input v-model="form.bargainsum" type="number"></el-input>
+                    <span class="newCustmerSpan">元</span>
                 </el-form-item>
                 <el-form-item label="项目启动时间" :show-message='false' :required='true'>
                     <el-date-picker v-model="form.projectstarttime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
@@ -197,16 +198,16 @@
                 </el-form-item>
                 <el-form-item label="客户名称" :show-message='false' :required='true'>
                     <div class="relative">
-                        <el-select v-model="form.custmerid" placeholder="请选择">
+                        <el-select v-model="form.custmerid" placeholder="请选择" @change="getAddressd">
                             <el-option :label="item.custmername" :value="item.id" v-for="(item,index) in customerList" :key="index"></el-option>
-                           
                         </el-select>
                         <div class="">
                             <el-button type="success" icon="el-icon-edit" class="newCustmer" @click="newCustmer">新建</el-button>
                         </div>
-                    </div>
-                    
-                    
+                    </div>  
+                </el-form-item>
+                <el-form-item label="所在地址" :show-message='false' :required='true'>
+                    <el-input  disabled v-model="form.address"></el-input>
                 </el-form-item>
                 
                 <el-form-item label="联系人" :show-message='false' :required='true'>
@@ -264,7 +265,7 @@
             <el-button type="primary" @click="addCustmer">确 定</el-button>
         </span>
         </el-dialog>
-        <v-map :mapVisible="mapVisible" @closeVisible="closeVisible" @confirmVal="confirmVal"  v-if="mapVisible"></v-map>
+        <v-map :mapVisible="mapVisible" :mapVal="mapVal" @closeVisible="closeVisible" @confirmVal="confirmVal"  v-if="mapVisible"></v-map>
     </div>
     
 </template>
@@ -289,25 +290,25 @@ export default {
             area:'',
             principal:'',
             status:"-1"
-
         },
         tableData: [],
         multipleSelection: [],
         newDialogVisible:false,
         newCustmerVisible:false,
         mapVisible:false,
+        mapVal:{},
         newCustmerData:{
             custmername:'',
             addressd:'',
             longitude:'',
             latitude:'',
-
         },
         dialogtTitle:'',
         pageSize:10,
         customerList:[],
         deptempList:[],
         limits:JSON.parse(sessionStorage.getItem('limits')),
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         isCompile:false,
         form: {
           api:"addproject_manage",
@@ -318,6 +319,7 @@ export default {
           appointedtime:'',
           custmerid:'',
           linkman:'',
+          address:'',
           linkmanphone:'',
           projectleader:'',
           projectmember:[],
@@ -327,22 +329,19 @@ export default {
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
-                {
-                    title:'编辑',
-                    clickEvent:'compile',
-                    icon:'icon-iconfontedit'
-                }
-
+              
             ],
             right:[
                 {
                     title:'新建',
                     clickEvent:'new',
-                    icon:'icon-bianji'
+                    icon:'icon-bianji',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
                 },{
                     title:'导出',
                     clickEvent:'export',
-                    icon:'icon-jia'
+                    icon:'icon-jia',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.query
                 }
             ]
         }
@@ -358,7 +357,6 @@ export default {
   },
   mounted(){
      
-
   },
   methods:{
     //FormulaBar组件按钮事件
@@ -516,6 +514,7 @@ export default {
             "api": "getprojectinfo",
             "id": row.id,
             "companyid":sessionStorage.getItem('companyid'),
+            "userid":sessionStorage.getItem('userid'),
         }
         Axios(reqBody,'project').then((res) => {
             console.log(res)
@@ -538,6 +537,7 @@ export default {
                     appointedtime:projectInfo.appointedtime1,
                     custmerid:projectInfo.custmerid,
                     linkman:projectInfo.linkman,
+                    address:projectInfo.addressd,
                     linkmanphone:projectInfo.linkmanphone,
                     projectleader:projectInfo.projectleader,
                     projectmember:projectmember,
@@ -582,6 +582,7 @@ export default {
                     projectstarttime:'',
                     appointedtime:'',
                     custmerid:'',
+                    address:'',
                     linkman:'',
                     linkmanphone:'',
                     projectleader:'',
@@ -667,6 +668,16 @@ export default {
         this.newCustmerData.addressd = mapVal.address
         this.newCustmerData.longitude = mapVal.lng
         this.newCustmerData.latitude = mapVal.lat
+    },
+    //获取地址
+    getAddressd(res){
+        console.log(res)
+        for(let i=0;i<this.customerList.length;i++){
+            if(res == this.customerList[i].id){
+                this.form.address = this.customerList[i].addressd
+                break;
+            }
+        }
     }
 
   }
@@ -724,6 +735,10 @@ export default {
         right -85px
     .newCustmer-dialog-footer
         padding-right 0
+    .newCustmerSpan
+        position absolute
+        top 0
+        right -25px
 
     
         

@@ -25,13 +25,13 @@
                             </div>
                         </el-form-item>
 
-                        <el-form-item>
+                        <el-form-item v-if="jurisdiction.workorder.add">
                             <div class="leftBtn btn"  @click="onNew">
                                 <span class="btnTitle">新建工单</span>
                             </div>
                         </el-form-item>
 
-                        <el-form-item>
+                        <el-form-item v-if="jurisdiction.workorder.query">
                             <div class="leftBtn btn"  >
                                 <span class="btnTitle" @click="exportworkorder">导出</span>
                             </div>
@@ -165,14 +165,14 @@
                         fixed="right"
                         label="操作"
                         width="200"
-                        align="center">
+                        align="center"  v-if="jurisdiction.workorder.save||jurisdiction.workorder.query">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
-                                    <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.workorder.query" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
                                 
                                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                    <el-button type="success" icon="el-icon-edit"  @click="onCompile(scope.row)" ></el-button>
+                                    <el-button type="success" icon="el-icon-edit" v-if="jurisdiction.workorder.save"  @click="onCompile(scope.row)" ></el-button>
                                 </el-tooltip>
 
                                 <!-- <el-tooltip class="item" effect="dark" content="删除" placement="top-end" >
@@ -218,8 +218,6 @@
                             </el-option>
                         </el-select>
                     </el-form-item>
-           
-
                    
                     <el-form-item label="联系人姓名：" :show-message='false' :required='true'>
                         <el-input  v-model="newMarketClue.linkman"></el-input>
@@ -235,8 +233,8 @@
                         v-model="newMarketClue.gettime"
                         type="datetime"
                         placeholder="选择上门时间"
-                        value-format="yyyy-MM-dd"
-                        format="yyyy-MM-dd">
+                        value-format="yyyy-MM-dd HH:mm"
+                        format="yyyy-MM-dd HH:mm">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="紧急程度：" :show-message='false' :required='true'>
@@ -305,19 +303,20 @@ export default {
         servicelist:[],
         workstatus:"0",
         pageSize:10,
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         limits:JSON.parse(sessionStorage.getItem('limits')),
         newMarketClue:{
-                projectid:'',
-                projectaddress:'',
-                linkman:'',
-                linkphone:'',
-                gettime:'',
-                flag:'',
-                servicetype:'',
-                serviceid:'',
-                remark:'',
-                companyid:''
-            }
+            projectid:'',
+            projectaddress:'',
+            linkman:'',
+            linkphone:'',
+            gettime:'',
+            flag:'',
+            servicetype:'',
+            serviceid:'',
+            remark:'',
+            companyid:''
+        }
         
     }
   },
@@ -563,7 +562,8 @@ export default {
             "ids": ids,
         }
         
-    }
+    },
+    
 
   }
 }

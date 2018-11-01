@@ -119,9 +119,9 @@ export default {
                 {
                     title:'确认添加',
                     clickEvent:'affirm',
-                    icon:'icon-iconfontedit'
+                    icon:'icon-iconfontedit',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.add
                 }
-
             ],
             right:[
                 

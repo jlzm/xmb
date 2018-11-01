@@ -1,5 +1,5 @@
 <template>
-    <div class="backlog">
+    <div class="backlog" @click="hideToDodetail">
         <div class="listBox">
             <div class="operationBox clearfix">
                 <div class="floatLeft leftBox clearfix">
@@ -25,7 +25,7 @@
             </div> 
             <div class="contentBox clearfix padTb5">
                 <div class="" v-loading="loading">
-                    <div class="bgWhite backlogItem cp" v-for="(item,index) in toDoList" :key="index" @click="meetingDetail(item.meetingid)">
+                    <div class="bgWhite backlogItem cp" ref="toDoList" v-for="(item,index) in toDoList" :key="index" @click="meetingDetail(item.meetingid)">
                         <div class="backlogItemTitle">
                             <!-- 修改 -->
                            <div class="row">
@@ -155,7 +155,10 @@
                                      <el-tree :data="departList" 
                                     :load="loadNode" 
                                     show-checkbox 
-                                    node-key="id" ref="tree"
+                                    node-key="treeId" 
+                                    :default-expanded-keys="expandedDeparList"
+                                    :default-checked-keys="checkedDeparList"
+                                    ref="tree"
                                     @check="handleCheckChange" 
                                     :props="defaultProps">
                                     </el-tree>
@@ -170,7 +173,7 @@
 
         <!-- 会议详情弹出层 -->
         <transition name="el-zoom-in-top">
-            <div v-show="show" class="particulars">
+            <div v-show="show" ref="toDoDetail" class="particulars">
                 <!-- 容器 -->
                 <!-- New -->
                 <!-- 标题 -->
@@ -267,7 +270,7 @@
                             <el-row >
                                 <el-col :span="4" v-for="(item,index) in backlogDetail.userlist" :key="index" class="particulars-personnel-item">
                                     <div class="personnel-avatar">
-                                        <img class="personnelImg" v-lazy="{src:item.portrait,error:'static/img/portrait.png'}"  alt="">
+                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = '../../../static/img/portrait.png'"  alt="">
                                     </div>
                                     <div class="personnel-completeTxt">{{item.staffname}}</div>
                                 </el-col>
@@ -352,8 +355,10 @@ export default {
             meetingtime:'',
             
         },
+        
         departList: [],  //部门级人员列表
-
+        expandedDeparList: [], //回选展开
+        checkedDeparList: [], //回选人员
         departShow:true,  //显示判断
         deptIndex:0,    //选择部门下标
         taskuserName:'',  //新建人员名称
@@ -373,13 +378,29 @@ export default {
   },
   created(){
     // this.getBasicList()
+    this._getMeetingList(1);
+
   },
   mounted() {
-    this._getMeetingList(1);
+    // this._getMeetingList(1);
   },
   methods:{
-
-    //   确认修改
+              // 隐藏待办详情
+        hideToDodetail(e) { 
+        let toDoList = this.$refs.toDoList;
+        let toDoDetail = this.$refs.toDoDetail && !this.$refs.toDoDetail.contains(e.target);
+        let detailShow = true;
+        toDoList.forEach(item => {
+            if(item.contains(e.target)) {
+                detailShow = false
+            }
+            return detailShow
+        });
+            if (detailShow && toDoDetail) { 
+                this.show = false;
+            }
+        },
+    //确认修改
     detailModify () {
         this.dialogVisible = false;
         this.modify = false;
@@ -408,26 +429,31 @@ export default {
         });
         this.taskuserName = _newTaskuser.name;
         this.taskuserId = _newTaskuser.id;
-        this.newMeeting.address = this.backlogDetail.address;
-        this.newMeeting.createtime = this.backlogDetail.createtime;
-        this.newMeeting.meetingtime = this.backlogDetail.meetingtime;
-        this.newMeeting.meetingname = this.backlogDetail.meetingname;
-        this.newMeeting.meetingtype = this.backlogDetail.meetingtype;
-        this.newMeeting.meetingtypename = this.backlogDetail.meetingtypename;
-        this.newMeeting.meetingdesc = this.backlogDetail.meetingdesc;
+        this.newMeetingObj(this.backlogDetail);
 
-        this._getDepartList(); 
+        this._getDepartList(this.backlogDetail.userlist);
+        
+    },
+
+    newMeetingObj(obj) {
+        this.newMeeting.address = obj.address;
+        this.newMeeting.createtime = obj.createtime;
+        this.newMeeting.meetingtime = obj.meetingtime;
+        this.newMeeting.meetingname = obj.meetingname;
+        this.newMeeting.meetingtype = obj.meetingtype;
+        this.newMeeting.meetingtypename = obj.meetingtypename;
+        this.newMeeting.meetingdesc = obj.meetingdesc;
     },
 
     // 获取部门和人员
-        _getDepartList () {
+        _getDepartList(participantsList) {
             let reqBody = {
                 api: "departlist",
                 companyid: sessionStorage.getItem("companyid"),
                 page: 1,
                 pagesize: "30"
             }
-            this.getDepartList(reqBody);
+            this.getDepartList(reqBody, participantsList)
         },
    
     onDetails(row){
@@ -890,6 +916,5 @@ export default {
 
 .content-desc
     padding 15px 0 7px
-
 
 </style>

@@ -4,6 +4,11 @@
             <div class="operationBox clearfix">
                 <div class="floatLeft leftBox clearfix">
                     <el-form :inline="true"  class="demo-form-inline" :model="searchData">
+                        <el-form-item>
+                            <div class="leftBtn btnst" :class="tableIndex==3?'actBtn':''" @click="cutList(3)">
+                                <span class="btnTitle">财务数据</span>
+                            </div>
+                        </el-form-item>
                        <el-form-item>
                             <div class="leftBtn btnst" :class="tableIndex==1?'actBtn':''"  @click="cutList(1)">
                                 <span class="btnTitle">支出列表</span>
@@ -14,11 +19,7 @@
                                 <span class="btnTitle">回款列表</span>
                             </div>
                         </el-form-item>
-                        <el-form-item>
-                            <div class="leftBtn btnst" :class="tableIndex==3?'actBtn':''" @click="cutList(3)">
-                                <span class="btnTitle">财务数据</span>
-                            </div>
-                        </el-form-item>
+                        
                         <el-form-item label="项目" v-if="tableIndex!=3">
                             <el-select v-model="searchData.projectId" placeholder="请选择项目" popper-class="border">
                                 <el-option value="" label="所有项目"></el-option>
@@ -53,13 +54,13 @@
                             </div>
                         </el-form-item>
                         <el-form-item v-if="tableIndex!=3">
-                            <div class="leftBtn btn"  @click="newFinance">
+                            <div class="leftBtn btn" v-if="jurisdiction.finance.add"  @click="newFinance">
                         
                                 <span class="btnTitle">{{tableIndex==1?'新建':'新建'}}</span>
                             </div>
                         </el-form-item>
                         <el-form-item v-if="tableIndex!=3">
-                            <div class="leftBtn btn"  @click="exportworkorder">
+                            <div class="leftBtn btn" v-if="jurisdiction.finance.query" @click="exportworkorder">
                         
                                 <span class="btnTitle">导出</span>
                             </div>
@@ -70,7 +71,7 @@
                     
                 </div>
                 <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"   >
+                    <div class="rightBtn btn" v-if="item.limits" v-for="(item,index) in formulaList.right" :key="index"   >
                         <i class="iconfont marR5" :class="[item.icon]"></i>
                         <span class="btnTitle">{{item.title}}</span>
                     </div> 
@@ -114,7 +115,7 @@
                             width="140">
                             </el-table-column>
                             <el-table-column
-                            prop="sum"
+                            prop="sum1"
                             label="支出金额"
                             align="center"
                             width="140">
@@ -142,16 +143,16 @@
                             fixed="right"
                             label="操作"
                             width="200"
-                            align="center">
+                            align="center" v-if="jurisdiction.finance.add||jurisdiction.finance.save||jurisdiction.finance.remove">
                                 <template slot-scope="scope">
                                     <el-tooltip class="item" effect="dark" content="用户详情" placement="top-end">
-                                        <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                        <el-button @click="onDetails(scope.row)" v-if="jurisdiction.finance.query"  type="primary" icon="el-icon-view" ></el-button>
                                     </el-tooltip>
                                     <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                        <el-button type="success" icon="el-icon-edit-outline"  @click="onCompile(scope.row)" ></el-button>
+                                        <el-button type="success" icon="el-icon-edit-outline" v-if="jurisdiction.finance.save"   @click="onCompile(scope.row)" ></el-button>
                                     </el-tooltip>
                                     <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
-                                        <el-button type="danger" icon="el-icon-delete"  @click="onDelete(scope.row)" ></el-button>
+                                        <el-button type="danger" icon="el-icon-delete" v-if="jurisdiction.finance.remove"   @click="onDelete(scope.row)" ></el-button>
                                     </el-tooltip>
                                     <!-- <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
                                         <el-button type="success" icon="el-icon-edit-outline"  @click="onAffirm(scope.row,'relieve')" ></el-button>
@@ -203,7 +204,7 @@
                             width="140">
                             </el-table-column>
                             <el-table-column
-                            prop="sum"
+                            prop="sum1"
                             label="回款金额"
                             align="center"
                             width="140">
@@ -231,18 +232,18 @@
                             fixed="right"
                             label="操作"
                             width="200"
-                            align="center">
+                            align="center" v-if="jurisdiction.finance.add||jurisdiction.finance.save||jurisdiction.finance.remove">
                                 <template slot-scope="scope">
                                     <el-tooltip class="item" effect="dark" content="用户详情" placement="top-end">
-                                        <el-button @click="onDetails2(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                        <el-button @click="onDetails2(scope.row)"   v-if="jurisdiction.finance.add" type="primary" icon="el-icon-view" ></el-button>
                                     </el-tooltip>
                                     
                                     <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                        <el-button type="success" icon="el-icon-edit-outline"  @click="onCompile(scope.row)" ></el-button>
+                                        <el-button type="success" v-if="jurisdiction.finance.save" icon="el-icon-edit-outline"  @click="onCompile(scope.row)" ></el-button>
                                     </el-tooltip>
 
                                     <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
-                                        <el-button type="danger" icon="el-icon-delete"  @click="onDelete(scope.row)" ></el-button>
+                                        <el-button type="danger" v-if="jurisdiction.finance.remove" icon="el-icon-delete"  @click="onDelete(scope.row)" ></el-button>
                                     </el-tooltip>
                                    <!-- <el-tooltip class="item" effect="dark" content="删除" placement="top-end" >
                                         <el-button type="danger" icon="el-icon-delete" @click="onAffirm(scope.row,'del')"></el-button>
@@ -284,7 +285,7 @@
                 <div >
                     <el-row :gutter="10">
                         <el-col :span="9">
-                            <div class="financialItem" v-loading="loading2">
+                            <div class="financialItem" v-loading="loading2" v-if="moneyTrend.rows.length>0">
                                 <div class="finance-content-r-c bgWhite">
                                     <div class="finance-content-title row marB15">
                                         <span class="fsize14 color333">收支趋势</span>   
@@ -293,16 +294,20 @@
                                 </div>
                                 
                             </div>
+                            <div class="pad20" v-else >
+                                <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                                <div class="notText">暂无收支数据</div>
+                            </div>
                         </el-col>
                         <el-col :span="8">
-                            <div class="financialItem"  v-loading="loading">
+                            <div class="financialItem"  v-loading="loading" v-if="capitalList.length>0">
                                 <div class="finance-content-r-c bgWhite">
                                     <el-row class="finance-content-title">
                                         <el-col :span="12">
                                             <span class="fsize14 color333">资金明细</span>
                                         </el-col>
                                         <el-col :span="12" class="tar">
-                                            <span class="fsize14 vam cp" >查看更多</span>
+                                            <span class="fsize14 vam cp" @click="fundMore">查看更多</span>
                                             <!-- <i class="finance-content-more-icon dib vam">
                                                 <img v-lazy="'static/img/porjectAmount/more.png'" alt="">
                                             </i> -->
@@ -321,7 +326,7 @@
                                                     <div class="finance-money-amount row" :class="[item.state==0? 'colorRed' : 'colorGreen']">
                                                         <span v-if="item.state==1" class="fsize16">+</span>
                                                         <span v-else class="fsize16">-</span>
-                                                        <span class="fsize16">{{item.money}}</span>
+                                                        <span class="fsize16">{{item.money1}}</span>
                                                     </div>
                                                 </el-col>
                                             </el-row>
@@ -339,9 +344,13 @@
                                     </div>
                                 </div>
                             </div>
+                            <div class="pad20" v-else >
+                                <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                                <div class="notText">暂无资金明细</div>
+                            </div>
                         </el-col>
                         <el-col :span="7">
-                            <div class="financialItem"  v-loading="loading1">
+                            <div class="financialItem"  v-loading="loading1"  v-if="moneyStatistics.list">
                                 <div class="finance-content-l-c bgWhite">
                                     <div class="finance-content-title row">
                                         <span class="fsize14 color333">数据统计</span>
@@ -361,14 +370,14 @@
                                             <span class="fsize16 color333">￥{{moneyStatistics.moneysum}}</span>
                                         </div>
                                         <div class="finance-strip-items row">
-                                            <div  class="finance-strip-item"  v-for="(item, index) in moneyStatistics.list" :key="index">
+                                            <div  class="finance-strip-item"  v-for="(item, index) in moneyStatistics.list" :key="index" @click="getMoreSelect">
                                                 <div :style="'width:'+item.percentage+'%'" class="finance-strip-bar dib fsize12 colorfff vam">
                                                     
                                                 </div>
                                                 <div class="finance-strip-item-text">
                                                     <div class="finance-strip-item-info fsize12 color333 vam tal col-lg-1 ">
                                                         <div>{{item.type}}</div>
-                                                        <div class="marT8" :class="statisticsTitle.statisticsSwitch?'colorGreen':'colorRed'">￥{{item.money}}</div>
+                                                        <div class="marT8" :class="statisticsTitle.statisticsSwitch?'colorGreen':'colorRed'">￥{{item.money1}}</div>
                                                     </div>
                                                     
                                                     <div class="finance-strip-scale fsize12 color333 vam tal  floatRight">
@@ -381,6 +390,10 @@
                                         </div>
                                     </div>
                                 </div>
+                            </div>
+                            <div class="pad20" v-else >
+                                <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                                <div class="notText">暂无数据统计</div>
                             </div>
                         </el-col>
                     </el-row>
@@ -460,8 +473,9 @@
                     <el-form-item label="回款时间：" :show-message='false' :required='true'>
                         <el-date-picker
                         v-model="newReturned.returnedtime"
-                        type="date"
-                        value-format="yyyy-MM-dd"
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:mm"
+                        format="yyyy-MM-dd HH:mm"
                         placeholder="选择日期">
                         </el-date-picker>
                     </el-form-item>
@@ -562,7 +576,8 @@
                         <el-date-picker
                         v-model="newReturned.returnedtime"
                         type="datetime"
-                        value-format="yyyy-MM-dd HH:hh:mm"
+                        value-format="yyyy-MM-dd HH:mm"
+                        format="yyyy-MM-dd HH:mm"
                         placeholder="选择日期">
                         </el-date-picker>
                     </el-form-item>
@@ -668,12 +683,14 @@ export default {
         uploadData:{
 
         },
+       
         sumsourceList:[],
         projectList:[],
         pageSize:10,
-        tableIndex:1,
+        tableIndex:3,
         tableData: [],
         tableData1: [],
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         limits:JSON.parse(sessionStorage.getItem('limits')),
         multipleSelection: [],
         formulaList:{ //编辑栏按钮数
@@ -682,7 +699,8 @@ export default {
                 {
                     title:'编辑',
                     clickEvent:'compile',
-                    icon:'icon-iconfontedit'
+                    icon:'icon-iconfontedit',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).finance.save
                 }
 
             ],
@@ -697,6 +715,9 @@ export default {
     vParticularsTab,vProjectInfo,vBidInfo
   },
   created () {
+      this._getdetaillist()
+      this._getemoneybyyear(0)
+      this.getmoneytrend()
       this.getExpendiTureList()  
       this.getReturnedMoneyList()
       this._getSumsource()
@@ -1155,15 +1176,21 @@ export default {
                     "projectid":res.data.projectid,
                 }
                 this.expenditureInfo = res.data
-                this.imgList = res.data.images.split(',')
-                for(let i=0;i<this.imgList.length;i++){
-                    images.push({
-                        url:this.imgList[i]
-                    })
-                    console.log(this.imgList[i])
-                    
+                
+                if( res.data.images){
+                    this.imgList = res.data.images.split(',')
+                    for(let i=0;i<this.imgList.length;i++){
+                        images.push({
+                            url:this.imgList[i]
+                        })
+                        console.log(this.imgList[i])
+                        
+                    }
+                    this.expendImagelist = images
+                }else{
+                    this.expendImagelist = []
                 }
-                this.expendImagelist = images
+                
                 this.newExpend = {
                     projectid:res.data.projectid,
                     typeid:res.data.typeid,
@@ -1229,15 +1256,22 @@ export default {
                     "projectid":res.data.projectid,
                 }
                 this.returnedMoneyInfo = res.data
-                this.imgList = res.data.images.split(',')
-                for(let i=0;i<this.imgList.length;i++){
-                    images.push({
-                        url:this.imgList[i]
-                    })
-                    console.log(this.imgList[i])  
-                }
+               
                 this.expendImagelist = images
-             
+                if( res.data.images){
+                    this.imgList = res.data.images.split(',')
+                    for(let i=0;i<this.imgList.length;i++){
+                        images.push({
+                            url:this.imgList[i]
+                        })
+                        console.log(this.imgList[i])
+                        
+                    }
+                    this.expendImagelist = images
+                }else{
+                    this.expendImagelist = []
+                }
+
                 this.newReturned={
                     projectid:res.data.projectid,
                     content:res.data.content,
@@ -1334,7 +1368,7 @@ export default {
             if(res.state==10001){
                this.capitalList = res.data.list
             }else{
-                this.$message.error(res.msg);
+               
             }
             setTimeout(() => {
                 this.loading = false
@@ -1355,7 +1389,7 @@ export default {
             if(res.state==10001){
                this.moneyStatistics = res.data
             }else{
-                this.$message.error(res.msg);
+                // this.$message.error(res.msg);
             }
             setTimeout(() => {
                 this.loading1 = false
@@ -1378,9 +1412,9 @@ export default {
                 for(let i=0;i<getData.length;i++){
                     let analysis = {
                         '日期':getData[i].yearmonth,
-                        "收入":getData[i].rmoney,
-                        '支出':getData[i].emoney,
-                        "结余":getData[i].remoney,
+                        "收入":getData[i].rmoney1.replace(/,/g,''),
+                        '支出':getData[i].emoney1.replace(/,/g,''),
+                        "结余":getData[i].remoney1.replace(/,/g,''),
                         
                     }
                     console.log(analysis)
@@ -1389,7 +1423,7 @@ export default {
                this.moneyTrend.rows = moneyTrend
                console.log(this.moneyTrend)
             }else{
-                this.$message.error(res.msg);
+                
             }
             setTimeout(() => {
                 this.loading2 = false
@@ -1406,6 +1440,20 @@ export default {
         }
         this.statisticsTitle.title = title
         this._getemoneybyyear(state)
+    },
+    fundMore(){
+        this.$router.push({ 
+            path: 'fundMore',                
+        })
+    },
+    getMoreSelect(){
+
+    },
+    selectdetailliste(){
+
+    },
+    selectrmoneylist(){
+
     }
     
     
@@ -1527,4 +1575,6 @@ export default {
             color #FF4949
         .colorGreen
             color #13CE66
+.notIcon
+    margin: 40px auto
 </style>

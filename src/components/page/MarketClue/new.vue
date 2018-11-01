@@ -72,7 +72,8 @@ export default {
                     {
                         title:this.$route.query.threadid?'确定修改':'确定新建',
                         clickEvent:'compile',
-                        icon:'icon-iconfontedit'
+                        icon:'icon-iconfontedit',
+                        limits:this.$route.query.threadid?JSON.parse(sessionStorage.getItem('jurisdiction')).sellthreacd.save:JSON.parse(sessionStorage.getItem('jurisdiction')).sellthreacd.add
                     }
 
                 ],

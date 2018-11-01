@@ -32,24 +32,37 @@
                     
                 </div>
                 <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" @click="getFormulaList(item.clickEvent)" v-for="(item,index) in formulaList.right" :key="index"   >
-                        <div v-if="item.type!='upload'">
-                            <i class="iconfont marR5" :class="[item.icon]"></i>
-                            <span class="btnTitle">{{item.title}}</span>
+                    <div class="rightBtn btn" @click="getFormulaList('new')"  v-if="jurisdiction.sellthreacd.add" >
+                        <div>
+                            <i class="iconfont marR5 icon-bianji" ></i>
+                            <span class="btnTitle">新建线索</span>
                         </div>
-                        <div v-else>
-                            <el-upload class="upload-demo" ref="upload" action="https://jsonplaceholder.typicode.com/posts/" :on-change="handlePreview" :on-remove="handleRemove" :auto-upload="false">
-                            <el-button slot="trigger" size="small" type="primary">选取文件</el-button>
-                            
-                           
-                            </el-upload>
+                    </div> 
+                    <div class="rightBtn btn" @click="getFormulaList('exportsellthread')" v-if="jurisdiction.sellthreacd.query"  >
+                        <div>
+                            <i class="iconfont marR5 exportsellthread" ></i>
+                            <span class="btnTitle">导出线索</span>
                         </div>
-                        
                     </div> 
                 </div>
             </div> 
             <div class="contentBox clearfix bgWhite padTb10">
                 <div class="pad20 bgWhite">
+                    <el-row :gutter="20" class="marB20" >
+                        <el-col :span="12">
+                            <div class="financialDataBox" v-if="tableData.mothsummoney">
+                                <div class="marB10 fbold color666">本月销售线索金额</div>
+                                <div class="color666">￥{{tableData.mothsummoney}}</div>
+                            </div>
+                            </el-col>
+                        <el-col :span="12">
+                            <div class="financialDataBox" v-if="tableData.yearsummoney">
+                                <div class="marB10 fbold color666">年度销售线索金额</div>
+                                <div class="color666">￥{{tableData.yearsummoney}}</div>
+                            </div>
+                        </el-col>
+                    
+                    </el-row>
                     <!-- 投标文件开始 -->
                     <el-table
                         ref="multipleTable"
@@ -95,7 +108,7 @@
                         align="center"
                         width="140">
                             <template slot-scope="scope">
-                                <span>{{!scope.row.estimatedsum?'待填写':'￥'+scope.row.estimatedsum}}</span>
+                                <span>{{!scope.row.estimatedsum1?'待填写':'￥'+scope.row.estimatedsum1}}</span>
                             </template>
                         </el-table-column>
                     
@@ -135,14 +148,16 @@
                         align="center">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
-                                    <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view" ></el-button>
+                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.sellthreacd.query" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
                                 
                                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                    <el-button type="success" icon="el-icon-edit"  @click="onCompile(scope.row)" ></el-button>
+                                    <el-button type="success" icon="el-icon-edit" v-if="jurisdiction.sellthreacd.save"  @click="onCompile(scope.row)" ></el-button>
                                 </el-tooltip>
                                 <el-tooltip class="item" effect="dark" content="更改项目状态" placement="top-end" >
-                                    <el-button type="warning" icon="el-icon-refresh" @click="onChangeDialogVisible(scope.row)"></el-button>
+                                    <el-button type="warning" icon="el-icon-refresh" 
+                                    v-if="jurisdiction.sellthreacd.save"
+                                    @click="onChangeDialogVisible(scope.row)"></el-button>
                                 </el-tooltip>
                             </template>
                         </el-table-column>
@@ -153,13 +168,13 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData[0]">
+                <div class="pagination" v-if="tableData.total>0">
                     <el-pagination 
                     background
                     :page-size="pageSize"
                     layout="prev, pager, next"
                     @current-change="pagingChange"
-                    :total="tableData[0].total">
+                    :total="tableData.total">
                     </el-pagination>
                 </div>
 
@@ -220,6 +235,7 @@ export default {
         tableData: [],
         pageSize:10,
         limits:JSON.parse(sessionStorage.getItem('limits')),
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         multipleSelection: [],
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
@@ -231,23 +247,7 @@ export default {
                 }
 
             ],
-            right:[
-                {
-                    title:'新建线索',
-                    clickEvent:'new',
-                    icon:'icon-bianji'
-                },{
-                    title:'导出线索',
-                    clickEvent:'exportsellthread',
-                    icon:'icon-jia'
-                },
-                // {
-                //     title:'导入线索',
-                //     clickEvent:'addRecord',
-                //     icon:'icon-jia',
-                //     type:'upload'
-                // }
-            ]
+            
         },
        
     }
@@ -464,4 +464,6 @@ export default {
             vertical-align middle
     .border
         border-color:#00AC97
+    .financialDataBox
+        text-align center
 </style>

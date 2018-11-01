@@ -18,8 +18,6 @@
                         </el-select>
                     </el-form-item>
                   
-
-                   
                     <el-form-item label="联系人姓名：" :show-message='false' :required='true'>
                         <el-input  v-model="newMarketClue.linkman"></el-input>
                     </el-form-item>
@@ -28,14 +26,18 @@
                     </el-form-item>
                      <el-form-item label="上门地址：" :show-message='false' :required='true'>
                         <el-input v-model="newMarketClue.projectaddress"></el-input>
+                        <i class="mapIcon"  @click="mapVisible = true" >
+                            <img src="static/img/mapIcon.png" alt="">
+                        </i>
                     </el-form-item>
                     <el-form-item label="上门时间：" :show-message='false' :required='true'>
                         <el-date-picker
                         v-model="newMarketClue.gettime"
-                        type="datetime"
+                   
                         placeholder="选择上门时间"
-                        value-format="yyyy-MM-dd"
-                        format="yyyy-MM-dd">
+                        type="datetime"
+                        value-format="yyyy-MM-dd HH:mm"
+                        format="yyyy-MM-dd HH:mm">
                         </el-date-picker>
                     </el-form-item>
                     <el-form-item label="紧急程度：" :show-message='false' :required='true'>
@@ -66,17 +68,22 @@
                 </el-form>
             </div>
         </div>
+
+        <v-map :mapVisible="mapVisible" :mapVal="mapVal" @closeVisible="closeVisible" @confirmVal="confirmVal"  v-if="mapVisible"></v-map>
     </div>
 </template>
 
 <script>
 import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
+import vMap from '../../common/Map.vue';  
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
 export default {
   
     data () {
         return {
+            mapVisible:false,
+            mapVal:{},
             purchaseProjectList:[],
             customerList:[],
             deptemp:[],
@@ -86,7 +93,8 @@ export default {
                     {
                         title:'确定新建',
                         clickEvent:'confirm',
-                        icon:'icon-iconfontedit'
+                        icon:'icon-iconfontedit',
+                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.query
                     }
 
                 ],
@@ -107,7 +115,7 @@ export default {
         }
     },
     components:{
-        vFormulaBar
+        vFormulaBar,vMap
     },
     created(){
         this._getCustomerList()
@@ -155,7 +163,6 @@ export default {
                 "servicetype":newMarketClue.servicetype,
                 "serviceid":serviceid,
                 "remark":newMarketClue.remark
-
             }
             console.log(reqBody)
             Axios(reqBody,'index').then((res) => {
@@ -229,6 +236,20 @@ export default {
                 }
             })
         },
+
+          //地图相关
+        closeVisible(mapVisible){
+            console.log(mapVisible)
+            this.mapVisible = mapVisible
+        },
+        confirmVal(mapVal){
+            this.mapVisible = false
+            console.log(mapVal)
+            // this.searchData.addressd = mapVal.address
+            // this.searchData.longitude = mapVal.lng
+            // this.searchData.latitude = mapVal.lat
+        }
+
         
     }
 }

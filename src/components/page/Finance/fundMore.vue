@@ -1,48 +1,22 @@
 <template>
     <div class="bid">
         <div class="listBox">
-            <div class="operationBox clearfix">
-                <div class="floatLeft leftBox clearfix">
-                    <el-form :inline="true"  class="demo-form-inline" :model="searchData">
-                        <el-form-item >
-                            <el-input v-model="searchData.antistop" placeholder="请输入项目名称或客户名称"></el-input>
-                        </el-form-item>
-                       
-                        
-                        <el-form-item>
-                            <div class="leftBtn btn" @click="getProjectList(1)" >
-                        
-                                <span class="btnTitle">查询</span>
-                            </div>
-                        </el-form-item>
-                    </el-form>
-                    
-                </div>
-                <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"   >
-                        <i class="iconfont marR5" :class="[item.icon]"></i>
-                        <span class="btnTitle">{{item.title}}</span>
-                    </div> 
-                </div>
-            </div> 
+            <v-formulaBar :formulaList="formulaList">
+                </v-formulaBar> 
             <div class="contentBox clearfix bgWhite padTb10">
                 <div class="pad20 bgWhite">
                     <!-- 投标文件开始 -->
                     <el-table
                         ref="multipleTable"
-                        :data="tableData.projectlist"
+                        :data="tableData.list"
                         stripe
                         v-loading="loading"
                         align="center"
                         border
                         tooltip-effect="dark"
                         style="width: 100%"
-                        @selection-change="handleSelectionChange">
-                        <el-table-column
-                        type="selection"
-                        align="center"
-                        width="55">
-                        </el-table-column>
+                        >
+                        
                         <el-table-column
                         type="index"
                         label="序号"
@@ -59,20 +33,44 @@
                         
                         </el-table-column>
                         <el-table-column
-                        prop="custmername"
-                        label="客户名称"
+                        prop="money"
+                        label="金额"
                         align="center"
+                         width="240"
                         >
-                        </el-table-column>
-                        <!-- <el-table-column
-                        prop="bargainsum"
-                        label="项目总金额"
-                        align="center"
-                        width="140">
                             <template slot-scope="scope">
-                                <span>{{!scope.row.bargainsum?'待填写':'￥'+scope.row.bargainsum}}</span>
+                                <span>{{scope.row.state==1?'￥'+scope.row.money1:'￥-'+scope.row.money1}}</span>
                             </template>
-                        </el-table-column> -->
+                        </el-table-column>
+                        <el-table-column
+                        prop="name"
+                        label="操作人"
+                        align="center"
+                        width="200">
+                            
+                        </el-table-column>
+                        <el-table-column
+                        prop="time"
+                        label="时间"
+                        align="center"
+                        width="200">
+                            
+                        </el-table-column>
+                        <el-table-column
+                        prop="type"
+                        label="类型"
+                        align="center"
+                        width="200">
+                        </el-table-column>
+                        <el-table-column
+                        prop="state"
+                        label="资金状态"
+                        align="center"
+                        width="200">
+                            <template slot-scope="scope">
+                                <span>{{scope.row.state==1?'回款':'支出'}}</span>
+                            </template>
+                        </el-table-column>
                         <!-- <el-table-column
                         prop="totalamount"
                         label="应收金额"
@@ -109,21 +107,7 @@
                                 <span>{{!scope.row.staffname?'待填写':scope.row.staffname}}</span>
                             </template>
                         </el-table-column> -->
-                        <el-table-column
-                        fixed="right"
-                        label="操作"
-                        width="200"
-                        align="center" v-if="jurisdiction.file.query">
-                            <template slot-scope="scope">
-                                <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
-                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.file.query" type="primary" icon="el-icon-view" ></el-button>
-                                </el-tooltip>
-                                
-                                <!-- <el-tooltip class="item" effect="dark" content="添加文件" placement="top-end">
-                                    <el-button type="success" icon="el-icon-tickets"  @click="onCompile(scope.row)" ></el-button>
-                                </el-tooltip> -->
-                            </template>
-                        </el-table-column>
+                        
                     </el-table>
                     <!-- 投标文件结束 -->
 
@@ -149,9 +133,7 @@
 </template>
 <script>
 
-import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
-import vProjectInfo from '../../common/ProjectInfo.vue';  //项目信息
-import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
+import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
 
@@ -162,40 +144,29 @@ export default {
   data () {
     return {
         loading:false,
-        searchData:{
-            antistop:'',
-            area:'',
-            principal:''
-        },
+        page:1,
         tableData: [],
         pageSize:10,
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         limits:JSON.parse(sessionStorage.getItem('limits')),
-        multipleSelection: [],
-        formulaList:{ //编辑栏按钮数
+       formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
-                {
-                    title:'编辑',
-                    clickEvent:'compile',
-                    icon:'icon-iconfontedit',
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).file.save
-                }
-
+              
             ],
             right:[
-               
+           
             ]
         },
         
     }
   },
   components:{
-    vParticularsTab,vProjectInfo,vBidInfo
+    vFormulaBar
   },
   created () {
-      this.getProjectList(1)      
-    
+         
+        this._getdetaillist()
   },
   methods:{
     //FormulaBar组件按钮事件
@@ -212,43 +183,35 @@ export default {
     },
     //分页
     pagingChange(val){
-        this.getProjectList(val)
+        this.page = val
+        this._getdetaillist()
     },
-    onDetails(row){
-        this.$router.push({ 
-            path: 'documentDetails',                
-            query:{
-                id:row.id
-            }
-         })
-    },
-    getProjectList(page){
+   
+  
+    _getdetaillist(){
         this.loading = true
         let reqBody = {
-            "api": "getprojectlist",
-            "searchname": this.searchData.antistop,
+            "api": "getdetaillist",
+            "page": this.page,
+            "pagesize":this.pageSize,
             "companyid": sessionStorage.getItem('companyid'),
-            "userid": sessionStorage.getItem('userid'),
-            "limit":this.limits['file'],
-            "page":page,
-            "status":-1,
-            "pagesize":this.pageSize
-        }
 
-        Axios(reqBody,'project').then((res) => {
+
+        }
+        Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
-                this.tableData = res.data
-                
+               this.tableData = res.data
             }else{
                 this.$message.error(res.msg);
             }
             setTimeout(() => {
                 this.loading = false
             }, 1000);
+          
             
         })
-    }
+    },
     
   }
 }

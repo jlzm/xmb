@@ -62,7 +62,15 @@ export default new Router({
         {
           path: '/projectDetails',
           component: resolve => require(['../components/page/Project/details.vue'], resolve),
-          meta: { title: '项目详情', page: 'project' }
+          meta: { title: '项目详情', page: 'project', tags: true },
+        },
+        {
+          path: '/financeFundsMore',
+          component: resolve => require(['../components/page/Project/financeFundsMore.vue'], resolve),
+          meta: {
+            title: '财务资金明细',
+            page: 'projectDetails'
+          }
         },
         {
           path: '/schedule',
@@ -118,6 +126,11 @@ export default new Router({
           path: '/finance',
           component: resolve => require(['../components/page/Finance/index.vue'], resolve),
           meta: { title: '财务分析', page: 'finance', tags: true }
+        },
+        {
+          path: '/fundMore',
+          component: resolve => require(['../components/page/Finance/fundMore.vue'], resolve),
+          meta: { title: '资金明细', page: 'finance' }
         },
         {
           path: '/financeDetails',
