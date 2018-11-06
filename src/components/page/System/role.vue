@@ -5,9 +5,8 @@
         <div class="floatLeft leftBox clearfix">
           <el-form :inline="true" class="demo-form-inline" :model="searchData">
 
-            <el-form-item>
+            <el-form-item v-if="jurisdiction.role.add">
               <div class="leftBtn btn" @click="newRole">
-
                 <span class="btnTitle">新建角色</span>
               </div>
             </el-form-item>
@@ -23,7 +22,7 @@
             ref="multipleTable"
             :data="roleList"
             stripe
-
+            v-loading="loading"
             align="center"
             border
             tooltip-effect="dark"
@@ -44,14 +43,18 @@
             <el-table-column
               prop="remark"
               label="角色描述"
-
               align="center"
               show-overflow-tooltip>
-
             </el-table-column>
             <el-table-column
               prop="auth"
               label="角色权限"
+              align="center"
+              show-overflow-tooltip>
+            </el-table-column>
+            <el-table-column
+              prop="rolenumber"
+              label="角色人员数"
               align="center"
               show-overflow-tooltip>
             </el-table-column>
@@ -62,14 +65,15 @@
               width="300"
               align="center">
               <template slot-scope="scope" v-if="limit==1">
-                <el-tooltip class="item" effect="dark" content="角色详情" placement="top-end">
+                <el-tooltip v-if="jurisdiction.role.query" class="item" effect="dark" content="角色详情"
+                            placement="top-end">
                   <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view"></el-button>
                 </el-tooltip>
-                <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
+                <el-tooltip v-if="jurisdiction.role.save" class="item" effect="dark" content="编辑" placement="top-end">
                   <el-button @click="onCompileVisible(scope.row)" type="success"
                              icon="el-icon-edit-outline"></el-button>
                 </el-tooltip>
-                <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
+                <el-tooltip v-if="jurisdiction.role.remove" class="item" effect="dark" content="删除" placement="top-end">
                   <el-button type="danger" @click="onDelete(scope.row)" icon="el-icon-delete"></el-button>
                 </el-tooltip>
               </template>
@@ -116,6 +120,7 @@
           principal: ''
         },
         limit: JSON.parse(sessionStorage.getItem('limits'))['deptemp'],
+        jurisdiction: JSON.parse(sessionStorage.getItem('jurisdiction')),
         pageSize: 10,
         roleList: [],
 
@@ -142,12 +147,13 @@
             }
           ]
         },
-        roleData:{
-          mark:1,
-          roleid:'',
-          authname:'',
-          describes:'',
-        }
+        roleData: {
+          mark: 1,
+          roleid: '',
+          authname: '',
+          describes: '',
+        },
+        loading:false,
 
       }
     },
@@ -184,8 +190,7 @@
         localStorage.setItem("roleData", JSON.stringify(this.roleData))
         this.$router.push({
           path: 'compileRole',
-          query: {
-          }
+          query: {}
         });
       },
       //删除

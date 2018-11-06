@@ -1,18 +1,6 @@
 <template>
   <div class="backlog">
     <div class="listBox">
-      <div class="operationBox clearfix">
-        <div class="floatLeft leftBox clearfix">
-          <el-form :inline="true" class="demo-form-inline" :model="searchData">
-            <el-form-item>
-              <div class="leftBtn btn">
-                <span class="btnTitle">返回</span>
-              </div>
-            </el-form-item>
-          </el-form>
-        </div>
-
-      </div>
       <div class="contentBox clearfix padTb10 bgWhite ">
         <div class="pad20 bgWhite">
            <el-table
@@ -40,7 +28,7 @@
               width="300"
               align="center">
               <template slot-scope="scope" v-if="limit==1">
-                <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
+                <el-tooltip v-if="jurisdiction.database.save" class="item" effect="dark" content="编辑" placement="top-end">
                   <el-button @click="onCompileVisible(scope.row)" type="success" icon="el-icon-edit-outline"></el-button>
                 </el-tooltip>
 
@@ -86,6 +74,7 @@
           basicsid:''
         },
         limit: JSON.parse(sessionStorage.getItem('limits'))['deptemp'],
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         multipleSelection: [],
         formulaList: { //编辑栏按钮数
           parent: 'marketClue',

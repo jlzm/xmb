@@ -3,21 +3,6 @@
     <div class="listBox">
       <div class="operationBox clearfix">
         <div class="floatLeft leftBox clearfix">
-          <el-form :inline="true" class="demo-form-inline" :model="searchData">
-            <el-form-item>
-              <el-input v-model="searchData.antistop" placeholder="请输入项目名称或客户名称"></el-input>
-            </el-form-item>
-
-            <el-form-item>
-              <div class="leftBtn btn">
-
-                <span class="btnTitle">查询</span>
-              </div>
-            </el-form-item>
-          </el-form>
-
-        </div>
-        <div class="floatRight rightBox clearfix">
           <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"
                @click="getFormulaBar(item.clickEvent)">
             <i class="iconfont marR5" :class="[item.icon]"></i>
@@ -184,6 +169,7 @@
           ]
         },
         editorOption: {},
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
       }
     },
     components: {

@@ -15,7 +15,7 @@
               </div>
             </el-form-item>
 
-            <el-form-item v-if="limit==1">
+            <el-form-item v-if="limit==1&&jurisdiction.database.query">
               <div class="leftBtn btn" @click="onNew">
                 <span class="btnTitle">新建</span>
               </div>
@@ -59,10 +59,11 @@
               fixed="right"
               label="操作"
               width="200"
-              align="center">
-              <template slot-scope="scope" v-if="limit==1">
-                <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                  <el-button @click="onCompileVisible(scope.row)" type="success"
+              align="center"
+              v-if="limit==1&&jurisdiction.database.query">
+              <template slot-scope="scope" >
+                <el-tooltip class="item"  effect="dark" content="编辑" placement="top-end">
+                  <el-button v-if="jurisdiction.database.save" @click="onCompileVisible(scope.row)" type="success"
                              icon="el-icon-edit-outline"></el-button>
                 </el-tooltip>
               </template>
@@ -133,25 +134,9 @@
         },
         folderList: [],
         limit: JSON.parse(sessionStorage.getItem('limits'))['deptemp'],
+        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         mapVal:{},
-        formulaList: { //编辑栏按钮数
-          parent: 'marketClue',
-          left: [
-            {
-              title: '编辑',
-              clickEvent: 'compile',
-              icon: 'icon-iconfontedit'
-            }
-
-          ],
-          right: [
-            {
-              title: '新建线索',
-              clickEvent: 'changeState',
-              icon: 'icon-bianji'
-            }
-          ]
-        },
+        
       }
     },
 
