@@ -66,9 +66,17 @@ export default new Router({
         },
         {
           path: '/financeFundsMore',
-          component: resolve => require(['../components/page/Project/financeFundsMore.vue'], resolve),
+          component: resolve => require(['../components/page/Project/FinanceFundsMore.vue'], resolve),
           meta: {
             title: '财务资金明细',
+            page: 'projectDetails'
+          }
+        },
+        {
+          path: '/outlayStatistics',
+          component: resolve => require(['../components/page/Project/OutlayStatistics.vue'], resolve),
+          meta: {
+            title: '支出统计明细',
             page: 'projectDetails'
           }
         },

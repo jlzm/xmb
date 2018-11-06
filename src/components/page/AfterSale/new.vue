@@ -110,7 +110,9 @@ export default {
                 servicetype:'',
                 serviceid:'',
                 remark:'',
-                companyid:''
+                companyid:'',
+                longitude:'',
+                latitude:''
             }
         }
     },
@@ -156,8 +158,8 @@ export default {
                 "linkman":newMarketClue.linkman,
                 "userid":sessionStorage.getItem('userid'),
                 "linkphone":newMarketClue.linkphone,                                                                                    
-                "longitude":1111,
-                "latitude":222,
+                "longitude":newMarketClue.longitude,
+                "latitude":newMarketClue.latitude,
                 "gettime":newMarketClue.gettime,
                 "flag":newMarketClue.flag,
                 "servicetype":newMarketClue.servicetype,
@@ -245,9 +247,9 @@ export default {
         confirmVal(mapVal){
             this.mapVisible = false
             console.log(mapVal)
-            // this.searchData.addressd = mapVal.address
-            // this.searchData.longitude = mapVal.lng
-            // this.searchData.latitude = mapVal.lat
+            this.newMarketClue.projectaddress = mapVal.address
+            this.newMarketClue.longitude = mapVal.lng
+            this.newMarketClue.latitude = mapVal.lat
         }
 
         
@@ -273,4 +275,6 @@ export default {
             width 30%
             .el-date-editor,.el-select
                 width 100%
+    .mapBox
+        background rgba(0,0,0,.5)
 </style>

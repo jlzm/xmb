@@ -2,44 +2,61 @@
     <div class="bid">
         <div class="listBox">
             <div class="operationBox clearfix">
-                <div class="floatLeft leftBox clearfix">
-                    <el-form :inline="true"  class="demo-form-inline" :model="searchData">
-                        <el-form-item>
-                            <div class="leftBtn btnst" :class="workstatus==0?'actBtn':''"  @click="setWorkStatus(0)">
-                                <span class="btnTitle">进行中工单</span>
-                            </div>
-                        </el-form-item>
-                        <el-form-item>
-                            <div class="leftBtn btnst" :class="workstatus==1?'actBtn':''"  @click="setWorkStatus(1)">
-                                <span class="btnTitle">已完成工单</span>
-                            </div>
-                        </el-form-item>
-                        <el-form-item >
-                            <el-input v-model="searchData.antistop" placeholder="请输入工单编号或项目名称"></el-input>
-                        </el-form-item>
-                       
-                      
-                        <el-form-item>
-                            <div class="leftBtn btn"  @click="getWorkorderList(1)">
-                                <span class="btnTitle">查询</span>
-                            </div>
-                        </el-form-item>
-
-                        <el-form-item v-if="jurisdiction.workorder.add">
-                            <div class="leftBtn btn"  @click="onNew">
-                                <span class="btnTitle">新建工单</span>
-                            </div>
-                        </el-form-item>
-
-                        <el-form-item v-if="jurisdiction.workorder.query">
-                            <div class="leftBtn btn"  >
-                                <span class="btnTitle" @click="exportworkorder">导出</span>
-                            </div>
-                        </el-form-item>
+                <el-row>
+                    <el-col :span="4">
+                        <div class="clearfix">
+                            <div  class="tabItem pointer" :class="workstatus==0?'activeTabItem':''" @click="setWorkStatus(0)"><span >进行中工单</span></div>
+                            <div  class="tabItem pointer" :class="workstatus==1?'activeTabItem':''" @click="setWorkStatus(1)"><span >已完成工单</span></div>
+                            <!-- <div  class="tabItem pointer" :class="tabIndex==2?'activeTabItem':''" @click="onTabCut(2)"><span >财务数据</span></div> -->
+            
+                        </div>
+                    </el-col>
+                    <el-col :span="20">
+                        <div class="screenBox">
                         
-                    </el-form>
+                            <el-form :inline="true"  class="demo-form-inline" :model="searchData">
+                                <!-- <el-form-item>
+                                    <div class="leftBtn btnst" :class="workstatus==0?'actBtn':''"  @click="setWorkStatus(0)">
+                                        <span class="btnTitle">进行中工单</span>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item>
+                                    <div class="leftBtn btnst" :class="workstatus==1?'actBtn':''"  @click="setWorkStatus(1)">
+                                        <span class="btnTitle">已完成工单</span>
+                                    </div>
+                                </el-form-item> -->
+                                <el-form-item >
+                                    <el-input v-model="searchData.antistop" placeholder="请输入工单编号或项目名称"></el-input>
+                                </el-form-item>
+                                
+                            
+                                <el-form-item>
+                                    <div class="leftBtn btn"  @click="getWorkorderList(1)">
+                                        <span class="btnTitle">查询</span>
+                                    </div>
+                                </el-form-item>
 
-                </div>
+                                <el-form-item v-if="jurisdiction.workorder.add">
+                                    <div class="leftBtn btn"  @click="onNew">
+                                        <span class="btnTitle">新建工单</span>
+                                    </div>
+                                </el-form-item>
+
+                                <el-form-item v-if="jurisdiction.workorder.query">
+                                    <div class="leftBtn btn"  >
+                                        <span class="btnTitle" @click="exportworkorder">导出</span>
+                                    </div>
+                                </el-form-item>
+                                
+                            </el-form>
+
+                        </div>
+                    
+                    </el-col>
+                </el-row>
+                
+                
+                
                
             </div> 
             <div class="contentBox clearfix bgWhite padTb10">
@@ -225,8 +242,11 @@
                     <el-form-item label="联系电话：" :show-message='false' :required='true'>
                         <el-input  type="number" v-model="newMarketClue.linkphone"></el-input>
                     </el-form-item>
-                    <el-form-item label="上门地址：" :show-message='false' :required='true'>
+                    <el-form-item class="relative" label="上门地址：" :show-message='false' :required='true'>
                         <el-input v-model="newMarketClue.projectaddress"></el-input>
+                        <i class="mapIcon"  @click="mapCompile = true" >
+                            <img src="static/img/mapIcon.png" alt="">
+                        </i>
                     </el-form-item>
                     <el-form-item label="上门时间：" :show-message='false' :required='true'>
                         <el-date-picker
@@ -270,25 +290,25 @@
             <el-button type="primary" @click="updateCompile">确 定</el-button>
         </span>
         </el-dialog>
-
+        <v-map :mapVisible="mapCompile" :mapVal="mapCompileVal" @closeVisible="closeCompile" @confirmVal="confirmCompile"  v-if="mapCompile"></v-map>
     </div>
     
 </template>
 <script>
 
-import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
-import vProjectInfo from '../../common/ProjectInfo.vue';  //项目信息
-import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
+
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
 import {AxiosExport} from './../../../api/axios'
-
+import vMap from '../../common/Map.vue';  
 export default {
   
   data () {
     return {
         loading:false,
+        mapCompile:false,
         addDialogVisible:false,
+        mapCompileVal:{},
         searchData:{
             antistop:'',
             area:'',
@@ -315,13 +335,15 @@ export default {
             servicetype:'',
             serviceid:'',
             remark:'',
-            companyid:''
+            companyid:'',
+            longitude:'',
+            latitude:''
         }
         
     }
   },
   components:{
-    vParticularsTab,vProjectInfo,vBidInfo
+    vMap
   },
   created () {
       this.getWorkorderList(1)      
@@ -467,7 +489,11 @@ export default {
             if(res.state==10001){
                 this.addDialogVisible = true
                 let newMarketClue = res.data.workorderinfo
-
+                this.mapCompileVal = {
+                    lng:res.data.workorderinfo.longitude,
+                    lat:res.data.workorderinfo.latitude,
+                    address:res.data.workorderinfo.projectaddress,
+                }
                 let serviceid = []
                 let servicelist = res.data.servicelist
                 this.servicelist = res.data.servicelist
@@ -481,8 +507,8 @@ export default {
                     "linkman":newMarketClue.linkman,
                     "userid":sessionStorage.getItem('userid'),
                     "linkphone":newMarketClue.linkphone,                                                                                    
-                    "longitude":1111,
-                    "latitude":222,
+                    "longitude":newMarketClue.longitude,
+                    "latitude":newMarketClue.latitude,
                     "gettime":newMarketClue.gettime,
                     "flag":newMarketClue.flag+'',
                     "servicetype":newMarketClue.servicetype+'',
@@ -519,8 +545,8 @@ export default {
             "linkman":newMarketClue.linkman,
             "id":this.workorderid,
             "linkphone":newMarketClue.linkphone,    
-            "longitude":'0',
-            "latitude":'0',
+            "longitude":newMarketClue.longitude,
+            "latitude":newMarketClue.latitude,
             "gettime":newMarketClue.gettime,
             "flag":newMarketClue.flag+'',
             "servicetype":newMarketClue.servicetype+'',
@@ -563,6 +589,18 @@ export default {
         }
         
     },
+    closeCompile(mapVisible){
+        console.log(mapVisible)
+        this.mapCompile = mapVisible
+       
+    },
+    confirmCompile(mapVal){
+        this.mapCompile = false
+      
+        this.newMarketClue.projectaddress = mapVal.address
+        this.newMarketClue.longitude = mapVal.lng
+        this.newMarketClue.latitude = mapVal.lat
+    }
     
 
   }
@@ -575,10 +613,38 @@ export default {
         padding 10px 15px
         overflow hidden
         .operationBox
-            height 52px
             background-color #fff
-            padding 10px
+            color #666
             margin-bottom 10px
+            .tabItem
+                float left 
+                height 52px
+                line-height 52px
+                padding 0 15px
+                border-bottom 1px solid transparent
+                border-left 1px solid transparent
+                border-right 1px solid transparent
+                font-size 14px
+                &.activeTabItem
+                    position relative
+                    border-left 1px solid #f4f4f4
+                    border-right 1px solid #f4f4f4
+                    border-bottom 1px solid #fff
+                    &:after
+                        position absolute
+                        content ''
+                        top 0
+                        left 0
+                        width 100%
+                        height 3px
+                        background-color #4c97ff
+            .screenBox
+                padding 10px 0
+                .el-form-item
+                    margin-bottom: 0
+                .el-input
+                    vertical-align: top
+                
         .btn
             height 32px
             line-height 30px
@@ -625,4 +691,15 @@ export default {
         margin-right 40px
         .el-date-editor,.el-select
             width 100%
+    .mapBox
+        background rgba(0,0,0,.5)
+    .relative 
+        position relative
+        .mapIcon
+            right: -36px;
+            top:4px
+            width: 28px;
+            height: 28px;
+    .newContent
+        padding-right 40px
 </style>

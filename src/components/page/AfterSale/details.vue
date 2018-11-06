@@ -23,8 +23,11 @@
                             <div class="floatLeft infoItemContent">{{workorderInfo.custmername}}</div>
                         </div>
                         <div class="infoItem clearfix">
-                            <div class="floatLeft infoItemTitle">客户地址：</div>
-                            <div class="floatLeft infoItemContent">{{workorderInfo.addressd}}</div>
+                            <div class="floatLeft infoItemTitle">上门地址：</div>
+                            <div class="floatLeft infoItemContent">{{workorderInfo.projectaddress}}</div>
+                            <i class="mapIcon"  @click="mapVisible = true" >
+                                <img src="static/img/mapIcon.png" alt="">
+                            </i>
                         </div>
                         <div class="infoItem clearfix">
                             <div class="floatLeft infoItemTitle">联系人姓名：</div>
@@ -184,7 +187,7 @@
         <el-dialog
         title="编辑售后工单"
         :visible.sync="addDialogVisible"
-        width="40%"
+        width="50%"
         >
         <div>
             <div class="newContent">
@@ -206,8 +209,11 @@
                     <el-form-item label="联系电话：" :show-message='false' :required='true'>
                         <el-input  type="number" v-model="newMarketClue.linkphone"></el-input>
                     </el-form-item>
-                    <el-form-item label="上门地址：" :show-message='false' :required='true'>
+                    <el-form-item class="relative" label="上门地址：" :show-message='false' :required='true'>
                         <el-input v-model="newMarketClue.projectaddress"></el-input>
+                        <i class="mapIcon"  @click="mapCompile = true" >
+                            <img src="static/img/mapIcon.png" alt="">
+                        </i>
                     </el-form-item>
                     <el-form-item label="上门时间：" :show-message='false' :required='true'>
                         <el-date-picker
@@ -251,14 +257,15 @@
             <el-button type="primary" @click="updateCompile">确 定</el-button>
         </span>
         </el-dialog>
-
+        <v-map :mapVisible="mapVisible" :mapVal="mapVal" @closeVisible="closeVisible" @confirmVal="confirmVal"  v-if="mapVisible"></v-map>
+        <v-map :mapVisible="mapCompile" :mapVal="mapCompileVal" @closeVisible="closeCompile" @confirmVal="confirmCompile"  v-if="mapCompile"></v-map>
     </div>
     
 </template>
 <script>
 import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
 import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
-
+import vMap from '../../common/Map.vue';  
 
 
 import {Axios} from './../../../api/axios'
@@ -270,7 +277,10 @@ export default {
   
   data () {
     return {
-      
+        mapVisible:false,
+        mapCompile:false,
+        mapVal:{},
+        mapCompileVal:{},
         imagelist:[],
         upVoucher:{
             fileurl:'',
@@ -293,7 +303,9 @@ export default {
             servicetype:'',
             serviceid:'',
             remark:'',
-            companyid:''
+            companyid:'',
+            longitude:'',
+            latitude:''
         },
         tabListIndex:0,
         workorderInfo:{},  //工单详情
@@ -341,7 +353,7 @@ export default {
     }
   },
   components:{
-    vFormulaBar,vParticularsTab
+    vFormulaBar,vParticularsTab,vMap
   },
   created(){
     this._getWorkorderInfo()
@@ -409,11 +421,20 @@ export default {
             console.log(res)
             if(res.state==10001){
                 if(!getDeptemp){
-                     this._getCustomerList()
+                    this._getCustomerList()
                     this._getDeptemp()
                     this._getPurchaseProjectList()
                 }
-               
+                this.mapVal = {
+                    lng:res.data.workorderinfo.longitude,
+                    lat:res.data.workorderinfo.latitude,
+                    address:res.data.workorderinfo.projectaddress,
+                }
+                this.mapCompileVal = {
+                    lng:res.data.workorderinfo.longitude,
+                    lat:res.data.workorderinfo.latitude,
+                    address:res.data.workorderinfo.projectaddress,
+                }
                 this.workorderInfo = res.data.workorderinfo
                 this.uploadData = {
                     "companyid": sessionStorage.getItem('companyid'),
@@ -541,7 +562,12 @@ export default {
                         ]
                     }else if(res.data.isaccept==2){
                         this.formulaList.right = [
-                            
+                             {
+                                title:'上传凭证',
+                                clickEvent:'uploading',
+                                icon:'icon-iconfontedit',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                            }
                         ]
                     }
                     if(res.data.workstatus==1){
@@ -549,7 +575,12 @@ export default {
                            
                         ]
                         this.formulaList.right = [
-                            
+                            {
+                                title:'上传凭证',
+                                clickEvent:'uploading',
+                                icon:'icon-iconfontedit',
+                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                            }
                         ]
                     }
                     
@@ -761,8 +792,8 @@ export default {
             "linkman":newMarketClue.linkman,
             "id":this.$route.query.workorderid,
             "linkphone":newMarketClue.linkphone,    
-            "longitude":'0',
-            "latitude":'0',
+            "longitude":newMarketClue.longitude,
+            "latitude":newMarketClue.latitude,
             "gettime":newMarketClue.gettime,
             "flag":newMarketClue.flag+'',
             "servicetype":newMarketClue.servicetype+'',
@@ -782,6 +813,25 @@ export default {
             }
         })
     },
+      //地图相关
+    closeVisible(mapVisible){
+        console.log(mapVisible)
+        this.mapVisible = mapVisible
+    },
+    confirmVal(mapVal){
+        this.mapVisible = false
+       
+    },
+    closeCompile(mapVisible){
+        console.log(mapVisible)
+        this.mapCompile = mapVisible
+    },
+    confirmCompile(mapVal){
+        this.mapCompile = false
+        this.newMarketClue.projectaddress = mapVal.address
+        this.newMarketClue.longitude = mapVal.lng
+        this.newMarketClue.latitude = mapVal.lat
+    }
     
   }
 }
@@ -845,6 +895,7 @@ export default {
     .projectInfoBox
         padding 20px
         .infoItem
+            position relative
             margin-bottom 15px
             .infoItemTitle
                 width 128px
@@ -865,5 +916,19 @@ export default {
                 font-size 14px
     .el-date-editor,.el-select
         width 100%
-    
+    .mapIcon
+        right: 0px;
+        width: 25px;
+        height: 25px;
+    .mapBox
+        background rgba(0,0,0,.5)
+    .relative 
+        position relative
+        .mapIcon
+            right: -36px;
+            top:4px
+            width: 28px;
+            height: 28px;
+    .newContent
+        padding-right 40px
 </style>

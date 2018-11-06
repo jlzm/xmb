@@ -13,6 +13,7 @@
                                 <el-option value="0" label="跟进中"></el-option>
                                
                                 <el-option value="3" label="取消跟进"></el-option>
+                                <el-option value="1" label="转入招投标"></el-option>
                                 
                                 
                             </el-select>
@@ -49,16 +50,16 @@
             <div class="contentBox clearfix bgWhite padTb10">
                 <div class="pad20 bgWhite">
                     <el-row :gutter="20" class="marB20" >
-                        <el-col :span="12">
+                        <el-col :span="6">
                             <div class="financialDataBox" v-if="tableData.mothsummoney">
-                                <div class="marB10 fbold color666">本月销售线索金额</div>
-                                <div class="color666">￥{{tableData.mothsummoney}}</div>
+                                <div class="marB10 "><span class="fbold color666">本月销售线索金额：</span><span class="fsize24" style="color:#4c97ff">￥{{tableData.mothsummoney}}</span></div>
+                               
                             </div>
                             </el-col>
                         <el-col :span="12">
                             <div class="financialDataBox" v-if="tableData.yearsummoney">
-                                <div class="marB10 fbold color666">年度销售线索金额</div>
-                                <div class="color666">￥{{tableData.yearsummoney}}</div>
+                                <div class="marB10 "><span class="fbold color666">年度销售线索金额：</span><span  class="fsize24" style="color:#1ace59">￥{{tableData.yearsummoney}}</span></div>
+                                
                             </div>
                         </el-col>
                     
@@ -132,7 +133,9 @@
                         align="center"
                         width="100">
                             <template slot-scope="scope">
-                                <span>{{scope.row.state==3?'取消跟进':'跟进中'}}</span>
+                                <span v-if="scope.row.state==3">取消跟进</span>
+                                <span v-if="scope.row.state==0">跟进中</span>
+                                <span v-if="scope.row.state==1">转入招投标</span>
                             </template>
                         </el-table-column>
                         <el-table-column
@@ -145,7 +148,7 @@
                         fixed="right"
                         label="操作"
                         width="200"
-                        align="center">
+                        align="center" v-if="jurisdiction.sellthreacd.query||jurisdiction.sellthreacd.save">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
                                     <el-button @click="onDetails(scope.row)" v-if="jurisdiction.sellthreacd.query" type="primary" icon="el-icon-view" ></el-button>
@@ -464,6 +467,5 @@ export default {
             vertical-align middle
     .border
         border-color:#00AC97
-    .financialDataBox
-        text-align center
+    
 </style>

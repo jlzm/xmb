@@ -20,7 +20,7 @@
                         </div>
                         <div class="infoItem clearfix">
                             <div class="floatLeft infoItemTitle">回款金额：</div>
-                            <div class="floatLeft infoItemContent">{{returnedMoneyInfo.sum}}</div>
+                            <div class="floatLeft infoItemContent">{{returnedMoneyInfo.sum1}}元</div>
                         </div>
                         <div class="infoItem clearfix">
                             <div class="floatLeft infoItemTitle">回款内容：</div>

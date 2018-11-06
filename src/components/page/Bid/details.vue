@@ -830,47 +830,71 @@ export default {
     },
     //招标文件删除
     deletebinddocument(id){
-        let reqBody={
-            "api": "deletebinddocument",
-            "id": id,
-            
-        }
-        Axios(reqBody,'index').then((res) => {
-            console.log(res)
-            if(res.state==10001){
-                this.$message.success('删除成功');
+        this.$confirm('是否确定删除该文件?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let reqBody={
+                "api": "deletebinddocument",
+                "id": id,
                 
-               
-                this._getSellThreadInfo()
-                this._getBinInfo()
-                
-            }else{
-                this.$message.error(res.msg);
             }
+            Axios(reqBody,'index').then((res) => {
+                console.log(res)
+                if(res.state==10001){
+                    this.$message.success('删除成功');
+                    
+                
+                    this._getSellThreadInfo()
+                    this._getBinInfo()
+                    
+                }else{
+                    this.$message.error(res.msg);
+                }
 
-        })
+            })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+        
     },
     
     //招标文件删除
     deletetenderdocument(id){
-        let reqBody={
-            "api": "deletetenderdocument",
-            "id": id,
-            
-        }
-        Axios(reqBody,'index').then((res) => {
-            console.log(res)
-            if(res.state==10001){
-                this.$message.success('删除成功');
-
-                this._getSellThreadInfo()
-                this._getBinInfo()
+        this.$confirm('是否确定删除该文件?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let reqBody={
+                "api": "deletetenderdocument",
+                "id": id,
                 
-            }else{
-                this.$message.error(res.msg);
             }
+            Axios(reqBody,'index').then((res) => {
+                console.log(res)
+                if(res.state==10001){
+                    this.$message.success('删除成功');
 
-        })
+                    this._getSellThreadInfo()
+                    this._getBinInfo()
+                    
+                }else{
+                    this.$message.error(res.msg);
+                }
+
+            })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+        
     },
     onExamine(url){
         this.iframeUrl = Session.browse+encodeURIComponent(url)

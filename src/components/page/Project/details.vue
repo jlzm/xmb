@@ -153,14 +153,14 @@
                                                 align="center">
                                                     <template slot-scope="scope">
                                                         <el-tooltip class="item" effect="dark" content="查看" placement="top-end">
-                                                            <el-button type="primary" v-if="jurisdiction.file.query"  icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
+                                                            <el-button type="primary" v-if="jurisdiction.project.query||(jurisdiction.file&&jurisdiction.file.query)"  icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
                                                         </el-tooltip>
                                                         <el-tooltip class="item" effect="dark" content="下载" placement="top-end">
-                                                            <el-button type="success" v-if="jurisdiction.file.query" icon="el-icon-download"  @click="fileDownload(scope.row)" ></el-button>
+                                                            <el-button type="success" v-if="jurisdiction.project.query||(jurisdiction.file&&jurisdiction.file.query)" icon="el-icon-download"  @click="fileDownload(scope.row)" ></el-button>
                                                         </el-tooltip>
 
                                                         <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
-                                                            <el-button type="danger"  v-if="jurisdiction.file.remove" icon="el-icon-delete"  @click="fileremove(scope.row.fileid)" ></el-button>
+                                                            <el-button type="danger"  v-if="jurisdiction.project.remove||(jurisdiction.file&&jurisdiction.file.remove)" icon="el-icon-delete"  @click="fileremove(scope.row.fileid)" ></el-button>
                                                         </el-tooltip>
                                                         
                                                     </template>
@@ -226,7 +226,7 @@
                                                         <span class="fsize14 color333">资金明细</span>
                                                     </el-col>
                                                     <el-col :span="12" class="tar" >
-                                                        <span @click="toFundsMore(financeInfo.fproject_manage.id)" class="fsize14 vam cp" style="color: #4c97ff">查看更多</span>
+                                                        <span class="fsize14 vam cp"  @click="toFundsMore(financeInfo.fproject_manage.id)" style="color: #4c97ff">查看更多</span>
                                                         <i class="finance-content-more-icon dib vam">
                                                             <img v-lazy="'static/img/porjectAmount/more.png'" alt="">
                                                         </i>
@@ -279,7 +279,7 @@
                                                         </div>
                                                         
                                                         <div class="finance-strip-items row">
-                                                            <div  class="finance-strip-item"  v-for="(item, index) in financeInfo.getspendinglist" :key="index">
+                                                            <div  class="finance-strip-item" @click="toOutlayStatistics(financeInfo.fproject_manage.id, item.typeid, item.state)"  v-for="(item, index) in financeInfo.getspendinglist" :key="index" >
                                                                 <div :style="'width:'+item.moneypercentage+'%'" class="finance-strip-bar dib fsize12 colorfff vam">
                                                                     
                                                                 </div>
@@ -463,7 +463,7 @@
         </span>
         </el-dialog>
 
-        </el-dialog>
+        
         
         <el-dialog title="在线浏览"
         :visible.sync="iframeVisible"
@@ -587,19 +587,19 @@ export default {
                 {
                     title:'进度查看',
                     clickEvent:'projectInfo'  ,
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).rate.query
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.query||(JSON.parse(sessionStorage.getItem('jurisdiction')).rate&&JSON.parse(sessionStorage.getItem('jurisdiction')).rate.query)
                 },
                 
                 {
                     title:'文件管理',
                     clickEvent:'projectInfo'  ,
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).file.query
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.query||(JSON.parse(sessionStorage.getItem('jurisdiction')).file&&JSON.parse(sessionStorage.getItem('jurisdiction')).file.query)
                     
                 },
                 {
                     title:'财务数据',
                     clickEvent:'projectInfo'  ,
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).finance.query
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).finance&&JSON.parse(sessionStorage.getItem('jurisdiction')).finance.query
                 }           
             ]
         }
@@ -625,7 +625,18 @@ export default {
     
   },
   methods:{
-    // 路由跳转
+    //支出统计路由跳转
+    toOutlayStatistics(projectid, typeid, state) {
+        this.$router.push({
+            path: 'outlayStatistics',
+            query: {
+                projectid: projectid,
+                typeid: typeid,
+                state: state
+            }
+        })
+    },
+      // 路由跳转
     toFundsMore(projectid) {
         this.$router.push({
             path: 'financeFundsMore',
@@ -710,7 +721,7 @@ export default {
                     title:'添加文件',
                     clickEvent:'add',
                     icon:'icon-bianji',
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).file.add
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add||(JSON.parse(sessionStorage.getItem('jurisdiction')).file&&JSON.parse(sessionStorage.getItem('jurisdiction')).file.add)
                 }
             ]
         }else if(res.index==2){
@@ -829,6 +840,7 @@ export default {
             "api": "getfile_typelist",
             "id": this.$route.query.id,
             "companyid": sessionStorage.getItem('companyid'),
+            "userid":sessionStorage.getItem('userid'),
         }
         Axios(reqBody,'project').then((res) => {
             console.log(res)
@@ -915,7 +927,7 @@ export default {
         }
 
         Axios(reqBody,'project').then((res) => {
-            console.log('财务数据',res);
+            console.log(res)
             if(res.state==10001){
             
                 this.financeInfo = res.data
@@ -1071,7 +1083,11 @@ export default {
             console.log(res)
             if (res.state == 10001) {
                 this.$message.success('添加成功')
-                this.getfilelist()
+                //this.getfilelist()
+                if(this.fileIndex!=null){
+                    this._getFileList(this.fileIndex)
+                }
+                
                 this.fileList = []
                 this.fileListStr = ''
                 this.fileListName = ''
@@ -1089,7 +1105,7 @@ export default {
     getfilelist(){
         let reqBody = {
             "api": "getfile_typelist",
-            
+            "userid":sessionStorage.getItem('userid'),
             "id": this.$route.query.id,
             "companyid":sessionStorage.getItem('companyid'),
           
@@ -1166,7 +1182,9 @@ export default {
     },
     collapseChange(val){
         console.log(val)
+        
         if(val!=null){
+            this.fileIndex = val
             this._getFileList(val)
         }
             
@@ -1195,22 +1213,34 @@ export default {
     },
     //删除文件
     fileremove(fileid){
-        let reqBody = {
-            "api": "updatefilestatus",
-            "fileid":fileid
-        }
-        Axios(reqBody,'project').then((res) => {
-            console.log(res)
-            
-            if(res.state==10001){
-                this.$message.success('删除成功');
-                this._getFileList(this.fileIndex)
-                
-            }else{
-                this.$message.error(res.msg);
+        this.$confirm('是否确定删除该文件?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let reqBody = {
+                "api": "updatefilestatus",
+                "fileid":fileid
             }
+            Axios(reqBody,'project').then((res) => {
+                console.log(res)
+                
+                if(res.state==10001){
+                    this.$message.success('删除成功');
+                    this._getFileList(this.fileIndex)
+                    
+                }else{
+                    this.$message.error(res.msg);
+                }
 
-        })
+            })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+        
     },
    
     

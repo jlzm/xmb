@@ -36,6 +36,9 @@
                             <el-option v-for="(item,index) in customerList" :key="index" :label="item.custmername" :value="item.id"></el-option>
                             
                         </el-select>
+                        <div class="">
+                                <el-button type="success" icon="el-icon-edit" class="newCustmer" @click="newCustmer">新建</el-button>
+                            </div>
                     </el-form-item>
                     <el-form-item label="所在地区：" :show-message='false' :required='true'>
                         <el-input disabled  v-model="newMarketClue.address"></el-input>
@@ -52,6 +55,34 @@
                 </el-form>
             </div>
         </div>
+        
+         <el-dialog
+        title="添加客户信息"
+        :visible.sync="newCustmerVisible"
+        width="30%"
+        >
+            <div>
+                <el-form  label-width="100px" class="demo-ruleForm" style="padding-right:60px">
+                    <el-form-item label="客户名称" :show-message='false' :required='true'>
+                        <el-input v-model="newCustmerData.custmername"></el-input>
+                    </el-form-item>
+                    <el-form-item label="客户地址" :show-message='false' :required='true'>
+                        <el-input :disabled="newCustmerData.latitude?false:true"  v-model="newCustmerData.addressd"></el-input>
+                        <i class="mapIcon"  @click="mapVisible = true">
+                            <img src="static/img/mapIcon.png" alt="">
+                        </i>
+                    </el-form-item>
+                
+                </el-form>
+            
+                
+            </div>
+            <span slot="footer" class="dialog-footer newCustmer-dialog-footer">
+                <el-button @click="newCustmerVisible = false">取 消</el-button>
+                <el-button type="primary" @click="addCustmer">确 定</el-button>
+            </span>
+        </el-dialog>
+        <v-map :mapVisible="mapVisible" :mapVal="mapVal" @closeVisible="closeVisible" @confirmVal="confirmVal"  v-if="mapVisible"></v-map>
     </div>
 </template>
 
@@ -59,13 +90,22 @@
 import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
-
+import vMap from '../../common/Map.vue';  //地图
 export default {
   
     data () {
         return {
             customerList:[],
             sumsourceList:[],
+            newCustmerVisible:false,
+            mapVisible:false,
+            mapVal:{},
+            newCustmerData:{
+                custmername:'',
+                addressd:'',
+                longitude:'',
+                latitude:'',
+            },
             formulaList:{ //编辑栏按钮数
                 parent:'marketClue',
                 left:[
@@ -99,7 +139,7 @@ export default {
         }
     },
     components:{
-        vFormulaBar
+        vFormulaBar,vMap
     },
     created(){
         this._getCustomerList()
@@ -255,9 +295,64 @@ export default {
                     break;
                 }
             }
-        }
+        },
+        newCustmer() {
+            this.newCustmerVisible = true
+            this.newCustmerData={
+                custmername:'',
+                addressd:'',
+                longitude:'',
+                latitude:'',
+            }
+        },
+        //地图相关
+        closeVisible(mapVisible){
+            console.log(mapVisible)
+            this.mapVisible = mapVisible
+        },
+        confirmVal(mapVal){
+            this.mapVisible = false
+            console.log(mapVal)
+            this.newCustmerData.addressd = mapVal.address
+            this.newCustmerData.longitude = mapVal.lng
+            this.newCustmerData.latitude = mapVal.lat
+            this.mapVal = {
+                lng:mapVal.lng,
+                lat:mapVal.lat,
+                address:mapVal.address,
+            }
+        },
+        addCustmer(){
+            if(!this.newCustmerData.custmername || !this.newCustmerData.addressd){
+                this.$message.error('请填写完整信息')
+                return false
+            }
+            let reqBody = {
+                "api": "basicadd",
+                "uid": sessionStorage.getItem('userid'),
+                "type": 4,
+                "longitude":this.newCustmerData.longitude,
+                "latitude":this.newCustmerData.latitude,
+                "companyid":sessionStorage.getItem('companyid'),
+                "custmername": this.newCustmerData.custmername,
+                "addressd": this.newCustmerData.addressd,
+            }
+
+            Axios(reqBody, 'user').then((res) => {
+                console.log(res)
+                if (res.state == 10001) {
+                    this.$message.success('添加成功')
+                    this.newCustmerVisible = false
+                    this._getCustomerList()
+                    
+                } else {
+                    
+                }
+            })
+        },
         
     },
+    
     computed:{
         
    }
@@ -288,4 +383,14 @@ export default {
         position absolute
         top 0
         right -20px
+    .newCustmer
+        position absolute
+        top 0
+        right -85px
+    .newCustmer-dialog-footer
+        padding-right 0
+    .newCustmerSpan
+        position absolute
+        top 0
+        right -25px
 </style>

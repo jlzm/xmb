@@ -37,18 +37,19 @@
             <div class="contentBox clearfix bgWhite padTb10">
                 <div class="pad20 bgWhite">
                     <el-row :gutter="20" class="marB20" >
-                        <el-col :span="12">
-                            <div class="textCenter" v-if="tableData.mothsummoney">
-                                <div class="marB10 fbold color666">本月金额</div>
-                                <div class="color666">￥{{tableData.mothsummoney}}</div>
+                        <el-col :span="6">
+                            <div class="financialDataBox" v-if="tableData.mothsummoney">
+                                <div class="marB10 "><span class="fbold color666">本月销售线索金额：</span><span class="fsize24" style="color:#4c97ff">￥{{tableData.mothsummoney}}</span></div>
+                               
                             </div>
                             </el-col>
                         <el-col :span="12">
-                            <div class="textCenter" v-if="tableData.yearsummoney">
-                                <div class="marB10 fbold color666">年度金额</div>
-                                <div class="color666">￥{{tableData.yearsummoney}}</div>
+                            <div class="financialDataBox" v-if="tableData.yearsummoney">
+                                <div class="marB10 "><span class="fbold color666">年度销售线索金额：</span><span  class="fsize24" style="color:#1ace59">￥{{tableData.yearsummoney}}</span></div>
+                                
                             </div>
                         </el-col>
+                        
                     
                     </el-row>
                     <!-- 投标文件开始 -->

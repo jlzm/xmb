@@ -134,7 +134,8 @@
                         <div class="particulars-desc-content-box row">
                             <div class="col-lg-7 particulars-desc-content vam">{{backlogDetail.endtime}}</div>
                             <div class="col-lg-3 vam tar fsize14">
-                                <el-button type="primary" @click="onConfirm(2)">确认完成</el-button>
+                                <el-button v-if="backlogDetail.mystate==0" type="primary" @click="onConfirm(2)">确认完成</el-button>
+                                <el-button v-else disabled>已完成</el-button>
                             </div>
                         </div>
                     </div>
@@ -221,7 +222,7 @@
                 <div class="publishBox">
                     <form action="" class="comment-form row">
                         <div class="comment-input-box dib vam" style="width:85%;">
-                            <el-input class="vam" @keydown.native="handlerMultiEnter(backlogDetail.taskid, $event)" type="textarea" autosize  style="width:100%;"  placeholder="请输入内容" v-model="backlogRemark"></el-input>
+                            <el-input class="vam" @keydown.native="handlerMultiEnter(backlogDetail.taskid, $event)" type="textarea" autosize  style="width:100%;"  placeholder="请输入评论内容" v-model="backlogRemark"></el-input>
                         </div>
                         <div class="comment-btn-box tar dib vam" style="width:15%">
                             <el-button class="vam" style="width:95%;" native-type="submit" type="primary" @click="_onRecordAdd(backlogDetail.taskid)">发送</el-button>

@@ -2,80 +2,92 @@
     <div class="bid">
         <div class="listBox">
             <div class="operationBox clearfix">
-                <div class="floatLeft leftBox clearfix">
-                    <el-form :inline="true"  class="demo-form-inline" :model="searchData">
-                        <el-form-item>
-                            <div class="leftBtn btnst" :class="tableIndex==3?'actBtn':''" @click="cutList(3)">
-                                <span class="btnTitle">财务数据</span>
-                            </div>
-                        </el-form-item>
-                       <el-form-item>
-                            <div class="leftBtn btnst" :class="tableIndex==1?'actBtn':''"  @click="cutList(1)">
-                                <span class="btnTitle">支出列表</span>
-                            </div>
-                        </el-form-item>
-                        <el-form-item>
-                            <div class="leftBtn btnst" :class="tableIndex==2?'actBtn':''"  @click="cutList(2)">
-                                <span class="btnTitle">回款列表</span>
-                            </div>
-                        </el-form-item>
-                        
-                        <el-form-item label="项目" v-if="tableIndex!=3">
-                            <el-select v-model="searchData.projectId" placeholder="请选择项目" popper-class="border">
-                                <el-option value="" label="所有项目"></el-option>
-                                <el-option :value="item.id" :label="item.projectname" v-for="(item,index) in  projectList" :key="index"></el-option>
+                <el-row>
+                    <el-col :span="5">
+                        <div class="clearfix">
+                            <div  class="tabItem pointer" :class="tableIndex==3?'activeTabItem':''" @click="cutList(3)"><span >财务数据</span></div>
+                            <div  class="tabItem pointer" :class="tableIndex==1?'activeTabItem':''" @click="cutList(1)"><span >支出列表</span></div>
+                            <div  class="tabItem pointer" :class="tableIndex==2?'activeTabItem':''" @click="cutList(2)"><span >回款列表</span></div>
+            
+                        </div>
+                    </el-col>
+                    <el-col :span="19">
+                        <div class="screenBox">
+                            <el-form :inline="true"  class="demo-form-inline" :model="searchData">
+                                <!-- <el-form-item>
+                                    <div class="leftBtn btnst" :class="tableIndex==3?'actBtn':''" @click="cutList(3)">
+                                        <span class="btnTitle">财务数据</span>
+                                    </div>
+                                </el-form-item>
+                            <el-form-item>
+                                    <div class="leftBtn btnst" :class="tableIndex==1?'actBtn':''"  @click="cutList(1)">
+                                        <span class="btnTitle">支出列表</span>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item>
+                                    <div class="leftBtn btnst" :class="tableIndex==2?'actBtn':''"  @click="cutList(2)">
+                                        <span class="btnTitle">回款列表</span>
+                                    </div>
+                                </el-form-item> -->
+                                
+                                <el-form-item label="选择项目" v-if="tableIndex!=3">
+                                    <el-select v-model="searchData.projectId" placeholder="请选择项目" popper-class="border">
+                                        <el-option value="" label="所有项目"></el-option>
+                                        <el-option :value="item.id" :label="item.projectname" v-for="(item,index) in  projectList" :key="index"></el-option>
+
+                                        
+                                    </el-select>
+                                </el-form-item>
+
+                                <el-form-item label="选择类型" v-if="tableIndex!=3">
+                                    <el-select v-model="searchData.sumsourceId" placeholder="请选择类型" popper-class="border">
+                                        <el-option value="" label="所有类型"></el-option>
+                                        <el-option :value="item.id" :label="item.typename" v-for="(item,index) in  sumsourceList" :key="index"></el-option>
+                                    </el-select>
+                                </el-form-item>
+                                <el-form-item label="" v-if="tableIndex!=3">
+                                    <el-date-picker
+                                    v-model="searchData.time"
+                                    type="datetimerange"
+                                    range-separator=""
+                                
+                                    :value-format="timeVal"
+                                    start-placeholder="开始日期"
+                                    end-placeholder="结束日期">
+                                    </el-date-picker>
+                                </el-form-item>
+                                
+                                <el-form-item v-if="tableIndex!=3">
+                                    <div class="leftBtn btn" @click="getSearchData" >
+                                
+                                        <span class="btnTitle">查询</span>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item v-if="tableIndex!=3">
+                                    <div class="leftBtn btn" v-if="jurisdiction.finance.add"  @click="newFinance">
+                                
+                                        <span class="btnTitle">{{tableIndex==1?'新建':'新建'}}</span>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item v-if="tableIndex!=3">
+                                    <div class="leftBtn btn" v-if="jurisdiction.finance.query" @click="exportworkorder">
+                                
+                                        <span class="btnTitle">导出</span>
+                                    </div>
+                                </el-form-item>
 
                                 
-                            </el-select>
-                        </el-form-item>
-
-                        <el-form-item label="类型" v-if="tableIndex!=3">
-                            <el-select v-model="searchData.sumsourceId" placeholder="请选择类型" popper-class="border">
-                                <el-option value="" label="所有类型"></el-option>
-                                <el-option :value="item.id" :label="item.typename" v-for="(item,index) in  sumsourceList" :key="index"></el-option>
-                            </el-select>
-                        </el-form-item>
-                        <el-form-item label="" v-if="tableIndex!=3">
-                            <el-date-picker
-                            v-model="searchData.time"
-                            type="datetimerange"
-                            range-separator=""
-                           
-                            :value-format="timeVal"
-                            start-placeholder="开始日期"
-                            end-placeholder="结束日期">
-                            </el-date-picker>
-                        </el-form-item>
-                        
-                        <el-form-item v-if="tableIndex!=3">
-                            <div class="leftBtn btn" @click="getSearchData" >
-                        
-                                <span class="btnTitle">查询</span>
+                            </el-form>
+                            <div class="floatRight rightBox clearfix">
+                                <div class="rightBtn btn" v-if="item.limits" v-for="(item,index) in formulaList.right" :key="index"   >
+                                    <i class="iconfont marR5" :class="[item.icon]"></i>
+                                    <span class="btnTitle">{{item.title}}</span>
+                                </div> 
                             </div>
-                        </el-form-item>
-                        <el-form-item v-if="tableIndex!=3">
-                            <div class="leftBtn btn" v-if="jurisdiction.finance.add"  @click="newFinance">
-                        
-                                <span class="btnTitle">{{tableIndex==1?'新建':'新建'}}</span>
-                            </div>
-                        </el-form-item>
-                        <el-form-item v-if="tableIndex!=3">
-                            <div class="leftBtn btn" v-if="jurisdiction.finance.query" @click="exportworkorder">
-                        
-                                <span class="btnTitle">导出</span>
-                            </div>
-                        </el-form-item>
-
-                        
-                    </el-form>
-                    
-                </div>
-                <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-if="item.limits" v-for="(item,index) in formulaList.right" :key="index"   >
-                        <i class="iconfont marR5" :class="[item.icon]"></i>
-                        <span class="btnTitle">{{item.title}}</span>
-                    </div> 
-                </div>
+                        </div>
+                    </el-col>
+                
+                </el-row>
             </div> 
             <div class="contentBox clearfix bgWhite padTb10"  v-if="tableIndex!=3">
                 <div class="pad20 bgWhite" >
@@ -143,7 +155,7 @@
                             fixed="right"
                             label="操作"
                             width="200"
-                            align="center" v-if="jurisdiction.finance.add||jurisdiction.finance.save||jurisdiction.finance.remove">
+                            align="center" v-if="jurisdiction.finance.query||jurisdiction.finance.save||jurisdiction.finance.twoquery">
                                 <template slot-scope="scope">
                                     <el-tooltip class="item" effect="dark" content="用户详情" placement="top-end">
                                         <el-button @click="onDetails(scope.row)" v-if="jurisdiction.finance.query"  type="primary" icon="el-icon-view" ></el-button>
@@ -152,7 +164,7 @@
                                         <el-button type="success" icon="el-icon-edit-outline" v-if="jurisdiction.finance.save"   @click="onCompile(scope.row)" ></el-button>
                                     </el-tooltip>
                                     <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
-                                        <el-button type="danger" icon="el-icon-delete" v-if="jurisdiction.finance.remove"   @click="onDelete(scope.row)" ></el-button>
+                                        <el-button type="danger" icon="el-icon-delete" v-if="jurisdiction.finance.twoquery"   @click="onDelete(scope.row)" ></el-button>
                                     </el-tooltip>
                                     <!-- <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
                                         <el-button type="success" icon="el-icon-edit-outline"  @click="onAffirm(scope.row,'relieve')" ></el-button>
@@ -232,10 +244,10 @@
                             fixed="right"
                             label="操作"
                             width="200"
-                            align="center" v-if="jurisdiction.finance.add||jurisdiction.finance.save||jurisdiction.finance.remove">
+                            align="center" v-if="jurisdiction.finance.query||jurisdiction.finance.save||jurisdiction.finance.remove">
                                 <template slot-scope="scope">
                                     <el-tooltip class="item" effect="dark" content="用户详情" placement="top-end">
-                                        <el-button @click="onDetails2(scope.row)"   v-if="jurisdiction.finance.add" type="primary" icon="el-icon-view" ></el-button>
+                                        <el-button @click="onDetails2(scope.row)"   v-if="jurisdiction.finance.query" type="primary" icon="el-icon-view" ></el-button>
                                     </el-tooltip>
                                     
                                     <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
@@ -307,7 +319,7 @@
                                             <span class="fsize14 color333">资金明细</span>
                                         </el-col>
                                         <el-col :span="12" class="tar">
-                                            <span class="fsize14 vam cp" @click="fundMore">查看更多</span>
+                                            <span class="fsize14 vam cp"  v-if="jurisdiction.finance.query" @click="fundMore">查看更多</span>
                                             <!-- <i class="finance-content-more-icon dib vam">
                                                 <img v-lazy="'static/img/porjectAmount/more.png'" alt="">
                                             </i> -->
@@ -318,7 +330,7 @@
                                             <el-row>
                                                 <el-col :span="12">
                                                 <div class="finance-detail-title">
-                                                    <span class="fsize16 color222">{{item.projectname}}</span>
+                                                    <span class="fsize14 marB5 color222">{{item.projectname}}</span>
                                                 </div>
 
                                                 </el-col>
@@ -370,7 +382,7 @@
                                             <span class="fsize16 color333">￥{{moneyStatistics.moneysum}}</span>
                                         </div>
                                         <div class="finance-strip-items row">
-                                            <div  class="finance-strip-item"  v-for="(item, index) in moneyStatistics.list" :key="index" @click="getMoreSelect">
+                                            <div  class="finance-strip-item"  v-for="(item, index) in moneyStatistics.list" :key="index" @click="getMoreSelect(item)">
                                                 <div :style="'width:'+item.percentage+'%'" class="finance-strip-bar dib fsize12 colorfff vam">
                                                     
                                                 </div>
@@ -718,8 +730,8 @@ export default {
       this._getdetaillist()
       this._getemoneybyyear(0)
       this.getmoneytrend()
-      this.getExpendiTureList()  
-      this.getReturnedMoneyList()
+      //this.getExpendiTureList()  
+      //this.getReturnedMoneyList()
       this._getSumsource()
       this._getPurchaseProjectList()
 
@@ -946,7 +958,7 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "userid": sessionStorage.getItem('userid'),
             "workstatus":0,
-            "limit":Session.limits['finance'],
+            "limit":this.limits['finance'],
             "page":this.returnedPage,
             "pagesize":this.pageSize,
             "starttime": searchData.time[0],
@@ -1324,34 +1336,46 @@ export default {
     },
     //删除
     onDelete(row){
-        let reqBody 
-        if(this.tableIndex==1){
-            reqBody = {
-                "api": "deleteexpenditure",
-                "id": row.id
+        this.$confirm('是否确定删除该财务数据?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let reqBody 
+            if(this.tableIndex==1){
+                reqBody = {
+                    "api": "deleteexpenditure",
+                    "id": row.id
+                }
+            }else if(this.tableIndex==2){
+                reqBody = {
+                    "api": "deletereturnedmoney",
+                    "id": row.id
+                }
             }
-        }else if(this.tableIndex==2){
-            reqBody = {
-                "api": "deletereturnedmoney",
-                "id": row.id
-            }
-        }
-        Axios(reqBody,'index').then((res) => {
-            console.log(res)
-            if(res.state==10001){
-                 this.$message.success('删除成功')
-                 if(this.tableIndex==1){
-                     this.getExpendiTureList()  
-                 }else if(this.tableIndex==2){
-                     this.getReturnedMoneyList()
-                 }
-                 
-            }else{
-                this.$message.error(res.msg);
-            }
-           
+            Axios(reqBody,'index').then((res) => {
+                console.log(res)
+                if(res.state==10001){
+                    this.$message.success('删除成功')
+                    if(this.tableIndex==1){
+                        this.getExpendiTureList()  
+                    }else if(this.tableIndex==2){
+                        this.getReturnedMoneyList()
+                    }
+                    
+                }else{
+                    this.$message.error(res.msg);
+                }
             
-        })
+                
+            })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+        
     },
     _getdetaillist(){
         this.loading = true
@@ -1417,11 +1441,11 @@ export default {
                         "结余":getData[i].remoney1.replace(/,/g,''),
                         
                     }
-                    console.log(analysis)
+                   
                     moneyTrend.push(analysis)
                 }
                this.moneyTrend.rows = moneyTrend
-               console.log(this.moneyTrend)
+               
             }else{
                 
             }
@@ -1431,7 +1455,7 @@ export default {
         })
     },
     switchChange(val){
-        console.log(val)
+      
         let state = 0
         let title = '支出总额'
         if(val){
@@ -1446,15 +1470,22 @@ export default {
             path: 'fundMore',                
         })
     },
-    getMoreSelect(){
-
+    getMoreSelect(row){
+        if(this.jurisdiction.finance.query){
+            let sType = this.statisticsTitle.statisticsSwitch?'1':'0'
+            this.$router.push({ 
+                path: 'statisticsMore',                
+                query:{
+                    sType:sType,
+                    state:row.state,
+                    typeid:row.typeid
+                }
+            })
+          
+        }
+        
     },
-    selectdetailliste(){
-
-    },
-    selectrmoneylist(){
-
-    }
+   
     
     
     
@@ -1468,10 +1499,37 @@ export default {
         padding 10px 15px
         overflow hidden
         .operationBox
-            height 52px
             background-color #fff
-            padding 10px
+            color #666
             margin-bottom 10px
+            .tabItem
+                float left 
+                height 52px
+                line-height 52px
+                padding 0 15px
+                border-bottom 1px solid transparent
+                border-left 1px solid transparent
+                border-right 1px solid transparent
+                font-size 14px
+                &.activeTabItem
+                    position relative
+                    border-left 1px solid #f4f4f4
+                    border-right 1px solid #f4f4f4
+                    border-bottom 1px solid #fff
+                    &:after
+                        position absolute
+                        content ''
+                        top 0
+                        left 0
+                        width 100%
+                        height 3px
+                        background-color #4c97ff
+            .screenBox
+                padding 10px 0
+                .el-form-item
+                    margin-bottom: 0
+                .el-input
+                    vertical-align: top
         .btn
             height 32px
             line-height 30px

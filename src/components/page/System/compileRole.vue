@@ -192,6 +192,9 @@
   export default {
     data() {
       return {
+        editData: [],
+        newRoleData: [],
+        list: [],
         array: [],
         dataList: [],
         roleList: [],
@@ -230,47 +233,90 @@
       init() {
         this.jurisdictionList();
       },
-      // 编辑
+      //编辑
       edit() {
-        this.roleList = JSON.parse(localStorage.getItem("roleList"))
-        this.roleData = JSON.parse(localStorage.getItem("roleData"))
+        this.roleData = JSON.parse(localStorage.getItem("roleData"));
         if (this.roleData == '' || this.roleData == null) {
+
         } else {
           this.editList.mark = this.roleData.mark;
           this.editList.roleid = this.roleData.roleid;
-          this.editList.roledesc = this.roleData.roledesc;
-          this.editList.rolename = this.roleData.rolename;
-          this.roleList.length && this.roleList.forEach((item, index) => {
-            this.array.forEach((el, dt) => {
-              if (item.authname == el.authname) {
-                el.alllimits = item.alllimits;
-                el.state = item.state;
-                el.isIndeterminate = true;
-                el.mychecked = item.state == 1 ? true : false
-              }
-              item.auth.length && item.auth.forEach((list) => {
-                if (item.alllimits == 0) {
-                  el.auth.length && el.auth.forEach((data, ind) => {
-                    if (list.authid == data.authid) {
-                      el.isIndeterminate = true;
-                      data.mychecked = list.state == 1 ? true : false
-                    }
-                  })
-                } else {
-                  el.auth1.length && el.auth1.forEach((data, ind) => {
-                    if (list.authid == data.authid) {
-                      el.isIndeterminate = true;
-                      data.mychecked = list.state == 1 ? true : false
-                    }
+          this.editList.roledesc = this.roleData.describes;
+          this.editList.rolename = this.roleData.authname;
+          this.loading = true
+          let reqBody = {
+            "api": "roledetails",
+            "uid": sessionStorage.getItem('userid'),
+            "roleid": this.editList.roleid,
+          }
+          Axios(reqBody, 'user').then((res) => {
+            console.log(res)
+            if (res.state == 10001) {
+              /*拿到角色的权限*/
+              res.data.authid.forEach((item) => {
+                if (item.state == 1) {
+                  this.editData.push({
+                    alllimits: item.alllimits,
+                    authid: item.authid,
+                    authname: item.authname,
+                    describes: item.describes,
+                    state: item.state,
+                    auth: item.auth
                   })
                 }
               })
-            })
+              res.data.authid2.forEach((item, index) => {
+                if (item.state == 1) {
+                  this.newRoleData.push({
+                    alllimits: item.alllimits,
+                    authid: item.authid,
+                    authname: item.authname,
+                    describes: item.describes,
+                    state: item.state,
+                    auth: item.auth
+                  })
+                }
+              })
+              this.list = this.editData.concat(this.newRoleData)
+              this.list.length && this.list.forEach((item, index) => {
+                this.array.forEach((el, dt) => {
+                  if (item.authname == el.authname) {
+                    el.alllimits = item.alllimits;
+                    el.state = item.state;
+                    el.isIndeterminate = true;
+                    el.mychecked = item.state == 1 ? true : false
+                  }
+                  item.auth.length && item.auth.forEach((list) => {
+                    if (item.alllimits == 0) {
+                      el.auth.length && el.auth.forEach((data, ind) => {
+                        if (list.authid == data.authid) {
+                          el.isIndeterminate = true;
+                          data.mychecked = list.state == 1 ? true : false
+                        }
+                      })
+                    } else {
+                      el.auth1.length && el.auth1.forEach((data, ind) => {
+                        if (list.authid == data.authid) {
+                          el.isIndeterminate = true;
+                          data.mychecked = list.state == 1 ? true : false
+                        }
+                      })
+                    }
+                  })
+                })
+              })
+            } else {
+              if (res.state == 10002) {
+                this.purchaseTypeList = []
+              }
+              this.$message.error(res.msg);
+            }
+
           })
         }
-        console.log(this.editList);
-        console.log(this.array);
       },
+
+
       //下拉框选择
       choice(index) {
         // console.log(index);
@@ -309,20 +355,20 @@
         }
         var childrenArray = this.array[index].auth;
         var childrenArray1 = this.array[index].auth1;
-        if ( this.array[index].alllimits == 0) {
+        if (this.array[index].alllimits == 0) {
           if (childrenArray) {
-          for (var i = 0, len = childrenArray.length; i < len; i++) {
-            childrenArray[i].mychecked = e;
-            // this.$set(childrenArray[i], 'mychecked', e)
+            for (var i = 0, len = childrenArray.length; i < len; i++) {
+              childrenArray[i].mychecked = e;
+              // this.$set(childrenArray[i], 'mychecked', e)
+            }
           }
-        }
-        }else {
+        } else {
           if (childrenArray1) {
-          for (var i = 0, len = childrenArray1.length; i < len; i++) {
-            childrenArray1[i].mychecked = e;
-            // this.$set(childrenArray[i], 'mychecked', e)
+            for (var i = 0, len = childrenArray1.length; i < len; i++) {
+              childrenArray1[i].mychecked = e;
+              // this.$set(childrenArray[i], 'mychecked', e)
+            }
           }
-        }
         }
       },
       //子级选择
@@ -331,7 +377,7 @@
         let tickCount = 0, unTickCount = 0, len = childrenArray.length
         for (var i = 0; i < len; i++) {
           if (sonID == childrenArray[i].authid) {
-            // childrenArray[i].mychecked = e;// 错误写法，不是响应性的，页面DOM不会渲染
+            // childrenArray[i].mychecked = e;// 错误写法，不是响应性的，页面DOM有时不会渲染
             let obj = childrenArray[i];
             obj.mychecked = e;
             this.$set(childrenArray, i, obj);
@@ -393,9 +439,7 @@
           }
           this.authidList = authid.join(',');
         }
-        console.log(this.authidList);
         if (this.editList.mark == 0) {
-          console.log(0);
           if (this.compile.name == '') {
             this.$message.error('请输入角色姓名!');
           } else {
@@ -410,7 +454,7 @@
               "roledesc": this.compile.describe,
             }
             Axios(reqBody, 'user').then((res) => {
-              console.log(res)
+              // console.log(res)
               if (res.state == 10001) {
                 this.$message.success('添加成功!');
                 this.$router.push({
@@ -438,17 +482,16 @@
               "uid": sessionStorage.getItem('userid'),
               "roleid": this.editList.roleid,
               "authid": this.authidList, /*权限数组*/
-              "rolename": this.editList.rolename == this.roleData.rolename ? "" : this.editList.rolename,
+              "rolename": this.editList.rolename == this.roleData.authname ? "" : this.editList.rolename,
               "roledesc": this.editList.roledesc,
             }
             Axios(reqBody, 'user').then((res) => {
-              console.log(res)
+              // console.log(res)
               if (res.state == 10001) {
                 this.$message.success('修改成功!');
                 this.$router.push({
                   path: 'role',
                 })
-                localStorage.removeItem("roleList")
                 localStorage.removeItem("roleData")
               } else {
                 if (res.state == 10002) {
@@ -464,7 +507,6 @@
       // 返回
       onBack() {
         this.$router.back(-1);
-        localStorage.removeItem("roleList")
         localStorage.removeItem("roleData")
       },
       //权限列表
@@ -522,7 +564,7 @@
         })
       },
     },
-    mounted() {
+    activated() {
       this.init()
     },
     components: {

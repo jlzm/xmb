@@ -24,8 +24,8 @@
           <div class="sectionBox">
             <div class="title">角色详情</div>
             <div class="padTb10">
-              <div class="sectionItem">角色名称：{{roleData.rolename}}</div>
-              <div class="sectionItem">角色描述：{{roleData.roledesc}}</div>
+              <div class="sectionItem">角色名称：{{roleData.authname}}</div>
+              <div class="sectionItem">角色描述：{{roleData.describes}}</div>
 
             </div>
           </div>
@@ -119,8 +119,6 @@
         this.$router.back(-1)
       },
       newRole() {
-
-        localStorage.setItem("roleList", JSON.stringify(this.roleList))
         localStorage.setItem("roleData", JSON.stringify(this.roleData))
         this.$router.push({
           path: 'compileRole',
@@ -165,10 +163,9 @@
               }
             })
             this.roleList.push.apply(this.roleList, this.newRoleList);
-            this.roleData.roledesc = res.data.roledesc;
+            this.roleData.describes = res.data.roledesc;
             this.roleData.roleid = res.data.roleid;
-            this.roleData.rolename = res.data.rolename;
-            console.log(this.roleList);
+            this.roleData.authname = res.data.rolename;
           } else {
             if (res.state == 10002) {
               this.purchaseTypeList = []

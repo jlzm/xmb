@@ -20,7 +20,7 @@
                         </div>
                         <div class="infoItem clearfix">
                             <div class="floatLeft infoItemTitle">支出金额：</div>
-                            <div class="floatLeft infoItemContent">{{expenditureInfo.sum}}</div>
+                            <div class="floatLeft infoItemContent">{{expenditureInfo.sum1}}元</div>
                         </div>
                         <div class="infoItem clearfix">
                             <div class="floatLeft infoItemTitle">支出类别：</div>

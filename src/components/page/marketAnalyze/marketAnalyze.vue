@@ -7,7 +7,7 @@
                         <div  class="tabItem pointer" :class="tabIndex==0?'activeTabItem':''" @click="onTabCut(0)"><span >销售线索</span></div>
                         <div  class="tabItem pointer" :class="tabIndex==1?'activeTabItem':''" @click="onTabCut(1)"><span >招投标项目</span></div>
                         <!-- <div  class="tabItem pointer" :class="tabIndex==2?'activeTabItem':''" @click="onTabCut(2)"><span >财务数据</span></div> -->
-                        
+        
                     </div>
                 </el-col>
                 <el-col :span="15">
@@ -63,8 +63,8 @@
                 </el-col> -->
                 <el-col :span="12">
                     <div class="bgWhite">
-                        <div class="chartTitle">销售线索金额</div>
-                        <ve-chart :data="marketMoneyData" :settings="chartSettings" :colors="colors"></ve-chart>
+                        <div class="chartTitle">销售线索金额（元）</div>
+                        <ve-chart :data="marketMoneyData" :settings="chartSettings" :colors="colors" :events="sellthreadlistana"></ve-chart>
                     </div>
                 </el-col>
                 <el-col :span="12">
@@ -87,8 +87,8 @@
                 </el-col> -->
                 <el-col :span="12">
                     <div class="bgWhite">
-                        <div class="chartTitle">招投标项目金额</div>
-                        <ve-chart :data="binMoneyData" :settings="chartSettings" :colors="colors"></ve-chart>
+                        <div class="chartTitle">招投标项目金额（元）</div>
+                        <ve-chart :data="binMoneyData" :settings="chartSettings" :colors="colors" :events="binMoneyClick"></ve-chart>
                     </div>
                 </el-col>
                 <el-col :span="12">
@@ -124,6 +124,211 @@
                 
             </el-row>
         </div>
+
+        <el-dialog
+        title="销售线索明细"
+        :visible.sync="sellthreadDialog"
+        width="80%"
+        class="newDialog"
+        >
+            <div>
+                <el-table
+                        ref="multipleTable"
+                        :data="sellanalysisData.list"
+                        stripe
+                        v-loading="loading"
+                        align="center"
+                        border
+                        tooltip-effect="dark"
+                        style="width: 100%"
+                        >
+                        
+                        <el-table-column
+                        type="index"
+                        label="序号"
+                        width="50"
+                        align="center">
+                        </el-table-column>
+                       
+                        <el-table-column
+                        prop="projectname"
+                        label="项目名称"
+                        align="center"
+                        show-overflow-tooltip>
+                        
+                        </el-table-column>
+                        <el-table-column
+                        prop="custmername"
+                        label="客户名称"
+                        align="center"
+                        width="240">
+                            
+                        </el-table-column>
+                        <el-table-column
+                        prop="linkman"
+                        label="联系人"
+                        align="center"
+                        width="100">
+                            
+                        </el-table-column>
+                        <el-table-column
+                        prop="staffname"
+                        label="负责人"
+                        align="center"
+                        width="100">
+                            
+                        </el-table-column>
+                        
+                        
+                        <el-table-column
+                        prop="estimatedtime"
+                        label="招标预计时间"
+                        align="center"
+                        width="200">
+                        </el-table-column>
+                         <el-table-column
+                        prop="estimatedsum"
+                        label="招投标预计金额"
+                        align="center"
+                        width="200">
+                        <template slot-scope="scope">
+                                <span>{{!scope.row.estimatedsum?'待填写':'￥'+scope.row.estimatedsum1}}</span>
+                        </template>
+                        
+                        </el-table-column>
+                        <el-table-column
+                        prop="estimatedsum"
+                        label="项目状态"
+                        align="center"
+                         width="100"
+                        >
+                            <template slot-scope="scope">
+                                <span v-if="scope.row.state==0">销售线索</span>
+                                <span v-if="scope.row.state==1">转入招投标</span>
+                                <span v-if="scope.row.state==3">取消跟进</span>
+                            </template>
+                        </el-table-column>
+                        
+                       
+                   
+                        
+                        
+                        
+                    </el-table>
+            </div>
+            <div class="pagination" v-if="sellanalysisData">
+                    <el-pagination 
+                    background
+                    :page-size="pagesize"
+                    @current-change="pagingChange"
+                    layout="prev, pager, next"
+                    :total="sellanalysisData.total">
+                    </el-pagination>
+            </div>
+        </el-dialog>
+
+        <el-dialog
+        title="招投标项目明细"
+        :visible.sync="binMoneyDialog"
+        width="80%"
+        class="newDialog"
+        >
+            <div>
+                <el-table
+                        ref="multipleTable"
+                        :data="binData.list"
+                        stripe
+                        v-loading="loading"
+                        align="center"
+                        border
+                        tooltip-effect="dark"
+                        style="width: 100%"
+                        >
+                        
+                        <el-table-column
+                        type="index"
+                        label="序号"
+                        width="50"
+                        align="center">
+                        </el-table-column>
+                       
+                        <el-table-column
+                        prop="projectname"
+                        label="项目名称"
+                        align="center"
+                        show-overflow-tooltip>
+                        
+                        </el-table-column>
+                        <el-table-column
+                        prop="custmername"
+                        label="客户名称"
+                        align="center"
+                        width="240"> 
+                        </el-table-column>
+                    
+                        <el-table-column
+                        prop="staffname"
+                        label="负责人"
+                        align="center"
+                        width="140">
+                            
+                        </el-table-column>
+        
+                        <el-table-column
+                        prop="binddocumenttime"
+                        label="标书购买时间"
+                        align="center"
+                        width="160">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.binddocumenttime?'待填写':scope.row.binddocumenttime}}</span>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column
+                        prop="bindendtime"
+                        label="投标结束时间"
+                        align="center"
+                        width="160">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.bindendtime?'待填写':scope.row.bindendtime}}</span>
+                            </template>
+                        </el-table-column>
+                         <el-table-column
+                        prop="bindsum"
+                        label="采购预算金额"
+                        align="center"
+                        width="160">
+                            <template slot-scope="scope">
+                                <span>{{!scope.row.bindsum?'待填写':'￥'+scope.row.bindsum1}}</span>
+                            </template>
+                        </el-table-column>
+                        
+                        <el-table-column
+                        prop="estimatedsum"
+                        label="项目状态"
+                        align="center"
+                         width="100"
+                        >
+                            <template slot-scope="scope">
+                                <span v-if="scope.row.state==0">投标中</span>
+                                <span v-if="scope.row.state==1">未中标</span>
+                                <span v-if="scope.row.state==2">已中标</span>
+                                <span v-if="scope.row.state==3">未投标</span>
+                            </template>
+                        </el-table-column>
+   
+                    </el-table>
+            </div>
+            <div class="pagination" v-if="binData">
+                    <el-pagination 
+                    background
+                    :page-size="pagesize"
+                    @current-change="pagingChange1"
+                    layout="prev, pager, next"
+                    :total="binData.total">
+                    </el-pagination>
+            </div>
+        </el-dialog>
     </div>
     
 </template>
@@ -138,33 +343,66 @@ export default {
    
     this.colors = ['#66A6FF','#AB66FF', '#FFA04C',
         '#FF594C', '#37D983','#D7C6FA','#0071B6']
-    this.typeArr = ['ring', 'line', 'bar']
+    this.typeArr = ['ring',  'bar']
     this.ChartType = 'ring'
+    var that = this
+    this.sellthreadlistana = {
+        
+        click: function (e) {
+     
+            that.sellthreadDialog = true
+            that.sellthreadUserid = that.sellanalysisMoney[e.dataIndex].userid
+            that.getsellthreadlistana(that.sellanalysisMoney[e.dataIndex].userid)
+        }
+        
+
+        
+    }
+    this.binMoneyClick = {
+        click: function (e) {
+      
+            that.binMoneyDialog = true
+            that.binMoneyUserid = that.binMoney[e.dataIndex].userid
+            that.getbinlistana(that.binMoney[e.dataIndex].userid)
+        }
+        
+    }
     return {
+        loading:false,
         daynum:"30",
         tabIndex:0,
         datePicke:'',
         starttime:'',
         endtime:'',
+        page:1,
+        page1:1,
+        pagesize:10,
         graph:[
             {
                 value: 'ring',
                 label: '环形图'
             },
-            {
-                value: 'line',
-                label: '折线图'
-            },
+           
             {
                 value: 'bar',
                 label: '条形图'
             },
         ],
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
+        limits:JSON.parse(sessionStorage.getItem('limits')),
+        sellthreadDialog:false,
+        binMoneyDialog:false,
         chartSettings:{
             type: this.ChartType ,
             selectedMode:'single',
         },
+        sellanalysisMoney:[],
+        sellanalysisData:{},
+        sellthreadUserid:'',
+        sellthreadName:'',
+        binMoney:[],
+        binData:{},
+        binMoneyUserid:'',
         marketNumberData: {
           columns: ['名字', '数量'],
           rows: [],
@@ -239,11 +477,22 @@ export default {
         }
         
     },
+    //分页
+    pagingChange(val){
+        this.page = val
+        that.getsellthreadlistana(this.sellthreadUserid)
+    },
+    pagingChange1(){
+        this.page1 = val
+        that.getbinlistana(this.binMoneyUserid)
+    },
     //销售线索数量分析
     getSellanalysisnum(){
         let reqBody = {
             "api": "getsellanalysisnum",
             "companyid": sessionStorage.getItem('companyid'),
+            "userid": sessionStorage.getItem('userid'),
+            
             "starttime": this.starttime,
             "endtime": this.endtime,
             "daynum":this.daynum
@@ -274,11 +523,14 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "starttime": this.starttime,
             "endtime": this.endtime,
+            "limit":this.limits['sellanalysis'],
+            "userid": sessionStorage.getItem('userid'),
             "daynum":this.daynum
         }
         Axios(reqBody,'index').then((res) => {
-           
+           console.log(res)
             if(res.state==10001){
+                this.sellanalysisMoney = res.data.analysis
                 let marketMoneyData = []
                 for(let i=0;i<res.data.analysis.length;i++){
                     let analysis = {
@@ -305,6 +557,8 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "starttime": this.starttime,
             "endtime": this.endtime,
+            "limit":this.limits['sellanalysis'],
+            "userid": sessionStorage.getItem('userid'),
             "daynum":this.daynum
         }
         Axios(reqBody,'index').then((res) => {
@@ -347,6 +601,8 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "starttime": this.starttime,
             "endtime": this.endtime,
+            "limit":this.limits['sellanalysis'],
+            "userid": sessionStorage.getItem('userid'),
             "daynum":this.daynum
         }
         Axios(reqBody,'index').then((res) => {
@@ -378,11 +634,14 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "starttime": this.starttime,
             "endtime": this.endtime,
+            "limit":this.limits['sellanalysis'],
+            "userid": sessionStorage.getItem('userid'),
             "daynum":this.daynum
         }
         Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
+                this.binMoney = res.data.analysis
                 let forData = []
                 for(let i=0;i<res.data.analysis.length;i++){
                     let analysis = {
@@ -409,6 +668,8 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "starttime": this.starttime,
             "endtime": this.endtime,
+            "limit":this.limits['sellanalysis'],
+            "userid": sessionStorage.getItem('userid'),
             "daynum":this.daynum
         }
         Axios(reqBody,'index').then((res) => {
@@ -540,6 +801,61 @@ export default {
         this.chartSettings.type = val
         console.log(this.chartSettings)
     },
+    //销售线索分析具体数据列表
+    getsellthreadlistana(userid){
+        this.loading = true
+        let reqBody = {
+            "api": "getsellthreadlistana",
+            "companyid": sessionStorage.getItem('companyid'),
+            "starttime": this.starttime,
+            "endtime": this.endtime,
+            "daynum":this.daynum,
+            "page":this.page,
+            "pagesize":this.pagesize,
+            "state":-1,
+            "userid": userid
+
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.sellanalysisData = res.data
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+            setTimeout(() => {
+                this.loading = false
+            }, 500);
+        })
+    },
+    //招投标分析具体数据列表
+    getbinlistana(userid){
+        this.loading = true
+        let reqBody = {
+            "api": "getbinlistana",
+            "companyid": sessionStorage.getItem('companyid'),
+            "starttime": this.starttime,
+            "endtime": this.endtime,
+            "daynum":this.daynum,
+            "page":this.page,
+            "pagesize":this.pagesize,
+            "state":-1,
+            "userid": userid
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.binData = res.data
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+            setTimeout(() => {
+                this.loading = false
+            }, 500);
+        })
+    }
     
 
   },

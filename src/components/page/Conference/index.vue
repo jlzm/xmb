@@ -25,7 +25,7 @@
             </div> 
             <div class="contentBox clearfix padTb5">
                 <div class="" v-loading="loading">
-                    <div class="bgWhite backlogItem cp" ref="toDoList" v-for="(item,index) in toDoList" :key="index" @click="meetingDetail(item.meetingid)">
+                    <div class="bgWhite backlogItem cp" ref="toDoList" v-for="(item,index) in toDoList" :key="index" @click="meetingDetail(item.meetingid, item.createid)">
                         <div class="backlogItemTitle">
                             <!-- 修改 -->
                            <div class="row">
@@ -106,7 +106,7 @@
                                     <el-input v-model="taskuserName" disabled></el-input>
                                 </el-form-item>
                                 <el-form-item label="会议类型"  :show-message='false' :required='true'>
-                                    <el-select v-model="newMeeting.meetingtypename" placeholder="请选择会议类型">
+                                    <el-select v-model="newMeeting.meetingtype" placeholder="请选择会议类型">
                                         <el-option
                                         v-for="(item,index) in meetingTypeList"
                                         :key="index"
@@ -135,8 +135,8 @@
                                 </el-form-item>
                                 
                                 <el-form-item>
-                                    <el-button @click="detailModify" v-if="modify==true" type="primary">立即创建</el-button>
-                                    <el-button @click="establish" v-else type="primary">立即创建</el-button>
+                                    <el-button @click="detailModify" v-if="modify==true" type="primary">确认修改</el-button>
+                                    <el-button @click="establish()" v-else type="primary">立即创建</el-button>
 
                                 </el-form-item>
                             </el-form>
@@ -155,10 +155,9 @@
                                      <el-tree :data="departList" 
                                     :load="loadNode" 
                                     show-checkbox 
-                                    node-key="treeId" 
                                     :default-expanded-keys="expandedDeparList"
                                     :default-checked-keys="checkedDeparList"
-                                    ref="tree"
+                                    node-key="treeId" ref="tree"
                                     @check="handleCheckChange" 
                                     :props="defaultProps">
                                     </el-tree>
@@ -190,11 +189,11 @@
                         <el-col :span=12 class="tar vam">
                             <div class="particulars-title-right dib">
                                 <!-- 编辑待办 -->
-                                <i @click="_editDetail" class="iconBox-particulars cp">
+                                <i v-if="permissionShow == true" @click="_editDetail" class="iconBox-particulars cp">
                                     <img  v-lazy="'static/img/backlogIcon/gray_editor.png'" alt="">
                                 </i>
                                 <!-- 删除此条待办 -->
-                                <i class="iconBox-particulars cp">
+                                <i v-if="permissionShow == true" @click="_deleteMeeting(backlogDetail.meetingid)" class="iconBox-particulars cp">
                                     <img  v-lazy="'static/img/backlogIcon/gray-delet.png'" alt="">
                                 </i>
                                 <!-- 关闭弹出层 -->
@@ -270,7 +269,7 @@
                             <el-row >
                                 <el-col :span="4" v-for="(item,index) in backlogDetail.userlist" :key="index" class="particulars-personnel-item">
                                     <div class="personnel-avatar">
-                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = '../../../static/img/portrait.png'"  alt="">
+                                        <img class="personnelImg" v-lazy="{src:item.portrait,error:'static/img/portrait.png'}"  alt="">
                                     </div>
                                     <div class="personnel-completeTxt">{{item.staffname}}</div>
                                 </el-col>
@@ -315,7 +314,7 @@
                 <div class="publishBox">
                     <form action="" class="comment-form row">
                         <div class="comment-input-box dib vam" style="width:85%;">
-                            <el-input class="vam" @keydown.native="handlerMultiEnter(backlogDetail.meetingid, $event)" type="textarea" autosize style="width:100%;"  placeholder="请输入内容" v-model="backlogRemark"></el-input>
+                            <el-input class="vam" @keydown.native="handlerMultiEnter(backlogDetail.meetingid, $event)" type="textarea" autosize style="width:100%;"  placeholder="请输入评论内容" v-model="backlogRemark"></el-input>
                         </div>
                         <div class="comment-btn-box tar dib vam" style="width:15%">
                             <el-button class="vam" style="width:95%;" native-type="submit" type="primary" @click="_onRecordAdd(backlogDetail.meetingid)">发送</el-button>
@@ -335,6 +334,7 @@ import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
 
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
+import {Permission} from './../../../api/axios'
 
 // css
 import "../../../assets/stylus/upcoming/details.styl";;
@@ -344,7 +344,8 @@ export default {
   mixins: [comment],
   data () {
     return {
-
+        
+        permissionShow: false, // 会议操作权限
         // 新建相关数据
     
         newMeeting:{  //表单绑定数据
@@ -355,7 +356,6 @@ export default {
             meetingtime:'',
             
         },
-        
         departList: [],  //部门级人员列表
         expandedDeparList: [], //回选展开
         checkedDeparList: [], //回选人员
@@ -363,6 +363,7 @@ export default {
         deptIndex:0,    //选择部门下标
         taskuserName:'',  //新建人员名称
         taskuserId:'',    //新建人员id
+        meetingid:'', //会议id
         departmentData:{},  //部门列表
         deptInitData:[],  //部门处理后列表
         deptChecked:[],
@@ -378,30 +379,73 @@ export default {
   },
   created(){
     // this.getBasicList()
-    this._getMeetingList(1);
-
   },
   mounted() {
-    // this._getMeetingList(1);
+    this._getMeetingList(1);
   },
   methods:{
-              // 隐藏待办详情
-        hideToDodetail(e) { 
-        let toDoList = this.$refs.toDoList;
-        let toDoDetail = this.$refs.toDoDetail && !this.$refs.toDoDetail.contains(e.target);
-        let detailShow = true;
-        toDoList.forEach(item => {
-            if(item.contains(e.target)) {
-                detailShow = false
+    // 会议权限
+    meetingPermission(createId) {
+        let reqBody = {
+                "companyid": sessionStorage.getItem("companyid"),
+                "userid": sessionStorage.getItem("userid"),
+                "uid": 'cc92eac238ef4f7bbac653f25e9c1dbd',
             }
-            return detailShow
-        });
-            if (detailShow && toDoDetail) { 
+             
+           return Permission(reqBody,'user/level').then(res => {
+                console.log('权限res:', res);
+                this.permissionShow = res
+            })
+
+    },
+    //   删除会议
+    _deleteMeeting(meetingId) {
+        this.$confirm('此操作将删除本条会议, 是否继续?', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+        }).then(() => {
+            let reqBody = {
+                "api": "meetingremove",
+                "companyid": sessionStorage.getItem("companyid"),
+                "userid": sessionStorage.getItem("userid"),
+                "meetingid": meetingId
+            }
+            this.deleteToDo(reqBody).then(res => {
                 this.show = false;
-            }
-        },
-    //确认修改
+                this._getMeetingList(1);
+            })
+            this.$message({
+            type: 'success',
+            message: '删除成功!'
+            });
+            }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });          
+            });
+
+    },
+    // 隐藏会议详情
+    hideToDodetail(e) { 
+    let toDoList = this.$refs.toDoList;
+    let toDoDetail = this.$refs.toDoDetail && !this.$refs.toDoDetail.contains(e.target);
+    let detailShow = true;
+    toDoList.forEach(item => {
+        if(item.contains(e.target)) {
+            detailShow = false
+        }
+        return detailShow
+    });
+        if (detailShow && toDoDetail) { 
+            this.show = false;
+        }
+    },
+        
+    // 确认修改
     detailModify () {
+        this.establish(this.newMeeting.meetingid);
         this.dialogVisible = false;
         this.modify = false;
 
@@ -429,31 +473,30 @@ export default {
         });
         this.taskuserName = _newTaskuser.name;
         this.taskuserId = _newTaskuser.id;
-        this.newMeetingObj(this.backlogDetail);
-
-        this._getDepartList(this.backlogDetail.userlist);
+        this.newMeeting.address = this.backlogDetail.address;
+        this.newMeeting.createtime = this.backlogDetail.createtime;
+        this.newMeeting.meetingtime = this.backlogDetail.meetingtime;
+        this.newMeeting.meetingname = this.backlogDetail.meetingname;
+        this.newMeeting.meetingtype = this.backlogDetail.meetingtype;
+        this.newMeeting.meetingdesc = this.backlogDetail.meetingdesc;
+        // 获取当前会议id
+        this.newMeeting.meetingid = this.backlogDetail.meetingid;
+        console.log('this.backlogDetail.userlist:', this.backlogDetail.userlist);
+        
+        this._getDepartList(this.backlogDetail.userlist); 
+        
         
     },
 
-    newMeetingObj(obj) {
-        this.newMeeting.address = obj.address;
-        this.newMeeting.createtime = obj.createtime;
-        this.newMeeting.meetingtime = obj.meetingtime;
-        this.newMeeting.meetingname = obj.meetingname;
-        this.newMeeting.meetingtype = obj.meetingtype;
-        this.newMeeting.meetingtypename = obj.meetingtypename;
-        this.newMeeting.meetingdesc = obj.meetingdesc;
-    },
-
     // 获取部门和人员
-        _getDepartList(participantsList) {
+        _getDepartList (participantsList) {
             let reqBody = {
                 api: "departlist",
                 companyid: sessionStorage.getItem("companyid"),
                 page: 1,
                 pagesize: "30"
             }
-            this.getDepartList(reqBody, participantsList)
+            this.getDepartList(reqBody, participantsList);
         },
    
     onDetails(row){
@@ -482,13 +525,14 @@ export default {
             this._getMeetingList(val);
         },
 
-    //会议细节
-    meetingDetail(meetingid, show){
+    //会议详情
+    meetingDetail(meetingid, createId, show){
         let reqBody = {
             "api": "meetingdetail",
             "companyid":sessionStorage.getItem('companyid'),
             "meetingid":meetingid,
         }
+        this.meetingPermission(createId);
         this.toDoDetail(reqBody, show)
     },
 
@@ -559,17 +603,25 @@ export default {
         })
     },
 
-    // 创建待办
-    establish(){
+    // 创建、编辑待办
+    establish(meetingid){
         console.log(this.taskuserId)
         if(!this.newMeeting.meetingtype || !this.newMeeting.meetingname || !this.newMeeting.meetingdesc || !this.taskuserId || !this.newMeeting.address|| !this.newMeeting.meetingtime){
             this.$message.error('请填写完整信息');
-            return false
+            return false;
         }
+        let api = null;
+        if(!meetingid) {
+                api = 'meetingsave'
+            } else {
+                api = 'meetingupdate'
+            }
+            
         let reqBody = {
-            "api": "meetingsave",
+            "api": api,
             "uid":sessionStorage.getItem('userid'),
             "taskuserid":this.taskuserId,
+            "meetingid": meetingid,
             "meetingtype":this.newMeeting.meetingtype,
             "meetingname":this.newMeeting.meetingname,
             "meetingdesc":this.newMeeting.meetingdesc,
@@ -577,19 +629,25 @@ export default {
             "meetingtime":this.newMeeting.meetingtime,
             "companyid":sessionStorage.getItem('companyid'),
         }
-
+        
         Axios(reqBody,'user').then((res) => {
             console.log(res)
             if(res.state==10001){
-                this.$message.success('新建成功')
+                if(!meetingid) {
+                        this.$message.success("新建成功");
+                    } else {
+                        this.$message.success("修改成功");
+                    }
+
                 this.dialogVisible = false
                 this.taskuserId = ''
                 this.taskuserName = ''
-                this.newMeeting.meetingtype = ''
-                this.newMeeting.meetingname = ''
-                this.newMeeting.meetingdesc = ''
-                this.newMeeting.address = ''
-                this.newMeeting.meetingtime = ''
+                this.newMeeting.meetingtype = '';
+                this.newMeeting.meetingname = '';
+                this.newMeeting.meetingdesc = '';
+                this.newMeeting.address = '';
+                this.newMeeting.meetingtime = '';
+                this.newMeeting.meetingid = '';
             }else{
                 this.$message.error(res.msg);
             }
@@ -601,42 +659,7 @@ export default {
 }
 </script>
 
-<style scoped lang="stylus" rel="stylesheet/stylus">   
-    .backlog
-        width 100%
-        padding 10px 15px
-        overflow hidden
-        .operationBox
-            height 50px
-            background-color #fff
-            padding 10px
-            margin-bottom 10px
-        .btn
-            height 30px
-            line-height 30px
-            font-size 12px
-            padding 0 15px
-            border-radius 3px
-            color #fff
-            background-color #00AC97
-            cursor pointer
-            min-width 80px
-            text-align center
-        .leftBtn
-            float left
-            margin-right 5px
-        .rightBtn
-            float left 
-            margin-left 5px
-        .returnBtn
-            background-color #f4f4f4
-            color #666
-        .btnTitle
-            vertical-align middle
-        .padB80
-            padding-bottom 80px
-        .padB60
-            padding-bottom 60px
+<style scoped lang="stylus" rel="stylesheet/stylus">
     .border
         border-color:#00AC97
     .breadcrumb
@@ -732,42 +755,6 @@ export default {
 
 
 // new css
-   .backlog
-        position relative
-        width 100%
-        padding 10px 15px
-
-        .operationBox
-            height 50px
-            background-color #fff
-            padding 10px
-            margin-bottom 10px
-        .btn
-            height 30px
-            line-height 30px
-            font-size 12px
-            padding 0 15px
-            border-radius 3px
-            color #fff
-            background-color #00AC97
-            cursor pointer
-            min-width 80px
-            text-align center
-        .leftBtn
-            float left
-            margin-right 5px
-        .rightBtn
-            float left
-            margin-left 5px
-        .returnBtn
-            background-color #f4f4f4
-            color #666
-        .btnTitle
-            vertical-align middle
-        .padB80
-            padding-bottom 80px
-        .padB60
-            padding-bottom 60px
     .border
         border-color:#00AC97
     .breadcrumb
@@ -816,7 +803,6 @@ export default {
         right 0
         width 31.25%
         height 88.4%
-
         background-color #fff
         z-index 9999
         box-shadow 0 2px 12px 0 rgba(0,0,0,.1)
@@ -916,5 +902,6 @@ export default {
 
 .content-desc
     padding 15px 0 7px
+
 
 </style>

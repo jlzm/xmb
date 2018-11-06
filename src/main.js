@@ -7,6 +7,7 @@ import VueCountUp from 'vue-countupjs'
 import VCharts from 'v-charts'
 import ElementUI from 'element-ui'
 import VueLazyload from 'vue-lazyload'
+import quillEditor from 'vue-quill-editor' //调用编辑器
 import 'babel-polyfill'
 import 'element-ui/lib/theme-chalk/index.css'   // 默认主题
 import './assets/stylus/base.styl'
@@ -18,7 +19,7 @@ Vue.use(VCharts)
 Vue.use(ElementUI, { size: 'small' });
 Vue.use(VueLazyload)
 /* eslint-disable no-new */
-
+Vue.use(quillEditor)
 //使用钩子函数对路由进行权限跳转
 router.beforeEach((to, from, next) => {
   const role = sessionStorage.getItem('userid');

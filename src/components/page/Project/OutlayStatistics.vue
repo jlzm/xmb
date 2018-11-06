@@ -8,7 +8,7 @@
                     <!-- 投标文件开始 -->
                     <el-table
                         ref="multipleTable"
-                        :data="tableData.getspendinglist"
+                        :data="tableData.list"
                         stripe
                         v-loading="loading"
                         align="center"
@@ -24,17 +24,10 @@
                         </el-table-column>
                        
                         <el-table-column
-                        prop="passman"
-                        label="备注"
-                        align="center"
-                        show-overflow-tooltip>
-                        
-                        </el-table-column>
-                        <el-table-column
                         prop="fsum1"
                         label="金额"
                         align="center"
-                         width="240"
+                        show-overflow-tooltip
                         >
                         <template slot-scope="scope">
                             <span>{{scope.row.type==1?'￥'+scope.row.fsum1:'￥-'+scope.row.fsum1}}</span>
@@ -56,13 +49,10 @@
                             
                         </el-table-column>
                         <el-table-column
-                        prop="type"
+                        prop="remark"
                         label="类型"
                         align="center"
                         width="200">
-                        <template slot-scope="scope">
-                            <span>{{scope.row.type==1? '项目回款': '项目支出'}}</span>
-                            </template>
                         </el-table-column>
 
                         <el-table-column
@@ -78,7 +68,6 @@
                     <!-- 投标文件结束 -->
 
                 </div>
-
                 <!-- 分页 -->
                 <div class="pagination" v-if="tableData">
                     <el-pagination 
@@ -94,13 +83,13 @@
         
 
     </div>
-    
 </template>
+
+
 <script>
 
 import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
 import {Axios} from './../../../api/axios';
-
 
 
 export default {
@@ -108,9 +97,9 @@ export default {
   data () {
     return {
         loading:false,
-        page: 1,
+        page:1,
         tableData: [],
-        pageSize: 10,
+        pageSize:10,
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         limits:JSON.parse(sessionStorage.getItem('limits')),
        formulaList:{ //编辑栏按钮数
@@ -132,9 +121,11 @@ export default {
          
         
   },
+
   mounted() {
-      this._getdetaillist()
+    this._getdetaillist()
   },
+
   methods:{
     //FormulaBar组件按钮事件
     getFormulaBar(res){
@@ -158,16 +149,24 @@ export default {
     _getdetaillist(){
         this.loading = true
         let reqBody = {
-            "api": "getfinancialdetails",
+            "api": "getexpenditurelist",
             "page": this.page,
             "pagesize":this.pageSize,
             "companyid": sessionStorage.getItem('companyid'),
-            "projectid": `${this.$route.query.projectid}`
+            "projectid": `${this.$route.query.projectid}`,
+            "typeid": `${this.$route.query.typeid}`,
+            "state": `${this.$route.query.state}`
         }
         Axios(reqBody, 'project').then((res) => {
             console.log('详情', res)
             if(res.state==10001){
-               this.tableData = res.data
+               this.tableData = res.data;
+            //    if(this.tableData.getexpenditurelist) {
+
+            //        this.tableData.getexpenditurelist.forEach(item => {
+            //            item.state = this.$route.query.state;
+            //        });
+            //    }
             }else{
                 this.$message.error(res.msg);
             }

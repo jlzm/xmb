@@ -113,10 +113,10 @@
                         fixed="right"
                         label="操作"
                         width="200"
-                        align="center" v-if="jurisdiction.file.query">
+                        align="center" v-if="jurisdiction.file.query||(jurisdiction.project&&jurisdiction.project.query)">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
-                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.file.query" type="primary" icon="el-icon-view" ></el-button>
+                                    <el-button @click="onDetails(scope.row)" v-if="jurisdiction.file.query||(jurisdiction.project&&jurisdiction.project.query)" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
                                 
                                 <!-- <el-tooltip class="item" effect="dark" content="添加文件" placement="top-end">

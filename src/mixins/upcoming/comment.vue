@@ -137,7 +137,7 @@ export default {
                             })
                         }
                     })
-                    
+
                     console.log('this.checkedDeparList:', this.checkedDeparList);
         },
 
@@ -236,10 +236,21 @@ export default {
             });
         },
 
-        //创建待办
-        establish(reqBody) {
-            if (
+        // 删除待办
+        deleteToDo(reqBody) {
+           return Axios(reqBody, 'user').then(res => {
+               console.log('res:', res);
+               if(res.state == 10001) {
+                   this.$message.success('删除成功');
+               } else {
+                   this.$message.error(res.msg);
+               }
+            })
+        },
 
+        //创建、编辑待办
+        establish(reqBody, taskId) {
+            if (
                 !this.newIssue.taskdescribe ||
                 !this.newIssue.flag ||
                 !this.taskuserId ||
@@ -252,14 +263,18 @@ export default {
             return Axios(reqBody, "user").then(res => {
                 console.log(res);
                 if (res.state == 10001) {
-                    this.$message.success("新建成功");
+                    if(!taskId) {
+                        this.$message.success("新建成功");
+                    } else {
+                        this.$message.success("修改成功");
+                    }
+                    
                     this.dialogVisible = false;
                     this.taskuserId = "";
                     this.taskuserName = "";
                     this.newIssue.taskname = "";
                     this.newIssue.taskdescribe = "";
                     this.newIssue.flag = "";
-                    // this.getToDoList(1, reqBody);
                 } else {
                     this.$message.error(res.msg);
                 }

@@ -465,22 +465,33 @@ export default {
     },
     //删除
     onDelete(row){
-        let reqBody = {
-            "api": "deletepuchase",
-            "purchaseid": row.id
-        }
-        Axios(reqBody,'index').then((res) => {
-            console.log(res)
-            if(res.state==10001){
-                 this.$message.success('删除成功')
-                 this.getPurchaseList(1)
-                
-            }else{
-                this.$message.error(res.msg);
+        this.$confirm('是否确定删除该采购记录?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let reqBody = {
+                "api": "deletepuchase",
+                "purchaseid": row.id
             }
-           
-            
-        })
+            Axios(reqBody,'index').then((res) => {
+                console.log(res)
+                if(res.state==10001){
+                    this.$message.success('删除成功')
+                    this.getPurchaseList(1)
+                    
+                }else{
+                    this.$message.error(res.msg);
+                }
+
+            })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+        
     },
     // //////////编辑
     //打开编辑层

@@ -4,14 +4,34 @@
       <div class="operationBox clearfix" v-if="limit==1">
         <div class="floatLeft leftBox clearfix">
           <el-form :inline="true" class="demo-form-inline" :model="searchData">
-
-
             <el-form-item>
+              <el-input v-model="searchData.search" placeholder="请输入员工名称"></el-input>
+            </el-form-item>
+            <el-form-item>
+              <el-select size="small" v-model="value"
+                         @change="choice"
+                         placeholder="请选择部门"
+                         class="xmb_select">
+                <el-option
+                  v-for="item in options"
+                  :key="item.value"
+                  :label="item.label"
+                  :value="item.value">
+                </el-option>
+              </el-select>
+            </el-form-item>
+            <el-form-item>
+              <div class="leftBtn btn" @click="onSearch">
+                <span class="btnTitle">查询</span>
+              </div>
+            </el-form-item>
+
+            <el-form-item class="floatRight">
               <div class="leftBtn btn">
                 <span class="btnTitle" @click="sectionVisible = true">新建部门</span>
               </div>
             </el-form-item>
-            <el-form-item>
+            <el-form-item class="floatRight">
               <div class="leftBtn btn">
                 <span class="btnTitle" @click="onNewStaff">新建员工</span>
               </div>
@@ -28,7 +48,7 @@
             </div>
             <div class="padTb10">
               <div class="sectionItem" v-for="(item,index) in departmentData.dept" :key="index"
-                   @click="_getMemberList(item.deptid,index)">
+                   @click="_getMemberList(item.deptid,index,item.deptname)">
                 <div>{{item.deptname}}</div>
                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
                   <el-button v-show="mark == index" @click="onCompileVisible(item.deptname,item.deptid)" type="success"
@@ -234,9 +254,7 @@
         oldPhone: '',
         removeId: '',
         searchData: {
-          antistop: '',
-          area: '',
-          principal: ''
+          search: '',
         },
         limit: JSON.parse(sessionStorage.getItem('limits'))['deptemp'],
         memberList: [],
@@ -287,7 +305,11 @@
           tabActive: 0,
           icon: 'icon-guanliangongnengliebiaoiconxuanzhong',
 
-        }
+        },
+        //下拉框
+        options: [],
+        value: '',
+
       }
     },
     activated() {
@@ -298,6 +320,19 @@
       vFormulaBar, vParticularsTab, vProjectInfo, vBidInfo
     },
     methods: {
+      // 搜索
+      onSearch() {
+        this._getMemberList(this.value, 0, this.editDepartment.deptname)
+      },
+      //部门选择
+      choice(value) {
+        this.deptid = value;
+        let obj = {};
+        obj = this.options.find((item) => {
+          return item.value === value;
+        });
+        this.editDepartment.deptname = obj.label
+      },
       getFormulaBar(res) {
         console.log(res)
       },
@@ -327,8 +362,13 @@
           if (res.state == 10001) {
             this.departmentData = res.data
             this.rightTabList.tabTitle = res.data.dept[0].deptname
-            this._getMemberList(res.data.dept[0].deptid, 0)
-
+            this._getMemberList(res.data.dept[0].deptid, 0, res.data.dept[0].deptname)
+            this.departmentData.dept.forEach(item => {
+              this.options.push({
+                value: item.deptid,
+                label: item.deptname
+              })
+            })
           } else {
             this.$message.error(res.msg);
           }
@@ -339,7 +379,8 @@
         })
       },
       //部门人员列表
-      _getMemberList(deptid, index) {
+      _getMemberList(deptid, index, deptname) {
+        this.rightTabList.tabTitle = deptname
         this.deptid = deptid;
         this.mark = index
         this.edit = true
@@ -350,15 +391,18 @@
           "page": 1,
           "pagesize": "30",
           "companyid": sessionStorage.getItem('companyid'),
-          "deptid": deptid
+          "deptid": this.deptid,
+          "search": this.searchData.search,
         }
         Axios(reqBody, 'user').then((res) => {
           console.log(res)
           if (res.state == 10001) {
             this.memberList = res.data
-            this.rightTabList.tabTitle = res.data[0].deptname
+            this.searchData.search = '';
+            this.value = '';
           } else {
             this.memberList = []
+            this.searchData.search = '';
             this.$message.error(res.msg);
           }
           setTimeout(() => {
@@ -615,8 +659,8 @@
       padding 10px
       margin-bottom 11px
     .btn
-      height 30px
-      line-height 30px
+      height 32px
+      line-height 32px
       font-size 12px
       padding 0 15px
       border-radius 3px
@@ -678,4 +722,8 @@
 
   .dialog-footer
     text-align center
+
+  .floatLeft {
+    width: 100%
+  }
 </style>

@@ -10,9 +10,9 @@
                        <el-form-item label="完成状态">
                             <el-select v-model="searchData.status" placeholder="请选择项目状态" popper-class="border">
                                 <el-option value="-1" label="所有项目"></el-option>
-                                <el-option value="0" label="已完成项目"></el-option>
+                                <el-option value="0" label="已完成"></el-option>
                                
-                                <el-option value="1" label="未完成项目"></el-option>
+                                <el-option value="1" label="进行中"></el-option>
                                 
                                 
                             </el-select>
@@ -141,7 +141,7 @@
                         fixed="right"
                         label="操作"
                         width="200"
-                        align="center">
+                        align="center" v-if="jurisdiction.project.query||jurisdiction.project.save">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="详情" placement="top-end">
                                     <el-button @click="onDetails(scope.row)" v-if="jurisdiction.project.query" type="primary" icon="el-icon-view" ></el-button>
@@ -276,7 +276,7 @@ import {Session} from './../../../api/axios'
 import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
 import vProjectInfo from '../../common/ProjectInfo.vue';  //项目信息
 import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
-import vMap from '../../common/Map.vue';  //招投标信息
+import vMap from '../../common/Map.vue';  //地图
 
 
 
@@ -668,6 +668,11 @@ export default {
         this.newCustmerData.addressd = mapVal.address
         this.newCustmerData.longitude = mapVal.lng
         this.newCustmerData.latitude = mapVal.lat
+        this.mapVal = {
+          lng:mapVal.lng,
+          lat:mapVal.lat,
+          address:mapVal.address,
+        }
     },
     //获取地址
     getAddressd(res){

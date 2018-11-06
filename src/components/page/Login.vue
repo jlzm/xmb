@@ -14,7 +14,7 @@
                         
                     </el-form-item>
                     <el-form-item prop="password">
-                        <el-input type="password" placeholder="请输入密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
+                        <el-input type="password" placeholder="请输入密码" v-model="ruleForm.password" @keyup.enter.native="onLogin('ruleForm')">
                             <i slot="prefix" class="userNameIcon">
                                  <img src="static/img/Key.png"  alt="">
                             </i>
@@ -97,7 +97,7 @@
                         }
                         sessionStorage.setItem('limits',JSON.stringify(limits))
                         sessionStorage.setItem('jurisdiction',JSON.stringify(jurisdiction))
-                        let pathRedirect = '/'
+                        let pathRedirect = ''
                         let fauths = JSON.parse(sessionStorage.getItem('fauths'))
                         for (let i = 0; i < fauths.length; i++) {
                             if (fauths[i].modular == 'sellthreacd') {
@@ -132,15 +132,15 @@
                             break
                             }
                             else if (fauths[i].modular == 'finance') {
-                            pathRedirect = '/bid'
+                            pathRedirect = '/finance'
                             break
                             }
-                            else if (fauths[i].modular == 'finance') {
-                            pathRedirect = '/bid'
-                            break
-                            }
+                            
 
 
+                        }
+                        if(!pathRedirect){
+                            pathRedirect = '/addressBook'
                         }
                         this.$router.replace({ 
                             path: pathRedirect,                

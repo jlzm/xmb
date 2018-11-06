@@ -7,7 +7,16 @@
                         <el-form-item >
                             <el-input v-model="searchData.antistop" placeholder="请输入项目名称或客户名称"></el-input>
                         </el-form-item>
-                     
+                        <el-form-item label="项目状态">
+                            <el-select v-model="searchData.status" placeholder="请选择项目状态" popper-class="border">
+                                <el-option value="-1" label="所有项目"></el-option>
+                                <el-option value="1" label="未完成"></el-option>
+                               
+                                <el-option value="0" label="已完成"></el-option>
+                                
+                                
+                            </el-select>
+                        </el-form-item>
                         <el-form-item>
                             <div class="leftBtn btn"  @click="getProjectList(1)">
                         
@@ -139,7 +148,7 @@
                         width="180"
                         align="center">
                             <template slot-scope="scope">
-                                <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
+                                <el-tooltip class="item" effect="dark" content="查看进度" placement="top-end">
                                     <el-button @click="onDetails(scope.row)" v-if="jurisdiction.rate.query" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
 
@@ -208,7 +217,8 @@ export default {
         searchData:{
             antistop:'',
             area:'',
-            principal:''
+            principal:'',
+            status:"-1"
         },
         tableData: [],
         multipleSelection: [],
@@ -285,8 +295,9 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['rate'],
+            "status":this.searchData.status,
             "page":page,
-            "status":-1,
+       
             "pagesize":this.pageSize
         }
 

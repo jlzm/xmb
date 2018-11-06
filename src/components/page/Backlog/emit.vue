@@ -166,9 +166,7 @@
                 </el-row>
             </div>
         </el-dialog>
-        <!-- <el-dialog title="新建待办" :visible.sync="dialogVisible" width="60%">
-            <Dialog title="新建待办" :dialogVisible="dialogVisible" />
-        </el-dialog> -->
+
         <!-- 待办详情 -->
         <transition name="el-zoom-in-top">
             <div v-show="show" ref="toDoDetail" class="particulars">
@@ -194,7 +192,7 @@
                                     <img  v-lazy="'static/img/backlogIcon/gray_editor.png'" alt="">
                                 </i>
                                 <!-- 删除此条待办 -->
-                                <i class="iconBox-particulars cp">
+                                <i @click="_deleteToDo(backlogDetail.taskid)" class="iconBox-particulars cp">
                                     <img  v-lazy="'static/img/backlogIcon/gray-delet.png'" alt="">
                                 </i>
                                 <!-- 关闭弹出层 -->
@@ -221,7 +219,8 @@
                         <div class="particulars-desc-content-box row">
                             <div class="col-lg-7 particulars-desc-content vam">{{backlogDetail.endtime}}</div>
                             <div class="col-lg-3 vam tar fsize14">
-                                <el-button type="primary" @click="onConfirm(2)">确认完成</el-button>
+                                <el-button v-if="backlogDetail.state == 0" type="primary" @click="onConfirm(2)">确认完成</el-button>
+                                <el-button v-else disabled>已完成</el-button>
                             </div>
                         </div>
                     </div>
@@ -310,7 +309,7 @@
                 <div class="publishBox">
                     <form action="" class="comment-form row">
                         <div class="comment-input-box dib vam" style="width:85%;">
-                            <el-input class="vam" @keydown.native="handlerMultiEnter(backlogDetail.taskid, $event)" type="textarea" autosize  style="width:100%;"  placeholder="请输入内容" v-model="backlogRemark"></el-input>
+                            <el-input class="vam" @keydown.native="handlerMultiEnter(backlogDetail.taskid, $event)" type="textarea" autosize  style="width:100%;"  placeholder="请输入评论内容" v-model="backlogRemark"></el-input>
                         </div>
                         <div class="comment-btn-box tar dib vam" style="width:15%">
                             <el-button class="vam" style="width:95%;" native-type="submit" type="primary" @click="_onRecordAdd(backlogDetail.taskid)">发送</el-button>
@@ -376,6 +375,35 @@ export default {
     },
     
     methods: {
+        // 删除待办
+        _deleteToDo(taskId) {
+        this.$confirm('此操作将删除本条待办, 是否继续?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let reqBody = {
+                "api": "mybacklogremove",
+                "companyid": sessionStorage.getItem("companyid"),
+                "userid": sessionStorage.getItem("userid"),
+                "taskid": taskId
+            }
+            this.deleteToDo(reqBody).then(res => {
+                this.show = false;
+                this._getMyBacklogList(1);
+            })
+          this.$message({
+            type: 'success',
+            message: '删除成功!'
+          });
+          }).catch(() => {
+                this.$message({
+                    type: 'info',
+                    message: '已取消删除'
+                });          
+            });
+        },
+
         // 隐藏待办详情
         hideToDodetail(e) { 
         let toDoList = this.$refs.toDoList;
@@ -391,13 +419,15 @@ export default {
                 this.show = false;
             }
         },
-        //   确认修改
+
+        //  修改待办
         detailModify () {
+            this._establish(this.newIssue.taskid);
             this.dialogVisible = false;
             this.modify = false;
         },
 
-        // 编辑详情
+        // 编辑待办
         _editDetail(taskid) {
             this.modify = true;
             this.show = false;
@@ -424,6 +454,9 @@ export default {
             this.newIssue.endtime = this.backlogDetail.endtime;
             this.newIssue.flag = this.backlogDetail.flag;
 
+            // 当前待办id
+            this.newIssue.taskid = this.backlogDetail.taskid;
+
             this._getDepartList(this.backlogDetail.userlist);
         },
 
@@ -440,7 +473,7 @@ export default {
             this.getToDoList(reqBody);
         },
 
-                // 获取部门和人员
+        // 获取部门和人员
         _getDepartList (participantsList) {
             let reqBody = {
                 api: "departlist",
@@ -541,19 +574,29 @@ export default {
             // this.getDepartmentList(reqBody);
         },
 
-        // 创建待办
-        _establish () {
+        // 创建和编辑待办
+        _establish (taskId) {
+            // 更新判断
+            let api = null;
+            if(!taskId) {
+                api = 'myIssuesave'
+            } else {
+                api = 'myIssueupdate'
+            }
+            console.log('api:', api);
+            
             let reqBody = {
-                api: "myIssuesave",
+                "api": api,
                 // taskname: this.newIssue.taskname,
-                taskdescribe: this.newIssue.taskdescribe,
-                endtime: this.newIssue.endtime,
-                flag: this.newIssue.flag,
-                taskuserid: this.taskuserId,
-                userid: sessionStorage.getItem("userid"),
-                companyid: sessionStorage.getItem("companyid")
+                "taskid": taskId,
+                "taskdescribe": this.newIssue.taskdescribe,
+                "endtime": this.newIssue.endtime,
+                "flag": this.newIssue.flag,
+                "taskuserid": this.taskuserId,
+                "userid": sessionStorage.getItem("userid"),
+                "companyid": sessionStorage.getItem("companyid")
             };
-            this.establish(reqBody).then(res => {
+            this.establish(reqBody, taskId).then(res => {
                 this._getMyBacklogList(1);
             })
         },
@@ -586,42 +629,6 @@ export default {
 </script>
 
 <style scoped lang="stylus" rel="stylesheet/stylus">
-    .backlog
-        position relative
-        width 100%
-        padding 10px 15px
-
-        .operationBox
-            height 50px
-            background-color #fff
-            padding 10px
-            margin-bottom 10px
-        .btn
-            height 30px
-            line-height 30px
-            font-size 12px
-            padding 0 15px
-            border-radius 3px
-            color #fff
-            background-color #00AC97
-            cursor pointer
-            min-width 80px
-            text-align center
-        .leftBtn
-            float left
-            margin-right 5px
-        .rightBtn
-            float left
-            margin-left 5px
-        .returnBtn
-            background-color #f4f4f4
-            color #666
-        .btnTitle
-            vertical-align middle
-        .padB80
-            padding-bottom 80px
-        .padB60
-            padding-bottom 60px
     .border
         border-color:#00AC97
     .breadcrumb

@@ -73,14 +73,14 @@
                                     align="center">
                                         <template slot-scope="scope">
                                             <el-tooltip class="item" effect="dark" content="查看" placement="top-end">
-                                                <el-button type="primary" v-if="jurisdiction.file.query"  icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
+                                                <el-button type="primary" v-if="query"  icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
                                             </el-tooltip>
                                             <el-tooltip class="item" effect="dark" content="下载" placement="top-end">
-                                                <el-button type="success" v-if="jurisdiction.file.query" icon="el-icon-download"  @click="fileDownload(scope.row)" ></el-button>
+                                                <el-button type="success" v-if="query" icon="el-icon-download"  @click="fileDownload(scope.row)" ></el-button>
                                             </el-tooltip>
 
                                             <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
-                                                <el-button type="danger"  v-if="jurisdiction.file.remove" icon="el-icon-delete"  @click="fileremove(scope.row.fileid)" ></el-button>
+                                                <el-button type="danger"  v-if="remove" icon="el-icon-delete"  @click="fileremove(scope.row.fileid)" ></el-button>
                                             </el-tooltip>
                                             
                                         </template>
@@ -170,6 +170,9 @@ export default {
         iframeVisible:false,
         projectname:'',
         iframeUrl:'',
+        query:false,
+        add:false,
+        remove:false,
         uploadData:{
  
         },
@@ -183,7 +186,7 @@ export default {
                     title:'添加文件',
                     clickEvent:'add',
                     icon:'icon-iconfontedit',
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).file.add
+                    limits:false
                 }
             ],
             right:[
@@ -191,12 +194,12 @@ export default {
                     title:'下载文件',
                     clickEvent:'download',
                     icon:'icon-download',
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).file.query
+                    limits:false
                 },{
                     title:'删除文件',
                     clickEvent:'del',
                     icon:'icon-delete',
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.remove
+                    limits:false
                 }
             ]
         },
@@ -237,6 +240,18 @@ export default {
     vFormulaBar,vParticularsTab,vProjectInfo,vBidInfo
   },
   created(){
+      if(this.jurisdiction.file.add||(this.jurisdiction.project&&this.jurisdiction.project.add)){
+          this.formulaList.left[0].limits = true
+          this.add = true
+      }
+      if(this.jurisdiction.file.query||(this.jurisdiction.project&&this.jurisdiction.project.query)){
+          this.formulaList.right[0].limits = true
+          this.query = true
+      }
+      if(this.jurisdiction.file.remove||(this.jurisdiction.project&&this.jurisdiction.project.remove)){
+          this.formulaList.right[1].limits = true
+          this.remove = true
+      }
     this.uploadData = {
         "companyid": sessionStorage.getItem('companyid'),
         "projectid":this.$route.query.id,
@@ -394,22 +409,34 @@ export default {
     },
     //删除文件
     fileremove(fileid){
-        let reqBody = {
-            "api": "updatefilestatus",
-            "fileid":fileid
-        }
-        Axios(reqBody,'project').then((res) => {
-            console.log(res)
-            
-            if(res.state==10001){
-                this.$message.success('删除成功');
-                this._getFileList(this.fileIndex)
-                
-            }else{
-                this.$message.error(res.msg);
+        this.$confirm('是否确定删除该文件?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let reqBody = {
+                "api": "updatefilestatus",
+                "fileid":fileid
             }
+            Axios(reqBody,'project').then((res) => {
+                console.log(res)
+                
+                if(res.state==10001){
+                    this.$message.success('删除成功');
+                    this._getFileList(this.fileIndex)
+                    
+                }else{
+                    this.$message.error(res.msg);
+                }
 
-        })
+            })
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+        
     },
     //批量下载
     filebatchremove(){

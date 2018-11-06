@@ -29,7 +29,6 @@
             tooltip-effect="dark"
             style="width: 100%"
           >
-
             <el-table-column
               type="index"
               label="序号"
@@ -67,7 +66,8 @@
                   <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view"></el-button>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                  <el-button @click="onCompileVisible(scope.row)" type="success" icon="el-icon-edit-outline"></el-button>
+                  <el-button @click="onCompileVisible(scope.row)" type="success"
+                             icon="el-icon-edit-outline"></el-button>
                 </el-tooltip>
                 <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
                   <el-button type="danger" @click="onDelete(scope.row)" icon="el-icon-delete"></el-button>
@@ -82,7 +82,6 @@
         <div class="pagination" v-if="roleList[0]">
           <el-pagination
             background
-            :page-size="pageSize"
             layout="prev, pager, next"
             @current-change="pagingChange"
             :total="Number(roleList[0].count)">
@@ -143,7 +142,12 @@
             }
           ]
         },
-
+        roleData:{
+          mark:1,
+          roleid:'',
+          authname:'',
+          describes:'',
+        }
 
       }
     },
@@ -152,7 +156,8 @@
       vParticularsTab, vProjectInfo, vBidInfo
     },
     activated() {
-      this._getRoleList(1)
+      this._getRoleList(1);
+      localStorage.removeItem("roleData")
     },
     methods: {
       // 新建
@@ -172,8 +177,16 @@
         })
       },
       //编辑
-      onCompileVisible(row){
-        console.log(row);
+      onCompileVisible(row) {
+        this.roleData.roleid = row.roleid;
+        this.roleData.authname = row.rolename;
+        this.roleData.describes = row.remark;
+        localStorage.setItem("roleData", JSON.stringify(this.roleData))
+        this.$router.push({
+          path: 'compileRole',
+          query: {
+          }
+        });
       },
       //删除
       onDelete(row) {

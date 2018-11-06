@@ -6,7 +6,12 @@
             <div class="contentBox clearfix">
                 <div class="leftBox leftBox554">
                     <div class="purchaseBox">
-                        <div class="title">{{purchaseInfo.projectname}}</div>
+                        <div class="title clearfix">
+                            <span class="titleSpan">{{purchaseInfo.projectname}}</span>
+                            <div class="compileBtn"  @click="openCompile" v-if="jurisdiction.purchase.save">编辑</div>
+                    
+                        </div>
+
                         <div class="">
                             <div class="item">
                                 <span class="label">采购类别：</span>
@@ -88,7 +93,9 @@
                                     width="200"
                                     align="center">
                                         <template slot-scope="scope">
-                                           
+                                            <el-tooltip class="item" effect="dark" content="查看" placement="top-end">
+                                                <el-button type="primary" v-if="jurisdiction.purchase.query"  icon="el-icon-view"   @click="onExamine(scope.row.fileurl)" ></el-button>
+                                            </el-tooltip>
                                             
                                             <el-tooltip class="item" effect="dark" content="下载" placement="top-end">
                                                 <el-button type="success" v-if="jurisdiction.purchase.query" icon="el-icon-download"   @click="onDownload(scope.row)" ></el-button>
@@ -148,6 +155,84 @@
             <el-button type="primary" @click="submitUpload">确 定</el-button>
         </span>
         </el-dialog>
+        <el-dialog title="在线浏览"
+        :visible.sync="iframeVisible"
+        width="90%"
+        class="iframeVisible"
+        fullscreen
+        >
+            
+                <iframe class="iframe"  v-if="iframeUrl"  :src='iframeUrl' width='100%'  ></iframe>
+        </el-dialog>
+
+
+        <el-dialog
+        title="编辑采购明细"
+        :visible.sync="compileVisible"
+        width="40%"
+        >
+        <div>
+            <div class="compileBox clearfix">
+                <div class="detailItem" v-for="(item,index) in purchaseArr" :key="index">
+                    
+                    <div>
+                        <el-form :ref="purchaseArr[index]" :model="purchaseArr[index]" label-position="left" label-width="80px" >
+                            <el-form-item label="采购项目">
+                                <el-select v-model="purchaseArr[index].pid" placeholder="请选择采购项目">
+                                    <el-option :label="_item.projectname" :value="_item.id" v-for="(_item,_index) in projectList" :key="_index"></el-option>
+                                
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="采购类别">
+                                <el-select v-model="purchaseArr[index].typeid1" placeholder="请选择采购类别">
+                                    <el-option :label="item_.typename" :value="item_.id" v-for="(item_,index_) in purchaseTypeList" :key="index_"></el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="采购金额">
+                                <el-input v-model="purchaseArr[index].money" type="number"></el-input>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </div>
+
+               
+
+                <div class="clearfix marB15">
+                    <div class="floatLeft addVoucherTitle">添加图片</div>
+                    <div class="floatLeft addVoucherContent">
+                        <el-upload
+                         :action="imageUrl"
+                
+                        multiple
+                        :limit="9"
+                      
+                        :on-exceed="handleExceed"
+                        list-type="picture-card"
+                        :file-list="imgList1"
+                        
+                        :on-success="handleSuccessImg"
+                        :on-remove="handleRemoveImg">
+                        <i class="el-icon-plus"></i>
+                        </el-upload>
+                    </div>
+                </div>  
+          
+
+                <div class="clearfix marB15">
+                    <div class="floatLeft addVoucherTitle">备注信息</div>
+                    <div class="floatLeft addVoucherContent">
+                        <el-input type="textarea"  v-model="remark"  :autosize="{ minRows: 6, maxRows: 15}"></el-input>
+                    </div>
+                </div>  
+
+            </div>
+                
+        </div>
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="compileVisible = false">取 消</el-button>
+            <el-button type="primary" @click="upDatePurchase">确 定</el-button>
+        </span>
+        </el-dialog>
     </div>
     
 </template>
@@ -170,37 +255,60 @@ export default {
         purchaseInfo:{},
       
         imgList:[],
+        imgList1:[],
+        imagepc:'',
         uploadData:{
 
         },
         exportUrl:Session.exportUrl+'saveFile',
+        imageUrl:Session.exportUrl+'saveImage',
         addFileVisible:false,
         fileBoxList:[],
         fileUploadList:[],
         fileList:[],
+        fileList1:[],
         fileListStr:'',
         fileListName:'',
         fileListSize:'',
         successLength:0,
+        iframeVisible:false,
+        iframeUrl:'',
         multipleSelection: [],
+        compileVisible:false,
+        purchaseArr:[
+            {
+                pid:'',
+                typeid1:'',
+                money:''
+            }
+            
+        ],
+        addPurchaseData:{
+            file:[],
+            purchaseurl:'',
+            purchaseurltwo:'',
+            remark:'',
+            
+        },
+        projectList:[],
+        purchaseTypeList:[],
+        remark:'',
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
-                // {
-                //     title:'添加记录',
-                //     clickEvent:'add',
-                //     icon:'icon-iconfontedit'
-                // },
+                
+                
+
+            ],
+            
+            right:[
                 {
                     title:'添加文件',
                     clickEvent:'addFile',
                     icon:'icon-iconfontedit',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.add
-                }
-
-            ],
-            right:[
+                },
                 {
                     title:'下载文件',
                     clickEvent:'download',
@@ -256,7 +364,8 @@ export default {
   },
   created(){
     this._getPurchaseInfo()     
-    
+    this.getPurchaseProjectList()
+    this.getPurchaseTypeList()   
   },
   methods:{
      handleSuccess(response, file, fileList){
@@ -309,6 +418,7 @@ export default {
             }
         }
     },
+    
     getFormulaBar(res){
         console.log(res)
         if(res=='add'){
@@ -349,12 +459,12 @@ export default {
         }
         Axios(reqBody,'index').then((res) => {
             console.log(res)
-            
             if(res.state==10001){
                 this.uploadData = {
                     "companyid": sessionStorage.getItem('companyid'),
                     "projectid":res.data.projectid,
                 }
+
                 this.purchaseInfo = res.data
                 if(res.data.purchaseurl.indexOf(",") != -1){
                     this.imgList = res.data.purchaseurl.split(",")
@@ -362,6 +472,39 @@ export default {
                     this.imgList.push(res.data.purchaseurl) 
                 }
                 this.getPurchasefilelist(res.data.id)
+
+                // 编辑
+                this.purchaseArr = [
+                    {
+                        pid:res.data.projectid,
+                        typeid1:res.data.typeid,
+                        money:res.data.sum
+                    }
+                ]
+                this.addPurchaseData = {
+                    file:[],
+                    purchaseurl:'',
+                    purchaseurltwo:'',
+                    remark:'',
+                }
+                this.remark = res.data.remark
+                this.imgList1 = []
+                this.addPurchaseData.purchaseurltwo = res.data.purchaseurl
+                this.imagepc = res.data.purchaseurl
+                if(res.data.purchaseurl&&res.data.purchaseurl.indexOf(",") != -1){
+                    let purchaseurl = res.data.purchaseurl.split(",")
+                    for(let i=0;i<purchaseurl.length;i++){
+                        this.imgList1.push({
+                            url:purchaseurl[i]
+                        }) 
+                    }
+                }else if(!res.data.purchaseurl){
+                    this.imgList1 = []
+                }else{
+                    this.imgList1.push({
+                            url:res.data.purchaseurl
+                        }) 
+                }
             }else{
                 this.$message.error(res.msg);
             }
@@ -379,7 +522,16 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.fileList = res.data
-                
+                for(let i=0;i<res.data.list.length;i++){
+                    this.fileList1.push({
+                        url:res.data.list[i].fileurl,
+                        name:res.data.list[i].filename,
+                    })
+                    this.addPurchaseData.file.push({
+                        fileurl:res.data.list[i].fileurl,
+                        filename:res.data.list[i].filename,
+                    })
+                }
                 
             }else{
                 this.$message.error(res.msg);
@@ -444,22 +596,33 @@ export default {
         this.onDel(fid)
     },
     onDel(id){
-
-        let reqBody = {
+        this.$confirm('是否确定删除该文件?', '提示', {
+          confirmButtonText: '确定',
+          cancelButtonText: '取消',
+          type: 'warning'
+        }).then(() => {
+            let reqBody = {
             "api": "updatepurchasefileflag",
             "id": id,
-           
-        }
-        Axios(reqBody,'index').then((res) => {
-            console.log(res)
-            if(res.state==10001){
-                this.$message.success('删除成功')
-                this.getPurchasefilelist(this.purchaseInfo.id)
-            }else{
-                this.$message.error(res.msg);
             }
+            Axios(reqBody,'index').then((res) => {
+                console.log(res)
+                if(res.state==10001){
+                    this.$message.success('删除成功')
+                    this.getPurchasefilelist(this.purchaseInfo.id)
+                }else{
+                    this.$message.error(res.msg);
+                }
 
-        })
+            }) 
+        }).catch(() => {
+          this.$message({
+            type: 'info',
+            message: '已取消删除'
+          });          
+        });
+
+        
     },
     addFile(){
         console.log(this.fileListName)
@@ -497,6 +660,126 @@ export default {
     submitUpload(){
         this.$refs.upload.submit()
        
+    },
+    onExamine(url){
+        this.iframeUrl = Session.browse+encodeURIComponent(url)
+        this.iframeVisible = true
+    },
+    openCompile(){
+        this.compileVisible = true
+       // console.log(this.addPurchaseData)
+    },
+    handleExceed(files, fileList) {
+        this.$message.warning(`最多选择9张图片`);
+    },
+    handleSuccessImg(response, file, fileList){
+        if(file.response){
+            if(this.imagepc){
+                this.imagepc = this.imagepc+','+file.response.fileUrl
+            }else{
+                this.imagepc  = file.response.fileUrl
+            }
+        }
+        
+        console.log(file)
+    },
+    //图片上传处理
+    handleRemoveImg(file, fileList) {
+        this.imagepc = ''
+        console.log(fileList)
+        for(let i=0;i<fileList.length;i++){
+            if(fileList[i].response){
+                if(this.imagepc){
+                    this.imagepc = this.imagepc+','+fileList[i].response.fileUrl
+                }else{
+                    this.imagepc  = fileList[i].response.fileUrl
+                }
+            }else{
+                if(this.imagepc){
+                    this.imagepc = this.imagepc+','+fileList[i].url
+                }else{
+                    this.imagepc  = fileList[i].url
+                }
+            }
+        }
+    },
+    //获取项目列表
+    getPurchaseProjectList(){
+        this.loading = true
+        let reqBody = {
+            "api": "getpurchaseprojectlist",
+            "companyid": sessionStorage.getItem('companyid'),
+            "searchname": ""
+            
+        }
+
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.projectList = res.data
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+            setTimeout(() => {
+                this.loading = false
+            }, 1000);
+            
+        })
+    },
+    //获取采购类型
+    getPurchaseTypeList(){
+        this.loading = true
+        let reqBody = {
+            "api": "getpurchasetypelist",
+            "companyid": sessionStorage.getItem('companyid')
+            
+        }
+
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this.purchaseTypeList = res.data
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+            setTimeout(() => {
+                this.loading = false
+            }, 1000);
+            
+        })
+    },
+    upDatePurchase(){
+        console.log(this.addPurchaseData)
+        if(!this.purchaseArr[0].money){
+            this.$message.error('请填写金额')
+            return false
+        }
+        
+        let reqBody = {
+            "api": "updatepurchase",
+            "projectid": this.purchaseArr[0].pid,
+            "typeid": this.purchaseArr[0].typeid1,
+            "sum": this.purchaseArr[0].money,
+            "remark": this.remark,
+            "purchaseurl": this.addPurchaseData.purchaseurl,
+            "purchaseurltwo": this.imagepc,
+            "purchaseid": this.$route.query.id,
+         
+        }
+        Axios(reqBody,'index').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this._getPurchaseInfo()
+                this.$message.success('修改成功')
+                this.compileVisible = false
+                
+            }else{
+                this.$message.error(res.msg);
+            }
+
+        })
     }
 
     
@@ -533,6 +816,47 @@ export default {
             margin-right 20px
             margin-bottom 20px
             float left
-        
+        .iframe
+            height 100vh
+            padding-bottom 200px
+            overflow: auto
+            margin: 0
+            z-index 3333
+        .iframeVisible .el-dialog__body
+            overflow hidden
+    .compileBtn
+        float right   
+        width 80px
+        text-align center
+        height: 30px
+        line-height: 30px
+        font-size: 12px
+        padding: 0 15px
+        border-radius: 3px
+        color: #fff
+        background-color: #00ac97
+        cursor: pointer
+        margin-top 10px
+    .titleSpan
+        display inline-block
+        width 410px
+    .compileBox
+        width 700px
+        border:1px soldi #ddd
+        background-color #fff
+        padding 20px
+        font-size 14px
+        .detailItem
+            padding-bottom 10px
+            margin-bottom 15px
+            border-bottom 2px solid #ccc
+            &:last-of-type
+                border-bottom 0
+            .el-select
+                width 100%
+        .addVoucherTitle
+            width 80px
+        .addVoucherContent
+            width 580px
     
 </style>
