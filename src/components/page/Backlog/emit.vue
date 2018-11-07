@@ -33,8 +33,10 @@
                                     <div class="remind-alert"
                                         :closable="false"
                                         center>
-                                        <img v-if="item.state==0 && item.flag!=0" src="static/img/backlogIcon/urgency.png" alt="">
+                                        <img v-if="item.state==0 && item.surplusday<0 && (item.flag==1 || item.flag==0)" src="static/img/backlogIcon/overdue.png" alt="">
+                                        <img v-else-if="item.state==0 && item.flag==1" src="static/img/backlogIcon/urgency.png" alt="">
                                         <img v-else-if="item.state==0 && item.flag==0" src="static/img/backlogIcon/general.png" alt="">
+                                        <img v-else-if="item.state==3" src="static/img/backlogIcon/closed.png" alt="">
                                         <img v-else-if="item.state==1" src="static/img/backlogIcon/complete.png" alt="">
                                     </div>
                                 </el-col>
@@ -49,9 +51,13 @@
 
                         <!--New 修改 -->
                         <div class="backlogItemContent">
-                            <div class="content-desc">{{item.taskdescribe}}</div>
+                            <div class="content-desc row">
+                                <span v-if="item.state==0 && item.surplusday>0" class="fsize14" style="color:#4c97ff">【剩余{{item.surplusday}}天】</span>
+                                <span v-else-if="item.state==0 && item.surplusday==0" class="fsize14" style="color:#f69e3f">【最后1天】</span>
+                                <span v-else-if="item.state==0 && item.surplusday<0" class="fsize14" style="color:#f33b3b">【逾期{{Math.abs(item.surplusday)}}天】</span>
+                                <p :class="[item.state==3 ? 'color999' : 'color333']" class="dib fsize16">{{item.taskdescribe}}</p>
+                                </div>
                             <div class="backlog-bottom-items">
-
                                 <!-- 发起人 -->
                                 <div class="dib backlog-bottom-item">
                                     <i class="iconBox">
@@ -87,7 +93,7 @@
                     :current-page.sync="currentPage"
                     :page-size="pageSize"
                     layout="prev, pager, next"
-                    :total="Number(toDoList.length)">
+                    :total="Number(toDoList[0].count)">
                     </el-pagination>
                 </div>
             </div>
@@ -214,12 +220,16 @@
                             </i>
                             <!-- 截止完成时间 -->
                             <span class="particulars-content-titleTxt vam">截止时间</span>
+                            <span v-if="backlogDetail.state==0 && backlogDetail.surplusday>0" class="vam fsize14" style="color:#4c97ff">【剩余{{backlogDetail.surplusday}}天】</span>
+                            <span v-else-if="backlogDetail.state==0 && backlogDetail.surplusday==0" class="vam fsize14" style="color:#f69e3f">【最后1天】</span>
+                            <span v-else-if="backlogDetail.state==0 && backlogDetail.surplusday<0" class="vam fsize14" style="color:#f33b3b">【逾期{{Math.abs(backlogDetail.surplusday)}}天】</span>
                         </div>
                         <div class="particulars-desc-content-box row">
                             <div class="col-lg-7 particulars-desc-content vam">{{backlogDetail.endtime}}</div>
                             <div class="col-lg-3 vam tar fsize14">
                                 <el-button v-if="backlogDetail.state == 0" style="background:#f69e3f;color:#fff;border:0" @click="closeTask()">关闭任务</el-button>
-                                <el-button style="background:#39d88f;color:#fff" v-else disabled>已完成</el-button>
+                                <el-button v-else-if="backlogDetail.state == 3" disabled style="background:#ccc;color:#fff">已关闭</el-button>
+                                <el-button v-else disabled style="background:#39d88f;color:#fff">已完成</el-button>
                             </div>
                         </div>
                     </div>
@@ -390,10 +400,6 @@ export default {
                 this.show = false;
                 this._getMyBacklogList(1);
             })
-          this.$message({
-            type: 'success',
-            message: '删除成功!'
-          });
           }).catch(() => {
                 this.$message({
                     type: 'info',
@@ -497,34 +503,30 @@ export default {
             this._getMyBacklogList(val);
         },
 
-        // 待办确认完成
-        closeTask(taskType) {
+        // 关闭待办
+        closeTask() {
             this.$confirm('还有执行人未完成，是否仍要关闭？', '提示', {
                 confirmButtonText: '确定',
                 cancelButtonText: '取消',
                 type: 'warning'
             }).then(() => {
                 let reqBody = {
-                    api: "closeTask",
-                    userid: sessionStorage.getItem("userid"),
+                    api: "endtask",
+                    uid: sessionStorage.getItem("userid"),
                     taskid: this.atTaskid,
-                    type: taskType
                 };
                 Axios(reqBody, "user").then(res => {
                     console.log(res);
                     if (res.state == 10001) {
-                        this.$message.success(res.msg);
                         this.show = false;
+                        this._getMyBacklogList(1);
+                        this.$message.success(res.msg);
                     } else {
                         if (res.state == 10002) {
                         }
                         this.$message.error(res.msg);
                     }
                 });
-            this.$message({
-                type: 'success',
-                message: '成功完成!'
-          });
             }).catch(() => {
             this.$message({
                 type: 'info',
@@ -575,7 +577,7 @@ export default {
                 pagesize: 4
             };
             this._getDepartList();
-            // this.getDepartmentList(reqBody);
+            this.getDepartmentList(reqBody);
         },
 
         // 创建和编辑待办
@@ -604,9 +606,9 @@ export default {
             console.log('reqBody:', reqBody);
             
             
-            // this.establish(reqBody, taskId).then(res => {
-            //     this._getMyBacklogList(1);
-            // })
+            this.establish(reqBody, taskId).then(res => {
+                this._getMyBacklogList(1);
+            })
         },
 
 
@@ -755,8 +757,7 @@ export default {
     text-overflow ellipsis 
     overflow hidden
     padding-bottom- 20px
-    font-size 16px
-    color #333
+
 
 .backlog-bottom-item
     margin-right 20px

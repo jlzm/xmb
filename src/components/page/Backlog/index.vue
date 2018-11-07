@@ -29,9 +29,11 @@
                                         type="error"
                                         :closable="false"
                                         center>
-                                        <img v-if="item.state==0 && item.flag==1 && item.mystate == 0" src="static/img/backlogIcon/urgency.png" alt="">
-                                        <img v-else-if="item.state==0 && item.flag==0 && item.mystate == 0" src="static/img/backlogIcon/general.png" alt="">
-                                        <img v-else-if="item.mystate == 2" src="static/img/backlogIcon/complete.png" alt="">
+                                        <img v-if="item.mystate==0 && item.surplusday<0 && (item.flag==1 || item.flag==0)" src="static/img/backlogIcon/overdue.png" alt="">
+                                        <img v-else-if="item.mystate==0 && item.flag==1" src="static/img/backlogIcon/urgency.png" alt="">
+                                        <img v-else-if="item.mystate==0 && item.flag==0" src="static/img/backlogIcon/general.png" alt="">
+                                        <img v-else-if="item.state!=3 && item.mystate==2" src="static/img/backlogIcon/complete.png" alt="">
+                                        <img v-else-if="item.state==3" src="static/img/backlogIcon/closed.png" alt="">
                                     </div>
                                 </el-col>
                                 <!-- 修改 -->
@@ -45,8 +47,12 @@
 
                         <!--New 修改 -->
                         <div class="backlogItemContent">
-                            <div class="content-desc">{{item.taskdescribe}}</div>
-
+                            <div class="content-desc">
+                                <span v-if="item.mystate==0 && item.surplusday>0" class="fsize14" style="color:#4c97ff">【剩余{{item.surplusday}}天】</span>
+                                <span v-else-if="item.mystate==0 && item.surplusday==0" class="fsize14" style="color:#f69e3f">【最后1天】</span>
+                                <span v-else-if="item.mystate==0 && item.surplusday<0" class="fsize14" style="color:#f33b3b">【逾期{{Math.abs(item.surplusday)}}天】</span>
+                                <p :class="[item.state==3 ? 'color999' : 'color333']" class="dib fsize16">{{item.taskdescribe}}</p>
+                                </div>
                             <div class="backlog-bottom-items">
 
                                 <!-- 发起人 -->
@@ -127,12 +133,16 @@
                             </i>
                             <!-- 截止完成时间 -->
                             <span class="particulars-content-titleTxt vam">截止时间</span>
+                            <span v-if="backlogDetail.mystate==0 && backlogDetail.surplusday>0" class="vam fsize14" style="color:#4c97ff">【剩余{{backlogDetail.surplusday}}天】</span>
+                            <span v-else-if="backlogDetail.mystate==0 && backlogDetail.surplusday==0" class="vam fsize14" style="color:#f69e3f">【最后1天】</span>
+                            <span v-else-if="backlogDetail.mystate==0 && backlogDetail.surplusday<0" class="vam fsize14" style="color:#f33b3b">【逾期{{Math.abs(backlogDetail.surplusday)}}天】</span>
                         </div>
                         <div class="particulars-desc-content-box row">
                             <div class="col-lg-7 particulars-desc-content vam">{{backlogDetail.endtime}}</div>
                             <div class="col-lg-3 vam tar fsize14">
                                 <el-button v-if="backlogDetail.mystate==0" type="primary" @click="onConfirm(2)">确认完成</el-button>
-                                <el-button style="background:#39d88f;color:#fff;border:0" v-else disabled>已完成</el-button>
+                                <el-button v-else-if="backlogDetail.state!=3 && backlogDetail.mystate==2" style="background:#39d88f;color:#fff;border:0"  disabled>已完成</el-button>
+                                <el-button v-else-if="backlogDetail.state==3" disabled style="background:#ccc;color:#fff">已关闭</el-button>
                             </div>
                         </div>
                     </div>
@@ -189,6 +199,7 @@
                                 <img  v-lazy="'static/img/backlogIcon/comments_20.png'" alt="">
                             </i>
                             <span class="particulars-content-titleTxt" style="margin-right:5px">评论</span>
+                            
                             <span class="particulars-content-titleTxt">({{backlogDetail.taskrecordlist && backlogDetail.taskrecordlist.length || 0}})</span>
                         </div>
                         <div class="particulars-comment-items">
@@ -363,26 +374,36 @@ export default {
 
         //待办确认完成
         onConfirm(taskType){
-            let reqBody = {
-                "api": "complete",
-                "userid":sessionStorage.getItem('userid'),
-                "taskid":this.atTaskid,
-                "type":taskType
-                }
-            Axios(reqBody,'user').then((res) => {
-                console.log(res)
-                if(res.state==10001){
-                    this.$message.success(res.msg);
-                    this.show = false
-                    this._getMyBacklogList(1);
-                }else{
-                    if(res.state==10002){
-
+            this.$confirm('是否确认完成当前待办事项?', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+                }).then(() => {
+                    let reqBody = {
+                    "api": "complete",
+                    "userid":sessionStorage.getItem('userid'),
+                    "taskid":this.atTaskid,
+                    "type":taskType
                     }
-                    this.$message.error(res.msg);
-                }
-
-            })
+                    Axios(reqBody,'user').then((res) => {
+                        console.log(res)
+                        if(res.state==10001){
+                            this.$message.success(res.msg);
+                            this.show = false
+                            this._getMyBacklogList(1);
+                        }else{
+                            if(res.state==10002){
+                            }
+                            this.$message.error(res.msg);
+                        }
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消'
+                });          
+                });
+            
         },
 
         // 回车发送评论

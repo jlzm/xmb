@@ -15,7 +15,7 @@
               </div>
             </el-form-item>
 
-            <el-form-item v-if="limit==1&&jurisdiction.database.query">
+            <el-form-item v-if="limit == 1 && jurisdiction.database.add == 1">
               <div class="leftBtn btn" @click="onNew">
                 <span class="btnTitle">新建</span>
               </div>
@@ -60,10 +60,10 @@
               label="操作"
               width="200"
               align="center"
-              v-if="limit==1&&jurisdiction.database.query">
+              v-if="limit == 1 && jurisdiction.database.save == 1">
               <template slot-scope="scope" >
                 <el-tooltip class="item"  effect="dark" content="编辑" placement="top-end">
-                  <el-button v-if="jurisdiction.database.save" @click="onCompileVisible(scope.row)" type="success"
+                  <el-button @click="onCompileVisible(scope.row)" type="success"
                              icon="el-icon-edit-outline"></el-button>
                 </el-tooltip>
               </template>
@@ -136,7 +136,7 @@
         limit: JSON.parse(sessionStorage.getItem('limits'))['deptemp'],
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         mapVal:{},
-        
+
       }
     },
 

@@ -9,7 +9,6 @@
                         </el-form-item>
                         <el-form-item>
                             <div class="leftBtn btn" @click="_getMeetingList(1)" >
-                        
                                 <span class="btnTitle">查询</span>
                             </div>
                         </el-form-item>
@@ -215,7 +214,7 @@
                                 <img  v-lazy="'static/img/backlogIcon/timems.png'" alt="">
                             </i>
                             <!-- 截止完成时间 -->
-                            <span class="particulars-content-titleTxt vam">截止时间</span>
+                            <span class="particulars-content-titleTxt vam">会议时间</span>
                         </div>
                         <div class="particulars-desc-content-box row">
                             <div class="particulars-desc-content vam">{{backlogDetail.meetingtime}}</div>

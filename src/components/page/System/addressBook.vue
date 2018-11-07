@@ -26,12 +26,12 @@
               </div>
             </el-form-item>
 
-            <el-form-item class="floatRight">
+            <el-form-item class="floatRight" v-if="jurisdiction.role.add">
               <div class="leftBtn btn">
                 <span class="btnTitle" @click="sectionVisible = true">新建部门</span>
               </div>
             </el-form-item>
-            <el-form-item class="floatRight">
+            <el-form-item class="floatRight" v-if="jurisdiction.role.twoadd">
               <div class="leftBtn btn">
                 <span class="btnTitle" @click="onNewStaff">新建员工</span>
               </div>
@@ -40,7 +40,7 @@
         </div>
       </div>
 
-      <div class="contentBox clearfix">
+      <div class="contentBox clearfix cp-all">
         <div class="leftBox leftBox554">
           <div class="sectionBox" v-loading="DepartmenLoading">
             <div class="title"><img class="iconImg" src="../../../assets/img/bm.png" alt="">
@@ -50,9 +50,15 @@
               <div class="sectionItem" v-for="(item,index) in departmentData.dept" :key="index"
                    @click="_getMemberList(item.deptid,index,item.deptname)">
                 <div>{{item.deptname}}</div>
-                <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                  <el-button v-show="mark == index" @click="onCompileVisible(item.deptname,item.deptid)" type="success"
+                <el-tooltip class="item visible" effect="dark" content="编辑" placement="top-end">
+                  <el-button v-if="jurisdiction.role.save && mark == index"
+                             @click.stop="onCompileVisible(item.deptname,item.deptid)"
+                             type="success"
                              icon="el-icon-edit-outline"></el-button>
+                </el-tooltip>
+                <el-tooltip class="item remove" effect="dark" content="删除" placement="top-end">
+                  <el-button v-if="jurisdiction.role.remove && mark == index" type="danger" icon="el-icon-delete"
+                             @click.stop="onDepartmentRemove(item.deptid)"></el-button>
                 </el-tooltip>
               </div>
             </div>
@@ -118,16 +124,20 @@
                     fixed="right"
                     label="操作"
                     width="200"
-                    align="center">
+                    align="center"
+                  >
                     <template slot-scope="scope" v-if="limit==1">
-                      <el-tooltip class="item" effect="dark" content="用户详情" placement="top-end">
+                      <el-tooltip v-if="jurisdiction.role.twoquery" class="item" effect="dark" content="用户详情"
+                                  placement="top-end">
                         <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view"></el-button>
                       </el-tooltip>
-                      <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
+                      <el-tooltip v-if="jurisdiction.role.twosave" class="item" effect="dark" content="编辑"
+                                  placement="top-end">
                         <el-button @click="onEdit(scope.row)" type="success"
                                    icon="el-icon-edit-outline"></el-button>
                       </el-tooltip>
-                      <el-tooltip class="item" effect="dark" content="删除" placement="top-end">
+                      <el-tooltip v-if="jurisdiction.role.tworemove" class="item" effect="dark" content="删除"
+                                  placement="top-end">
                         <el-button type="danger" icon="el-icon-delete" @click="onAffirm(scope.row.userid)"></el-button>
                       </el-tooltip>
                     </template>
@@ -156,7 +166,8 @@
         </el-form-item>
         <el-form-item label="所属部门" label-position="left" :show-message='false' :required='true' label-width="100px">
           <el-select v-model="newStaff.deptid" placeholder="请选择所属部门">
-            <el-option :label="item.deptname" :value="item.deptid" v-for="(item,index) in departmentData.dept"
+            <el-option :label="item.deptname" :value="item.deptid"
+                       v-for="(item,index) in departmentData.dept"
                        :key="index"></el-option>
           </el-select>
         </el-form-item>
@@ -233,7 +244,7 @@
         MemberLoading: false,
         deleteVisible: false,
         tabListIndex: 0,
-        departmentData: {},
+        departmentData: [],
         roleList: [],   //角色列表
         newStaff: {
           newStaffTitle: '新建员工',
@@ -257,6 +268,7 @@
           search: '',
         },
         limit: JSON.parse(sessionStorage.getItem('limits'))['deptemp'],
+        jurisdiction: JSON.parse(sessionStorage.getItem('jurisdiction')),
         memberList: [],
         multipleSelection: [],
         formulaList: { //编辑栏按钮数
@@ -312,7 +324,7 @@
 
       }
     },
-    activated() {
+    created() {
       this._getDepartmentList()
       this._getRoleList()
     },
@@ -322,7 +334,15 @@
     methods: {
       // 搜索
       onSearch() {
-        this._getMemberList(this.value, 0, this.editDepartment.deptname)
+        if (!this.searchData.search || !this.value) {
+          this.$message.error("员工姓名与部门不能为空");
+        } else {
+          this.departmentData.dept.forEach((item, index) => {
+            if (item.deptname == this.editDepartment.deptname) {
+              this._getMemberList(this.value, index, this.editDepartment.deptname)
+            }
+          })
+        }
       },
       //部门选择
       choice(value) {
@@ -335,6 +355,25 @@
       },
       getFormulaBar(res) {
         console.log(res)
+      },
+      //删除部门
+      onDepartmentRemove(id) {
+        console.log(id);
+        let reqBody = {
+          "api": "meberremove",
+          "deptid": id,
+          "companyid": sessionStorage.getItem('companyid'),
+
+        }
+        Axios(reqBody, 'user').then((res) => {
+          console.log(res)
+          if (res.state == 10001) {
+            this.$message.success('删除成功');
+            this._getDepartmentList()
+          } else {
+            this.$message.error(res.msg);
+          }
+        })
       },
       // 编辑部门
       onCompileVisible(deptname, deptid) {
@@ -363,6 +402,7 @@
             this.departmentData = res.data
             this.rightTabList.tabTitle = res.data.dept[0].deptname
             this._getMemberList(res.data.dept[0].deptid, 0, res.data.dept[0].deptname)
+            this.options = [];
             this.departmentData.dept.forEach(item => {
               this.options.push({
                 value: item.deptid,
@@ -403,6 +443,7 @@
           } else {
             this.memberList = []
             this.searchData.search = '';
+            this.value = '';
             this.$message.error(res.msg);
           }
           setTimeout(() => {
@@ -632,7 +673,6 @@
           console.log(res)
           if (res.state == 10001) {
             this.$message.success('添加成功')
-
             this.sectionVisible1 = false
             this.editDepartment.deptname = ''
             this._getDepartmentList()
@@ -707,8 +747,14 @@
       border-bottom: 1px solid #ddd
       .item {
         position absolute
-        right 11px
+        right 0px
         top: 6px
+      }
+      .visible {
+        right: 70px
+      }
+      .remove {
+        right: 11px
       }
       &:hover
         background-color #00ac97

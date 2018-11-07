@@ -26,10 +26,12 @@
               fixed="right"
               label="操作"
               width="300"
-              align="center">
-              <template slot-scope="scope" v-if="limit==1">
-                <el-tooltip v-if="jurisdiction.database.save" class="item" effect="dark" content="编辑" placement="top-end">
-                  <el-button @click="onCompileVisible(scope.row)" type="success" icon="el-icon-edit-outline"></el-button>
+              align="center"
+              v-if="limit == 1 && jurisdiction.database.save == 1">
+              <template slot-scope="scope">
+                <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
+                  <el-button @click="onCompileVisible(scope.row)" type="success"
+                             icon="el-icon-edit-outline"></el-button>
                 </el-tooltip>
 
               </template>

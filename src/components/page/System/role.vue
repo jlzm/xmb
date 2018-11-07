@@ -1,11 +1,10 @@
 <template>
   <div class="bid">
     <div class="listBox">
-      <div class="operationBox clearfix" v-if="limit==1">
+      <div class="operationBox clearfix" v-if="limit==1 && jurisdiction.role.add == 1">
         <div class="floatLeft leftBox clearfix">
           <el-form :inline="true" class="demo-form-inline" :model="searchData">
-
-            <el-form-item v-if="jurisdiction.role.add">
+            <el-form-item>
               <div class="leftBtn btn" @click="newRole">
                 <span class="btnTitle">新建角色</span>
               </div>
@@ -63,8 +62,9 @@
               fixed="right"
               label="操作"
               width="300"
-              align="center">
-              <template slot-scope="scope" v-if="limit==1">
+              align="center"
+              v-if="limit==1 || jurisdiction.role.query || jurisdiction.role.save || jurisdiction.role.remove">
+              <template slot-scope="scope">
                 <el-tooltip v-if="jurisdiction.role.query" class="item" effect="dark" content="角色详情"
                             placement="top-end">
                   <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view"></el-button>
