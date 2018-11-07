@@ -49,7 +49,6 @@ export default {
                     }
                 ]
             },
-
             dialogTitle: null
         };
     },
@@ -285,9 +284,7 @@ export default {
         //编辑相关
         editBacklog() {
             this.show = false;
-            this.dialogTitle = "编辑待办";
             this.dialogVisible = true;
-
             this.getCurrentBacklog();
         }
     }

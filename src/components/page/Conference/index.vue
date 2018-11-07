@@ -92,7 +92,7 @@
         
         <!-- 新建会议弹出层 -->
         <el-dialog
-            title="新建会议"
+            :title="dialogTitle"
             :visible.sync="dialogVisible"
             width="60%"
             >
@@ -455,6 +455,7 @@ export default {
         this.modify = true;
         this.show = false;
         this.dialogVisible = true;
+        this.dialogTitle = '编辑会议纪要';
         let _newTaskuser = {
             name: "",
             id: ""
@@ -569,6 +570,7 @@ export default {
 
         // 打开新建待办弹出层
         _openNewBacklog() {
+            this.dialogTitle = '新建会议纪要';
             let reqBody = {
                 "api": "departmentlist",
                 "uid": sessionStorage.getItem('userid'),
