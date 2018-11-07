@@ -137,8 +137,6 @@ export default {
                             })
                         }
                     })
-
-                    console.log('this.checkedDeparList:', this.checkedDeparList);
         },
 
         loadNode(node, resolve) {
@@ -186,6 +184,8 @@ export default {
                     console.log(res);
                     if (res.state == 10001) {
                         this.toDoList = res.data;
+                        console.log('this.toDoList.length:', this.toDoList.length);
+                        
                     } else {
                         if (res.state == 10002) {
                             this.toDoList = [];
@@ -226,8 +226,6 @@ export default {
                 if (res.state == 10001) {
                     this.$message.success("评论成功");
                     this.backlogRemark = "";
-                    // this.getToDoList(1, reqBody);
-                    // this.toDoDetail(taskid, true);
                 } else {
                     if (res.state == 10002) {
                     }
@@ -259,7 +257,6 @@ export default {
                 this.$message.error("请填写完整信息");
                 return false;
             }
-
             return Axios(reqBody, "user").then(res => {
                 console.log(res);
                 if (res.state == 10001) {

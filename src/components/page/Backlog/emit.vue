@@ -33,10 +33,9 @@
                                     <div class="remind-alert"
                                         :closable="false"
                                         center>
-                                        <img v-if="item.state==0 && item.flag!=0" v-lazy="'static/img/backlogIcon/urgency.png'" alt="">
-                                        <img v-else-if="item.state==0 && item.flag==0" v-lazy="'static/img/backlogIcon/general.png'" alt="">
-                                        <img v-else-if="item.state==1" v-lazy="'static/img/backlogIcon/complete.png'" alt="">
-                                        <img v-else v-lazy="'static/img/backlogIcon/complete.png'" alt="">
+                                        <img v-if="item.state==0 && item.flag!=0" src="static/img/backlogIcon/urgency.png" alt="">
+                                        <img v-else-if="item.state==0 && item.flag==0" src="static/img/backlogIcon/general.png" alt="">
+                                        <img v-else-if="item.state==1" src="static/img/backlogIcon/complete.png" alt="">
                                     </div>
                                 </el-col>
                                 <!-- 修改 -->
@@ -88,7 +87,7 @@
                     :current-page.sync="currentPage"
                     :page-size="pageSize"
                     layout="prev, pager, next"
-                    :total="Number(toDoList[0].count)">
+                    :total="Number(toDoList.length)">
                     </el-pagination>
                 </div>
             </div>
@@ -134,7 +133,7 @@
                                 
                                 <el-form-item>
                                     <el-button @click="detailModify" v-if="modify==true" type="primary">确认修改</el-button>
-                                    <el-button @click="_establish" v-else type="primary">立即创建</el-button>
+                                    <el-button @click="_establish()" v-else type="primary">立即创建</el-button>
                                 </el-form-item>
                             </el-form>
                         </div>
@@ -219,8 +218,8 @@
                         <div class="particulars-desc-content-box row">
                             <div class="col-lg-7 particulars-desc-content vam">{{backlogDetail.endtime}}</div>
                             <div class="col-lg-3 vam tar fsize14">
-                                <el-button v-if="backlogDetail.state == 0" type="primary" @click="onConfirm(2)">确认完成</el-button>
-                                <el-button v-else disabled>已完成</el-button>
+                                <el-button v-if="backlogDetail.state == 0" style="background:#f69e3f;color:#fff;border:0" @click="closeTask()">关闭任务</el-button>
+                                <el-button style="background:#39d88f;color:#fff" v-else disabled>已完成</el-button>
                             </div>
                         </div>
                     </div>
@@ -338,11 +337,10 @@ import "../../../assets/stylus/upcoming/details.styl";
 export default {
     mixins: [comment],
     created() {
-        this._getMyBacklogList(1);
+        // this._getMyBacklogList(1);
     },
     mounted() {
-        // this._getMyBacklogList(1);
-        // this._getDepartList();
+        this._getMyBacklogList(1);
     },
     data() {
         return {
@@ -479,7 +477,7 @@ export default {
                 api: "departlist",
                 companyid: sessionStorage.getItem("companyid"),
                 page: 1,
-                pagesize: "30"
+                pagesize: "4"
             }
             this.getDepartList(reqBody, participantsList)
         },
@@ -490,6 +488,7 @@ export default {
                 api: "myIssuedetail",
                 taskid: taskid
             };
+            this.atTaskid = taskid;
             this.toDoDetail(reqBody, show)
         },
 
@@ -498,34 +497,39 @@ export default {
             this._getMyBacklogList(val);
         },
 
-        // 待办详情
-        _issueDetail(taskid) {
-            let reqBody = {
-                api: "myIssuedetail",
-                taskid: taskid
-            }
-            this.atTaskid = taskid;
-            this.toDoDetail(reqBody, show);
-        },
-
         // 待办确认完成
-        onConfirm(taskType) {
-            let reqBody = {
-                api: "complete",
-                userid: sessionStorage.getItem("userid"),
-                taskid: this.atTaskid,
-                type: taskType
-            };
-            Axios(reqBody, "user").then(res => {
-                console.log(res);
-                if (res.state == 10001) {
-                    this.$message.success(res.msg);
-                    this.show = false;
-                } else {
-                    if (res.state == 10002) {
+        closeTask(taskType) {
+            this.$confirm('还有执行人未完成，是否仍要关闭？', '提示', {
+                confirmButtonText: '确定',
+                cancelButtonText: '取消',
+                type: 'warning'
+            }).then(() => {
+                let reqBody = {
+                    api: "closeTask",
+                    userid: sessionStorage.getItem("userid"),
+                    taskid: this.atTaskid,
+                    type: taskType
+                };
+                Axios(reqBody, "user").then(res => {
+                    console.log(res);
+                    if (res.state == 10001) {
+                        this.$message.success(res.msg);
+                        this.show = false;
+                    } else {
+                        if (res.state == 10002) {
+                        }
+                        this.$message.error(res.msg);
                     }
-                    this.$message.error(res.msg);
-                }
+                });
+            this.$message({
+                type: 'success',
+                message: '成功完成!'
+          });
+            }).catch(() => {
+            this.$message({
+                type: 'info',
+                message: '已取消'
+            });          
             });
         },
 
@@ -568,7 +572,7 @@ export default {
                 api: "departmentlist",
                 uid: sessionStorage.getItem("userid"),
                 page: 1,
-                pagesize: 99999
+                pagesize: 4
             };
             this._getDepartList();
             // this.getDepartmentList(reqBody);
@@ -583,11 +587,12 @@ export default {
             } else {
                 api = 'myIssueupdate'
             }
+            console.log('taskId:', taskId);
+            
             console.log('api:', api);
             
             let reqBody = {
                 "api": api,
-                // taskname: this.newIssue.taskname,
                 "taskid": taskId,
                 "taskdescribe": this.newIssue.taskdescribe,
                 "endtime": this.newIssue.endtime,
@@ -596,33 +601,14 @@ export default {
                 "userid": sessionStorage.getItem("userid"),
                 "companyid": sessionStorage.getItem("companyid")
             };
-            this.establish(reqBody, taskId).then(res => {
-                this._getMyBacklogList(1);
-            })
+            console.log('reqBody:', reqBody);
+            
+            
+            // this.establish(reqBody, taskId).then(res => {
+            //     this._getMyBacklogList(1);
+            // })
         },
 
-        //待办确认完成
-        onConfirm(taskType){
-            let reqBody = {
-                "api": "complete",
-                "userid":sessionStorage.getItem('userid'),
-                "taskid":this.atTaskid,
-                "type":taskType
-            }
-            Axios(reqBody,'user').then((res) => {
-                console.log(res)
-                if(res.state==10001){
-                    this.$message.success(res.msg);
-                    this.show = false
-                    this._getMyBacklogList(1)
-                }else{
-                    if(res.state==10002){
-
-                    }
-                    this.$message.error(res.msg);
-                }
-            })
-        },
 
     }
 }

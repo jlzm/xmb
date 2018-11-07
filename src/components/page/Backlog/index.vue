@@ -29,9 +29,9 @@
                                         type="error"
                                         :closable="false"
                                         center>
-                                        <img v-if="item.state==0 && item.flag==1 && item.mystate == 0" v-lazy="'static/img/backlogIcon/urgency.png'" alt="">
-                                        <img v-else-if="item.state==0 && item.flag==0 && item.mystate == 0" v-lazy="'static/img/backlogIcon/general.png'" alt="">
-                                        <img v-else-if="item.mystate == 2" v-lazy="'static/img/backlogIcon/complete.png'" alt="">
+                                        <img v-if="item.state==0 && item.flag==1 && item.mystate == 0" src="static/img/backlogIcon/urgency.png" alt="">
+                                        <img v-else-if="item.state==0 && item.flag==0 && item.mystate == 0" src="static/img/backlogIcon/general.png" alt="">
+                                        <img v-else-if="item.mystate == 2" src="static/img/backlogIcon/complete.png" alt="">
                                     </div>
                                 </el-col>
                                 <!-- 修改 -->
@@ -93,9 +93,6 @@
         <!-- 待办弹出框 -->
         <transition name="el-zoom-in-top">
             <div ref="toDoDetail" v-if="show" class="particulars">
-                <!-- 容器 -->
-
-                <!-- 修改 -->
                 <!-- New -->
                 <!-- 标题 -->
                 <div  class="particulars-title-wrap">
@@ -135,7 +132,7 @@
                             <div class="col-lg-7 particulars-desc-content vam">{{backlogDetail.endtime}}</div>
                             <div class="col-lg-3 vam tar fsize14">
                                 <el-button v-if="backlogDetail.mystate==0" type="primary" @click="onConfirm(2)">确认完成</el-button>
-                                <el-button v-else disabled>已完成</el-button>
+                                <el-button style="background:#39d88f;color:#fff;border:0" v-else disabled>已完成</el-button>
                             </div>
                         </div>
                     </div>
@@ -173,7 +170,7 @@
                             <el-row >
                                 <el-col :span="4" v-for="(item,index) in backlogDetail.userlist" :key="index" class="particulars-personnel-item">
                                     <div class="personnel-avatar">
-                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = '../../../static/img/portrait.png'"  alt="">
+                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = 'static/img/portrait.png'"  alt="">
                                     </div>
                                     <i class="accomplish-icon" v-if="item.state == 2">
                                         <img v-lazy="'static/img/do_complete.png'"  alt="">
@@ -258,6 +255,9 @@ export default {
     //     }
     // })
         },
+    created() {
+        // this._getMyBacklogList(1);    
+    },
     mounted() {
         this._getMyBacklogList(1);
     },
@@ -374,7 +374,7 @@ export default {
                 if(res.state==10001){
                     this.$message.success(res.msg);
                     this.show = false
-                    this._getMyBacklogList(1)
+                    this._getMyBacklogList(1);
                 }else{
                     if(res.state==10002){
 

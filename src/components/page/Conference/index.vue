@@ -378,7 +378,7 @@ export default {
     vParticularsTab,vProjectInfo,vBidInfo
   },
   created(){
-    // this.getBasicList()
+    // this._getMeetingList(1);
   },
   mounted() {
     this._getMeetingList(1);
@@ -386,16 +386,16 @@ export default {
   methods:{
     // 会议权限
     meetingPermission(createId) {
-        let reqBody = {
-                "companyid": sessionStorage.getItem("companyid"),
-                "userid": sessionStorage.getItem("userid"),
-                "uid": 'cc92eac238ef4f7bbac653f25e9c1dbd',
-            }
+        // let reqBody = {
+        //         "companyid": sessionStorage.getItem("companyid"),
+        //         "userid": sessionStorage.getItem("userid"),
+        //         "uid": 'cc92eac238ef4f7bbac653f25e9c1dbd',
+        //     }
              
-           return Permission(reqBody,'user/level').then(res => {
-                console.log('权限res:', res);
-                this.permissionShow = res
-            })
+        //    return Permission(reqBody,'user/level').then(res => {
+        //         console.log('权限res:', res);
+        //         this.permissionShow = res
+        //     })
 
     },
     //   删除会议
