@@ -18,7 +18,7 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item>
-                            <div class="leftBtn btn"  @click="getProjectList(1)">
+                            <div class="leftBtn btn"  @click="setReset">
                         
                                 <span class="btnTitle">查询</span>
                             </div>
@@ -72,13 +72,13 @@
                         prop="staffname"
                         label="项目经理"
                         align="center"
-                        width="80">
+                        width="100">
                         </el-table-column>
                         <el-table-column
                         prop="projectstarttime1"
                         label="项目启动时间"
                         align="center"
-                        width="140">
+                        width="120">
                             <template slot-scope="scope">
                                 <span>{{!scope.row.projectstarttime1?'待填写':scope.row.projectstarttime1}}</span>
                             </template>
@@ -107,7 +107,7 @@
                         prop=""
                         label="添加人"
                         align="center"
-                        width="80">
+                        width="100">
                             <template slot-scope="scope">
                                 <span>{{!scope.row.operator?'待填写':scope.row.operator}}</span>
                             </template>
@@ -116,7 +116,7 @@
                         prop=""
                         label="添加时间"
                         align="center"
-                        width="100">
+                        width="140">
                             <template slot-scope="scope">
                                 <span>{{!scope.row.addtime?'待填写':scope.row.addtime}}</span>
                             </template>
@@ -145,7 +145,7 @@
                         <el-table-column
                         fixed="right"
                         label="操作"
-                        width="180"
+                        width="100"
                         align="center">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看进度" placement="top-end">
@@ -162,9 +162,10 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData">
+                <div class="pagination" v-if="pageReset">
                     <el-pagination 
                     background
+                    :current-page.sync="page"
                     :page-size="pageSize"
                     @current-change="pagingChange"
                     layout="prev, pager, next"
@@ -224,6 +225,8 @@ export default {
         multipleSelection: [],
         optProjectid:'',
         pageSize:10,
+        page:1,
+        pageReset:false,
         updatedescribe:'',
         addDialogVisible:false,
         limits:JSON.parse(sessionStorage.getItem('limits')),
@@ -268,7 +271,13 @@ export default {
     },
     //分页
     pagingChange(val){
+        this.page = val
         this.getProjectList(val)
+    },
+    setReset(){
+        this.pageReset = false
+        this.page = 1
+        this.getProjectList()
     },
     onDetails(row){
         this.$router.push({ 
@@ -287,7 +296,7 @@ export default {
         this.addDialogVisible=true
         this.optProjectid=row.id
     },
-    getProjectList(page){
+    getProjectList(){
         this.loading = true
         let reqBody = {
             "api": "getsmlist",
@@ -296,7 +305,7 @@ export default {
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['rate'],
             "status":this.searchData.status,
-            "page":page,
+            "page":this.page,
        
             "pagesize":this.pageSize
         }
@@ -305,7 +314,9 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.tableData = res.data
-                
+                if(res.data.total>0){
+                    this.pageReset = true
+                }
             }else{
                 this.$message.error(res.msg);
             }

@@ -158,7 +158,7 @@ export default {
     return {
         tabListIndex:0,
         addFileVisible:false,
-        fileIndex:0,
+        fileIndex:'',
         fileTypeList:[],
         fileList:[],
         fileListData:[],
@@ -182,23 +182,26 @@ export default {
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
+                
+            ],
+            right:[
                 {
                     title:'添加文件',
                     clickEvent:'add',
-                    icon:'icon-iconfontedit',
+                    icon:'icon-jia',
                     limits:false
-                }
-            ],
-            right:[
+                },
                 {
                     title:'下载文件',
                     clickEvent:'download',
                     icon:'icon-download',
+                    bgColor:"bg4C97FF",
                     limits:false
                 },{
                     title:'删除文件',
                     clickEvent:'del',
                     icon:'icon-delete',
+                    bgColor:'bgDelete',
                     limits:false
                 }
             ]
@@ -241,15 +244,15 @@ export default {
   },
   created(){
       if(this.jurisdiction.file.add||(this.jurisdiction.project&&this.jurisdiction.project.add)){
-          this.formulaList.left[0].limits = true
+          this.formulaList.right[0].limits = true
           this.add = true
       }
       if(this.jurisdiction.file.query||(this.jurisdiction.project&&this.jurisdiction.project.query)){
-          this.formulaList.right[0].limits = true
+          this.formulaList.right[1].limits = true
           this.query = true
       }
       if(this.jurisdiction.file.remove||(this.jurisdiction.project&&this.jurisdiction.project.remove)){
-          this.formulaList.right[1].limits = true
+          this.formulaList.right[2].limits = true
           this.remove = true
       }
     this.uploadData = {
@@ -345,13 +348,14 @@ export default {
             "api": "getdocumentdetails",
             "companyid": sessionStorage.getItem('companyid'),
             "id": this.$route.query.id,
+            "userid":sessionStorage.getItem('userid'),
         }
         Axios(reqBody,'project').then((res) => {
             console.log(res)
             if(res.state==10001){
-                this.fileTypeList = res.data.file_type
+                this.fileTypeList = res.data.filetype
                 this.projectname = res.data.fProject_manage.projectname
-                if(res.data.file_type){
+                if(res.data.filetype){
                    this._getFileList(0)
                 }
             }else{
@@ -402,7 +406,15 @@ export default {
             return false
         }
         for(let i=0;i<this.multipleSelection.length;i++){
-            window.open(this.multipleSelection[i].fileurl)
+            let triggerDelay = 2000
+            setTimeout(() => {
+               //window.open(this.multipleSelection[i].fileurl)
+                    var a = document.createElement("a"), //创建a标签
+                    e = document.createEvent("MouseEvents"); //创建鼠标事件对象
+                    e.initEvent("click", false, false); //初始化事件对象
+                    a.href = this.multipleSelection[i].fileurl;  //设置下载地址
+                    a.dispatchEvent(e); //给指定的元素，执行事件click事件
+            }, triggerDelay*i);
         }
        
         //window.open(row.fileurl)
@@ -505,7 +517,9 @@ export default {
         console.log(this.fileListName)
     },
     submitUpload(){
+        
         this.$refs.upload.submit()
+        
        
     }
     
@@ -546,7 +560,7 @@ export default {
                     color #4c97ff
     .iframe
         height 100vh
-        padding-bottom 200px
+        padding-bottom 60px
         overflow: auto
         margin: 0
         z-index 3333

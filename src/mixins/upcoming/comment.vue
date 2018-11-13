@@ -29,31 +29,21 @@ export default {
             searchData: {
                 antistop: ""
             },
-            pageSize: 4,
+            pageSize: 5,
             multipleSelection: [],
-            formulaList: {
-                //编辑栏按钮数
-                parent: "marketClue",
-                left: [
-                    {
-                        title: "编辑",
-                        clickEvent: "compile",
-                        icon: "icon-iconfontedit"
-                    }
-                ],
-                right: [
-                    {
-                        title: "新建",
-                        clickEvent: "changeState",
-                        icon: "icon-bianji"
-                    }
-                ]
-            },
-            dialogTitle: null
+            dialogTitle: null,
+            // 搜索
+            starttime: '',
+            endtime: ''
         };
     },
     methods: {
+        pickerOptions0() {
 
+        },
+        pickerOptions1() {
+
+        },
         // 选择人员
         handleCheckChange(data, checkedNodes) {
             console.log(checkedNodes);

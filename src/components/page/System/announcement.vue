@@ -108,13 +108,13 @@
           <el-input v-model="compileData.title"></el-input>
         </el-form-item>
         <el-form-item :required='true' label="公告内容" label-width="100px">
-          <quill-editor v-model="compileData.content"
-                        class="editer"
-                        :options="editorOption" @change="onEditorChang($event)">
-          </quill-editor>
+          <div class="editer">
+            <quill-editor v-model="compileData.content"
+                          :options="editorOption" @change="onEditorChang($event)">
+            </quill-editor>
+          </div>
         </el-form-item>
       </el-form>
-
       <div slot="footer" class="dialog-footer">
         <el-button class="confirmBtn" type="primary" @click="onNoticeEdit">保存</el-button>
       </div>
@@ -169,7 +169,7 @@
           ]
         },
         editorOption: {},
-        jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
+        jurisdiction: JSON.parse(sessionStorage.getItem('jurisdiction')),
       }
     },
     components: {
@@ -229,7 +229,9 @@
       },
       //保存
       onNoticeEdit() {
-        if (this.compileType == 0) {
+        if (this.compileData.title) {
+          console.log(this.compileData.title);
+           if (this.compileType == 0) {
           //新增保存
           this.loading = true;
           let reqBody = {
@@ -278,6 +280,10 @@
 
           })
         }
+        }else {
+          this.$message.error("请输入标题");
+        }
+
       },
       //分页
       pagingChange(val) {
@@ -368,11 +374,6 @@
   .dateSel {
     width: 100%
   }
-
-  .editer {
-
-  }
-
   .dialog-footer
     text-align center
 </style>

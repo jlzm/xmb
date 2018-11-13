@@ -19,7 +19,7 @@
     </div>
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">项目预算：</div>
-        <div class="floatLeft infoItemContent">{{infoData.estimatedsum}}元</div>
+        <div class="floatLeft infoItemContent">{{infoData.estimatedsum1}}元</div>
     </div>
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">资金来源：</div>
@@ -46,10 +46,8 @@
         <div class="floatLeft infoItemContent" v-if="infoData.state==0&&!bidType">跟进中</div>
         <div class="floatLeft infoItemContent" v-if="infoData.state==3&&!bidType">取消跟进</div>
 
-        <div class="floatLeft infoItemContent" v-if="binState==0&&bidType">投标中</div>
-        <div class="floatLeft infoItemContent" v-if="binState==1&&bidType">未中标</div>
-        <div class="floatLeft infoItemContent" v-if="binState==2&&bidType">已中标</div>
-        <div class="floatLeft infoItemContent" v-if="binState==3&&bidType">未投标</div>
+        <div class="floatLeft infoItemContent" v-if="bidType">转入招投标</div>
+        
        
        
     </div>

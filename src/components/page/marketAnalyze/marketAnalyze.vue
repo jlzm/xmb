@@ -2,7 +2,7 @@
     <div class="marketAnalyze">
         <div class="operationBox" v-if="jurisdiction.sellanalysis.query">
             <el-row>
-                <el-col :span="9">
+                <el-col :span="6">
                     <div class="clearfix">
                         <div  class="tabItem pointer" :class="tabIndex==0?'activeTabItem':''" @click="onTabCut(0)"><span >销售线索</span></div>
                         <div  class="tabItem pointer" :class="tabIndex==1?'activeTabItem':''" @click="onTabCut(1)"><span >招投标项目</span></div>
@@ -10,7 +10,7 @@
         
                     </div>
                 </el-col>
-                <el-col :span="15">
+                <el-col :span="18">
                     <div class="screenBox">
                         <el-row >
                             <el-col :span="6">
@@ -24,7 +24,7 @@
                                 </el-select>
                             </el-col>
                             <el-col :span="6">
-                                <el-select v-model="daynum"  placeholder="请选择">
+                                <el-select v-model="daynum"  placeholder="请选择" @change="selectChange">
                                     <el-option label="近30天" value="30"></el-option>
                                     <el-option label="近60天" value="60"></el-option>
                                     <el-option label="近90天" value="90"></el-option>
@@ -32,13 +32,30 @@
                                 </el-select>
                             </el-col>
                             <el-col :span="10">
-                                <el-date-picker
+                                <!-- <el-date-picker
                                 v-model="datePicke"
                                 value-format='yyyy-MM-dd'
                                 type="daterange"
                                 range-separator="至"
                                 start-placeholder="开始日期"
                                 end-placeholder="结束日期">
+                                </el-date-picker> -->
+
+                                <el-date-picker
+                                v-model="starttime"
+                                type="date"
+                                :picker-options="pickerOptions0"
+                                value-format='yyyy-MM-dd'
+                                placeholder="开始日期">
+                                </el-date-picker>
+                                <span>至</span>
+
+                                <el-date-picker
+                                v-model="endtime"
+                                :picker-options="pickerOptions1"
+                                type="date"
+                                value-format='yyyy-MM-dd'
+                                placeholder="结束日期">
                                 </el-date-picker>
                             </el-col>
                             <el-col :span="2">
@@ -64,13 +81,21 @@
                 <el-col :span="12">
                     <div class="bgWhite">
                         <div class="chartTitle">销售线索金额（元）</div>
-                        <ve-chart :data="marketMoneyData" :settings="chartSettings" :colors="colors" :events="sellthreadlistana"></ve-chart>
+                        <ve-chart :data="marketMoneyData" :settings="chartSettings" :colors="colors" :events="sellthreadlistana" v-if="marketMoneyData.rows.length"></ve-chart>
+                        <div class="pad20"  v-else>
+                            <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                            <div class="notText">暂无数据</div>
+                        </div>
                     </div>
                 </el-col>
                 <el-col :span="12">
                     <div class="bgWhite">
                         <div class="chartTitle">销售线索状态</div>
-                        <ve-chart :data="marketStateData" :settings="chartSettings" :colors="colors"></ve-chart>
+                        <ve-chart :data="marketStateData" :settings="chartSettings" :colors="colors"  :events="sellthreacdState" v-if="marketStateData.rows.length"></ve-chart>
+                        <div class="pad20"  v-else>
+                            <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                            <div class="notText">暂无数据</div>
+                        </div>
                     </div>
                 </el-col>
                 
@@ -88,13 +113,21 @@
                 <el-col :span="12">
                     <div class="bgWhite">
                         <div class="chartTitle">招投标项目金额（元）</div>
-                        <ve-chart :data="binMoneyData" :settings="chartSettings" :colors="colors" :events="binMoneyClick"></ve-chart>
+                        <ve-chart :data="binMoneyData" :settings="chartSettings" :colors="colors" :events="binMoneyClick" v-if="binMoneyData.rows.length"></ve-chart>
+                        <div class="pad20"  v-else>
+                            <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                            <div class="notText">暂无数据</div>
+                        </div>
                     </div>
                 </el-col>
                 <el-col :span="12">
                     <div class="bgWhite">
                         <div class="chartTitle">招投标项目状态</div>
-                        <ve-chart :data="binStateData" :settings="chartSettings" :colors="colors"></ve-chart>
+                        <ve-chart :data="binStateData" :settings="chartSettings" :colors="colors" :events="binMoneyStateClick" v-if="binStateData.rows.length"></ve-chart>
+                        <div class="pad20"  v-else>
+                            <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                            <div class="notText">暂无数据</div>
+                        </div>
                     </div>
                 </el-col>
                 
@@ -203,7 +236,7 @@
                          width="100"
                         >
                             <template slot-scope="scope">
-                                <span v-if="scope.row.state==0">销售线索</span>
+                                <span v-if="scope.row.state==0">跟进中</span>
                                 <span v-if="scope.row.state==1">转入招投标</span>
                                 <span v-if="scope.row.state==3">取消跟进</span>
                             </template>
@@ -346,26 +379,53 @@ export default {
     this.typeArr = ['ring',  'bar']
     this.ChartType = 'ring'
     var that = this
+    //销售线索金额明细
     this.sellthreadlistana = {
-        
         click: function (e) {
-     
-            that.sellthreadDialog = true
-            that.sellthreadUserid = that.sellanalysisMoney[e.dataIndex].userid
-            that.getsellthreadlistana(that.sellanalysisMoney[e.dataIndex].userid)
+            if(that.jurisdiction.sellanalysis.query){
+                that.sellthreadDialog = true
+                that.sellthreadState = -1
+                that.sellthreadUserid = that.sellanalysisMoney[e.dataIndex].userid
+                that.getsellthreadlistana(that.sellanalysisMoney[e.dataIndex].userid,-1)
+            }
+            
         }
-        
-
-        
     }
+    //销售线索状态明细
+    this.sellthreacdState = {
+        click: function (e) {
+            if(that.jurisdiction.sellanalysis.query){
+                that.sellthreadDialog = true
+                that.sellthreadUserid = ''
+                that.sellthreadState = that.sellanalysisState[e.dataIndex].state
+                that.getsellthreadlistana('',that.sellanalysisState[e.dataIndex].state)
+            }
+            
+        }
+    }
+
     this.binMoneyClick = {
         click: function (e) {
-      
-            that.binMoneyDialog = true
-            that.binMoneyUserid = that.binMoney[e.dataIndex].userid
-            that.getbinlistana(that.binMoney[e.dataIndex].userid)
+            if(that.jurisdiction.sellanalysis.query){
+                that.binMoneyDialog = true
+                that.binState = -1
+                that.binMoneyUserid = that.binMoney[e.dataIndex].userid
+                that.getbinlistana(that.binMoney[e.dataIndex].userid,-1)
+            }
+            
         }
-        
+    }
+
+    this.binMoneyStateClick = {
+        click: function (e) {
+            if(that.jurisdiction.sellanalysis.query){
+                that.binMoneyDialog = true
+                that.binMoneyUserid = ''
+                that.binState = that.binMoneyState[e.dataIndex].state
+                that.getbinlistana('',that.binMoneyState[e.dataIndex].state)
+            }
+            
+        }
     }
     return {
         loading:false,
@@ -388,6 +448,20 @@ export default {
                 label: '条形图'
             },
         ],
+        pickerOptions0: {
+                disabledDate: (time) => {
+                    if (this.endtime != "") {
+                        
+                        return  time.getTime() > new Date(this.endtime);
+                    } 
+
+                }
+        },
+        pickerOptions1: {
+            disabledDate: (time) => {
+                return time.getTime() < new Date(this.starttime) 
+            }
+        },
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         limits:JSON.parse(sessionStorage.getItem('limits')),
         sellthreadDialog:false,
@@ -398,11 +472,15 @@ export default {
         },
         sellanalysisMoney:[],
         sellanalysisData:{},
+        sellanalysisState:[],
         sellthreadUserid:'',
+        sellthreadState:'',
         sellthreadName:'',
         binMoney:[],
+        binMoneyState:[],
         binData:{},
         binMoneyUserid:'',
+        binState:'',
         marketNumberData: {
           columns: ['名字', '数量'],
           rows: [],
@@ -461,10 +539,9 @@ export default {
         this.tabIndex = idx
     },
     onInquire(){
-        console.log(this.marketNumberData)
-        if(this.datePicke.length>0){
-            this.starttime = this.datePicke[0]
-            this.endtime = this.datePicke[1]
+       // console.log(this.marketNumberData)
+        if(this.starttime||this.endtime){
+            this.daynum = "-1"
         }
         if(this.tabIndex==0){
             //this.getSellanalysisnum()
@@ -477,14 +554,21 @@ export default {
         }
         
     },
+    selectChange(val){
+        console.log(val)
+        if(val!=-1){
+            this.starttime=''
+            this.endtime=''
+        }
+    },
     //分页
     pagingChange(val){
         this.page = val
-        that.getsellthreadlistana(this.sellthreadUserid)
+        this.getsellthreadlistana(this.sellthreadUserid,this.sellthreadState)
     },
-    pagingChange1(){
+    pagingChange1(val){
         this.page1 = val
-        that.getbinlistana(this.binMoneyUserid)
+        this.getbinlistana(this.binMoneyUserid,this.binState)
     },
     //销售线索数量分析
     getSellanalysisnum(){
@@ -564,14 +648,14 @@ export default {
         Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
-                
+                this.sellanalysisState = res.data.analysis
                 let rows = [
                    
                 ]
                 for(let i=0;i<res.data.analysis.length;i++){
                     if(res.data.analysis[i].state==0){
                         rows.push({
-                            "名称":'销售线索',
+                            "名称":'跟进中',
                             "状态":res.data.analysis[i].money
                         })
                     }else if(res.data.analysis[i].state==1){
@@ -675,6 +759,7 @@ export default {
         Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
+                this.binMoneyState = res.data.analysis
                 let rows = [
                    
                 ]
@@ -802,7 +887,7 @@ export default {
         console.log(this.chartSettings)
     },
     //销售线索分析具体数据列表
-    getsellthreadlistana(userid){
+    getsellthreadlistana(userid,state){
         this.loading = true
         let reqBody = {
             "api": "getsellthreadlistana",
@@ -812,8 +897,10 @@ export default {
             "daynum":this.daynum,
             "page":this.page,
             "pagesize":this.pagesize,
-            "state":-1,
-            "userid": userid
+            "state":state,
+            "userid": userid,
+            "uidd": sessionStorage.getItem('userid'),
+            "limit":this.limits['sellanalysis'],
 
         }
         Axios(reqBody,'index').then((res) => {
@@ -830,7 +917,7 @@ export default {
         })
     },
     //招投标分析具体数据列表
-    getbinlistana(userid){
+    getbinlistana(userid,state){
         this.loading = true
         let reqBody = {
             "api": "getbinlistana",
@@ -840,8 +927,10 @@ export default {
             "daynum":this.daynum,
             "page":this.page,
             "pagesize":this.pagesize,
-            "state":-1,
-            "userid": userid
+            "state":state,
+            "userid": userid,
+            "uidd": sessionStorage.getItem('userid'),
+            "limit":this.limits['sellanalysis'],
         }
         Axios(reqBody,'index').then((res) => {
             console.log(res)
@@ -908,5 +997,9 @@ export default {
                         background-color #4c97ff
             .screenBox
                 line-height 46px
+    .notText
+        margin-bottom: 60px;
+    .notIcon
+        margin-top: 60px;
             
 </style>

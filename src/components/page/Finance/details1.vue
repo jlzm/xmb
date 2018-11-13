@@ -194,6 +194,7 @@ export default {
     vFormulaBar,vParticularsTab
   },
   created(){
+    sessionStorage.setItem('tabIndex',2)
     this._getReturnedMoneyInfo()
     this._getSumsource()
     this._getPurchaseProjectList()

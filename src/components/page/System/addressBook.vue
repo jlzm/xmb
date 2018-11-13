@@ -26,12 +26,12 @@
               </div>
             </el-form-item>
 
-            <el-form-item class="floatRight" v-if="jurisdiction.role.add">
+            <el-form-item class="floatRight" v-if="jurisdiction.deptemp.add">
               <div class="leftBtn btn">
                 <span class="btnTitle" @click="sectionVisible = true">新建部门</span>
               </div>
             </el-form-item>
-            <el-form-item class="floatRight" v-if="jurisdiction.role.twoadd">
+            <el-form-item class="floatRight" v-if="jurisdiction.deptemp.twoadd">
               <div class="leftBtn btn">
                 <span class="btnTitle" @click="onNewStaff">新建员工</span>
               </div>
@@ -51,13 +51,13 @@
                    @click="_getMemberList(item.deptid,index,item.deptname)">
                 <div>{{item.deptname}}</div>
                 <el-tooltip class="item visible" effect="dark" content="编辑" placement="top-end">
-                  <el-button v-if="jurisdiction.role.save && mark == index"
+                  <el-button v-if="jurisdiction.deptemp.save && mark == index"
                              @click.stop="onCompileVisible(item.deptname,item.deptid)"
                              type="success"
                              icon="el-icon-edit-outline"></el-button>
                 </el-tooltip>
                 <el-tooltip class="item remove" effect="dark" content="删除" placement="top-end">
-                  <el-button v-if="jurisdiction.role.remove && mark == index" type="danger" icon="el-icon-delete"
+                  <el-button v-if="jurisdiction.deptemp.remove && mark == index" type="danger" icon="el-icon-delete"
                              @click.stop="onDepartmentRemove(item.deptid)"></el-button>
                 </el-tooltip>
               </div>
@@ -125,18 +125,19 @@
                     label="操作"
                     width="200"
                     align="center"
+                    v-if="limit==1 || jurisdiction.deptemp.query || jurisdiction.deptemp.save || jurisdiction.deptemp.remove"
                   >
                     <template slot-scope="scope" v-if="limit==1">
-                      <el-tooltip v-if="jurisdiction.role.twoquery" class="item" effect="dark" content="用户详情"
+                      <el-tooltip v-if="jurisdiction.deptemp.twoquery" class="item" effect="dark" content="用户详情"
                                   placement="top-end">
                         <el-button @click="onDetails(scope.row)" type="primary" icon="el-icon-view"></el-button>
                       </el-tooltip>
-                      <el-tooltip v-if="jurisdiction.role.twosave" class="item" effect="dark" content="编辑"
+                      <el-tooltip v-if="jurisdiction.deptemp.twosave" class="item" effect="dark" content="编辑"
                                   placement="top-end">
                         <el-button @click="onEdit(scope.row)" type="success"
                                    icon="el-icon-edit-outline"></el-button>
                       </el-tooltip>
-                      <el-tooltip v-if="jurisdiction.role.tworemove" class="item" effect="dark" content="删除"
+                      <el-tooltip v-if="jurisdiction.deptemp.tworemove" class="item" effect="dark" content="删除"
                                   placement="top-end">
                         <el-button type="danger" icon="el-icon-delete" @click="onAffirm(scope.row.userid)"></el-button>
                       </el-tooltip>
@@ -334,8 +335,8 @@
     methods: {
       // 搜索
       onSearch() {
-        if (!this.searchData.search || !this.value) {
-          this.$message.error("员工姓名与部门不能为空");
+        if (!this.searchData.search) {
+          this.$message.error("stafflist");
         } else {
           this.departmentData.dept.forEach((item, index) => {
             if (item.deptname == this.editDepartment.deptname) {
@@ -358,9 +359,8 @@
       },
       //删除部门
       onDepartmentRemove(id) {
-        console.log(id);
         let reqBody = {
-          "api": "meberremove",
+          "api": "deptremove",
           "deptid": id,
           "companyid": sessionStorage.getItem('companyid'),
 
@@ -547,6 +547,7 @@
       _onMeberremove() {
         let reqBody = {
           "api": "meberremove",
+          "uid": sessionStorage.getItem('userid'),
           "userid": this.removeId,
           "companyid": sessionStorage.getItem('companyid')
         }
@@ -599,10 +600,10 @@
       // 用户详情
       onDetails(row) {
         console.log(row)
-
         let reqBody = {
           "api": "staffdetails",
           "uid": row.userid,
+          "companyid": sessionStorage.getItem('companyid'),
 
         }
         Axios(reqBody, 'user').then((res) => {
@@ -672,7 +673,7 @@
         Axios(reqBody, 'user').then((res) => {
           console.log(res)
           if (res.state == 10001) {
-            this.$message.success('添加成功')
+            this.$message.success('修改成功')
             this.sectionVisible1 = false
             this.editDepartment.deptname = ''
             this._getDepartmentList()

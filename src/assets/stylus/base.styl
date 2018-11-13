@@ -16,7 +16,7 @@ body,
 body, html
 
   font-family: 'PingFang SC', 'STHeitiSC-Light', 'Helvetica-Light', arial, sans-serif, 'Droid Sans Fallback'
-  user-select: none
+
   -webkit-tap-highlight-color: transparent
   background: $color-background
   color: $color-text
@@ -192,6 +192,7 @@ img
   background: #f5f5f5
 .greyf2f2f2
   background: #f2f2f2
+
 .themeBg
   background-color: $theme-color
 /*图片的大小*/
@@ -474,6 +475,8 @@ input[type="number"]{
 }
 .iframeVisible .el-dialog 
   overflow hidden
+  .el-dialog__body
+    padding:0 20px
 .el-message-box
     width auto
     min-width auto
@@ -491,9 +494,37 @@ input[type="number"]{
       width 32px
       height 32px
       cursor pointer
-
+.content .operationBox .btn.bg4C97FF
+  background #4C97FF
+.content .operationBox .btn.bgDelete
+  background #F45252
+.icon-export
+  display inline-block
+  width 14px
+  height 14px
+  background  url('../../../static/img/icon-export.png') no-repeat
+  background-size 100% 100%
+.icon-wancheng
+  display inline-block
+  width 14px
+  height 14px
+  background  url('../../../static/img/icon-wancheng.png') no-repeat
   // New
-  
+.icon-download
+  display inline-block
+  width 14px
+  height 14px
+  background  url('../../../static/img/icon-download.png') no-repeat
+.icon-delete
+  display inline-block
+  width 14px
+  height 14px
+  background  url('../../../static/img/icon-delete.png') no-repeat
+.icon-accept
+  display inline-block
+  width 14px
+  height 14px
+  background  url('../../../static/img/icon-accept.png') no-repeat
 /* 元素显示及空格清除和字体还原 */
 .row {
     font-size: 0;
@@ -698,4 +729,16 @@ input[type="number"]{
 
 .csp {
   font-size: 0;
+}
+
+//富文本编辑器
+.editer {
+  max-height: 500px;
+  .quill-editor {
+    .ql-container{
+      min-height: 400px;
+      max-height: 400px;
+      overflow: auto;
+    }
+  }
 }

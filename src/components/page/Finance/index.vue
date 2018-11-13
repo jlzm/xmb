@@ -29,7 +29,18 @@
                                         <span class="btnTitle">回款列表</span>
                                     </div>
                                 </el-form-item> -->
-                                
+                                <el-form-item v-if="tableIndex!=3">
+                                    <div class="leftBtn btn" v-if="jurisdiction.finance.add"  @click="newFinance">
+                                        <i class="iconfont marR5 icon-jia" ></i>
+                                        <span class="btnTitle">{{tableIndex==1?'新建支出':'新建回款'}}</span>
+                                    </div>
+                                </el-form-item>
+                                <el-form-item v-if="tableIndex!=3">
+                                    <div class="leftBtn btn bg4C97FF" v-if="jurisdiction.finance.query" @click="exportworkorder">
+                                        <i class="iconfont marR5 icon-export" ></i>
+                                        <span class="btnTitle">批量导出</span>
+                                    </div>
+                                </el-form-item>
                                 <el-form-item label="选择项目" v-if="tableIndex!=3">
                                     <el-select v-model="searchData.projectId" placeholder="请选择项目" popper-class="border">
                                         <el-option value="" label="所有项目"></el-option>
@@ -46,7 +57,7 @@
                                     </el-select>
                                 </el-form-item>
                                 <el-form-item label="" v-if="tableIndex!=3">
-                                    <el-date-picker
+                                    <!-- <el-date-picker
                                     v-model="searchData.time"
                                     type="datetimerange"
                                     range-separator=""
@@ -54,27 +65,34 @@
                                     :value-format="timeVal"
                                     start-placeholder="开始日期"
                                     end-placeholder="结束日期">
+                                    </el-date-picker> -->
+                                    <el-date-picker
+                                    v-model="starttime"
+                                    type="date"
+                                    :picker-options="pickerOptions0"
+                                    value-format='yyyy-MM-dd'
+                                    format='yyyy-MM-dd'
+                                    placeholder="开始日期">
+                                    </el-date-picker>
+                                    <span>至</span>
+
+                                    <el-date-picker
+                                    v-model="endtime"
+                                    :picker-options="pickerOptions1"
+                                    type="date"
+                                    value-format='yyyy-MM-dd'
+                                    format='yyyy-MM-dd'
+                                    placeholder="结束日期">
                                     </el-date-picker>
                                 </el-form-item>
                                 
                                 <el-form-item v-if="tableIndex!=3">
-                                    <div class="leftBtn btn" @click="getSearchData" >
+                                    <div class="leftBtn btn" @click="setReset" >
                                 
                                         <span class="btnTitle">查询</span>
                                     </div>
                                 </el-form-item>
-                                <el-form-item v-if="tableIndex!=3">
-                                    <div class="leftBtn btn" v-if="jurisdiction.finance.add"  @click="newFinance">
                                 
-                                        <span class="btnTitle">{{tableIndex==1?'新建':'新建'}}</span>
-                                    </div>
-                                </el-form-item>
-                                <el-form-item v-if="tableIndex!=3">
-                                    <div class="leftBtn btn" v-if="jurisdiction.finance.query" @click="exportworkorder">
-                                
-                                        <span class="btnTitle">导出</span>
-                                    </div>
-                                </el-form-item>
 
                                 
                             </el-form>
@@ -272,19 +290,21 @@
                 </div>
                 
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableIndex==1&&tableData[0]">
+                <div class="pagination" v-if="tableIndex==1&&pageReset">
                     <el-pagination 
                     background
                     :page-size="pageSize"
+                    :current-page.sync="expendiPage"
                     layout="prev, pager, next"
                     @current-change="pagingChange"
                     :total="tableData[0].total">
                     </el-pagination>
                 </div>
-                <div class="pagination" v-if="tableIndex==2&&tableData1[0]">
+                <div class="pagination" v-if="tableIndex==2&&pageReset1">
                     <el-pagination 
                     background
                     :page-size="pageSize"
+                    :current-page.sync="returnedPage"
                     layout="prev, pager, next"
                     @current-change="pagingChange1"
                     :total="tableData1[0].total">
@@ -661,9 +681,26 @@ export default {
             title:'支出总额',
             statisticsSwitch:false,
         },
-        
+        starttime:'',
+        endtime:'',
+        pickerOptions0: {
+                disabledDate: (time) => {
+                    if (this.endtime != "") {
+                        
+                        return  time.getTime() > new Date(this.endtime);
+                    } 
+
+                }
+        },
+        pickerOptions1: {
+            disabledDate: (time) => {
+                return time.getTime() < new Date(this.starttime) 
+            }
+        },
         expendiPage:1,
         returnedPage:1,
+        pageReset:false,
+        pageReset1:false,
         imageUrl:Session.exportUrl+'saveImage',
         timeVal:'yyyy-MM-dd HH:mm:ss',
         searchData:{
@@ -671,7 +708,7 @@ export default {
             projectId:'',
             sumsourceId:'',
             principal:'',
-            time:''
+           
         },
         newExpend:{
             projectid:'',
@@ -727,6 +764,18 @@ export default {
     vParticularsTab,vProjectInfo,vBidInfo
   },
   created () {
+      if(sessionStorage.getItem('tabIndex')){
+          if(sessionStorage.getItem('tabIndex')==1){
+              this.tableIndex = 1
+           
+            sessionStorage.removeItem('tabIndex')
+             this.getExpendiTureList()  
+          }else if(sessionStorage.getItem('tabIndex')==2){
+              this.tableIndex = 2
+              this.getReturnedMoneyList()
+              sessionStorage.removeItem('tabIndex')
+          }
+      }
       this._getdetaillist()
       this._getemoneybyyear(0)
       this.getmoneytrend()
@@ -758,7 +807,6 @@ export default {
                 this.imagepc  = file.response.fileUrl
             }
         }
-        
         console.log(file)
     },
      //图片上传处理
@@ -860,12 +908,16 @@ export default {
         this.expendiPage = 1
         this.returnedPage = 1
         if(tableIndex!=this.tableIndex&&tableIndex!=3){
+            this.pageReset = false
+            this.pageReset1 = false
+            this.endtime = ''
+            this.starttime = ''
             this.searchData={
                 antistop:'',
                 projectId:'',
                 sumsourceId:'',
                 principal:'',
-                time:''
+               
             }
             this.imagepc = ''
             this.tableIndex = tableIndex
@@ -900,16 +952,7 @@ export default {
     //获取列表数据 -- 项目支出
     getExpendiTureList(){
         this.loading = true
-        let searchData = {
-            time:[
-            '',
-            ''
-            ]
-        }
-        if(this.searchData.time&&this.searchData.time.length>1){
-            searchData = this.searchData
-        }
-        console.log(this.searchData)
+
         let reqBody = {
             "api": "getexpenditurelist",
             "searchname": "",
@@ -919,8 +962,8 @@ export default {
             "limit":this.limits['finance'],
             "page":this.expendiPage,
             "pagesize":this.pageSize,
-            "starttime": searchData.time[0],
-            "endtime": searchData.time[1],
+            "starttime": this.starttime,
+            "endtime": this.endtime,
             "projectid": this.searchData.projectId,
             "type": "",
             "typeid":this.searchData.sumsourceId
@@ -929,7 +972,9 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.tableData = res.data
-                
+                if(res.data[0].total>0){
+                    this.pageReset = true
+                }
             }else{
                 this.tableData = []
                 this.$message.error(res.msg);
@@ -943,15 +988,7 @@ export default {
     //获取列表数据 -- 项目回款
     getReturnedMoneyList(){
         this.loading = true
-        let searchData = {
-            time:[
-            '',
-            ''
-            ]
-        }
-        if(this.searchData.time&&this.searchData.time.length>1){
-            searchData = this.searchData
-        }
+         
         let reqBody = {
             "api": "getreturnedmoneylist",
             "searchname": "",
@@ -961,8 +998,8 @@ export default {
             "limit":this.limits['finance'],
             "page":this.returnedPage,
             "pagesize":this.pageSize,
-            "starttime": searchData.time[0],
-            "endtime": searchData.time[1],
+            "starttime": this.starttime,
+            "endtime": this.endtime,
             "projectid": this.searchData.projectId,
 
            
@@ -971,7 +1008,9 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.tableData1 = res.data
-                
+                if(res.data[0].total>0){
+                    this.pageReset1 = true
+                }
             }else{
                 this.tableData1 = []
                 this.$message.error(res.msg);
@@ -1155,15 +1194,21 @@ export default {
         
         
     },
-    //查询
-    getSearchData(){
+    setReset(){
         if(this.tableIndex==1){
-             this.getExpendiTureList(1)  
+            this.pageReset = false
+            this.expendiPage = 1
+            this.getExpendiTureList()  
       
         }else{
-            this.getReturnedMoneyList(1)
+            this.pageReset1 = false
+            this.returnedPage = 1
+            this.getReturnedMoneyList()
         }
+        
     },
+    //查询
+    
     //编辑弹出
     onCompile(row){
         if(this.tableIndex==1){
@@ -1530,6 +1575,7 @@ export default {
                     margin-bottom: 0
                 .el-input
                     vertical-align: top
+                    width: 160px
         .btn
             height 32px
             line-height 30px
@@ -1569,7 +1615,7 @@ export default {
         .btnTitle
             vertical-align middle
         .el-select,.el-date-editor
-            width 100%
+            width 180px
     .border
         border-color:#00AC97
     .line

@@ -1,8 +1,7 @@
 <template>
-    <div class="bid">
-        <div class="listBox">
-            <v-formulaBar :formulaList="formulaList" @formulaBarRoutes="getFormulaBar">
-            </v-formulaBar> 
+    <div class="clearfix">
+        <div class="listBox ">
+           
             <div class="contentBox clearfix">
                 <div class="detailItem" v-for="(item,index) in purchaseArr" :key="index">
                     <div class="detailItemTitle clearfix marB15">采购明细（{{index+1}}） <div class="floatRight pointer" @click="delPurchaseArr(index)">删除</div></div>
@@ -74,14 +73,16 @@
                 </div>  
 
             </div>
+             <span slot="footer" class="dialog-footer">
+                <el-button @click="visible">取 消</el-button>
+                <el-button type="primary" @click="addpurchase">确 定</el-button>
+            </span>
         </div>
+       
     </div>
 </template>
 <script>
-import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
-import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
-import vProjectInfo from '../../common/ProjectInfo.vue';  //项目信息
-import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
+
 
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
@@ -113,25 +114,12 @@ export default {
         exportUrl:Session.exportUrl+'saveFile',
         imagepc:'',
         multipleSelection: [],
-        formulaList:{ //编辑栏按钮数
-            parent:'marketClue',
-            left:[
-                {
-                    title:'确认添加',
-                    clickEvent:'affirm',
-                    icon:'icon-iconfontedit',
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.add
-                }
-            ],
-            right:[
-                
-            ]
-        },
+    
         
     }
   },
   components:{
-    vFormulaBar,vParticularsTab,vProjectInfo,vBidInfo
+    
   },
   created () {
       this.getpurchaseprojectlist()
@@ -140,17 +128,11 @@ export default {
     
   },
   methods:{
-    getFormulaBar(res){
-        console.log(res)
-        if(res=='affirm'){
-            this.addpurchase()
-            
-        }
+
+    visible(){
+        this.$emit('onVisible',false)
     },
-    getCutTab(res){
-        console.log(res)
-        this.tabListIndex = res.index
-    },
+  
    
     handleChange(file, fileList) {
         this.fileList = fileList.slice(-3);
@@ -292,10 +274,7 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.$message.success('新建成功')
-                this.$router.replace({ 
-                    path: 'purchase',                
-                
-                })
+                this.$emit('newPurchase',true)
                 
             }else{
                 this.$message.error(res.msg);
@@ -358,4 +337,6 @@ export default {
     .number 
         width 540px
         margin-right 20px
+    .dialog-footer
+        float right
 </style>

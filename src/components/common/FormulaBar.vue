@@ -6,13 +6,13 @@
                 <i class="icon-fanhui1 iconfont marR5"></i>
                 <span class="btnTitle">返回</span>
             </div>
-            <div class="leftBtn btn" v-if="item.limits!=0&&item.limits" v-for="(item,index) in formulaList.left" :key="index"   @click="onFormulaBar(item.clickEvent)">
+            <div class="leftBtn btn" v-if="item.limits!=0&&item.limits" v-for="(item,index) in formulaList.left" :key="index" :class="item.bgColor"  @click="onFormulaBar(item.clickEvent)">
                 <i class="iconfont marR5" :class="[item.icon]"></i>
                 <span class="btnTitle">{{item.title}}</span>
             </div>
         </div>
         <div class="floatRight rightBox clearfix">
-            <div class="rightBtn btn" v-if="item.limits!=0&&item.limits"  v-for="(item,index) in formulaList.right" :key="index"   @click="onFormulaBar(item.clickEvent)">
+            <div class="rightBtn btn" v-if="item.limits!=0&&item.limits"  v-for="(item,index) in formulaList.right" :key="index" :class="item.bgColor"  @click="onFormulaBar(item.clickEvent)">
                 <i class="iconfont marR5" :class="[item.icon]"></i>
                 <span class="btnTitle">{{item.title}}</span>
             </div> 
@@ -70,4 +70,5 @@ export default {
             color #666
         .btnTitle
             vertical-align middle
+        
 </style>

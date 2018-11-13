@@ -4,17 +4,40 @@
             <div class="operationBox clearfix">
                 <div class="floatLeft leftBox clearfix">
                     <el-form :inline="true"  class="demo-form-inline" :model="searchData">
+                        <div class="dib vam">
+                            <el-form-item >
+                                <el-input v-model="searchData.antistop" placeholder="请输入关键词"></el-input>
+                            </el-form-item>
+                        </div>
+                        <div class="dib vam">
+                            <div class="dib">
+                            <el-date-picker
+                            v-model="starttime"
+                            type="date"
+                            :picker-options="pickerOptions0"
+                            value-format='yyyy-MM-dd'
+                            placeholder="开始日期">
+                            </el-date-picker>
+                        </div>
+                        <span>至</span>
+                        <div class="dib">
+                            <el-date-picker
+                            v-model="endtime"
+                            :picker-options="pickerOptions1"
+                            type="date"
+                            value-format='yyyy-MM-dd'
+                            placeholder="结束日期">
+                        </el-date-picker>
+                        </div>
                         <el-form-item >
-                            <el-input v-model="searchData.antistop" placeholder="请输入会议主题"></el-input>
+                        <div class="btn"  @click="_getMeetingList(1)">
+                            <span class="btnTitle">查询</span>
+                        </div>
                         </el-form-item>
-                        <el-form-item>
-                            <div class="leftBtn btn" @click="_getMeetingList(1)" >
-                                <span class="btnTitle">查询</span>
-                            </div>
-                        </el-form-item>
+                        </div>
                     </el-form>
-                    
                 </div>
+                <!-- 右侧编辑 -->
                 <div class="floatRight rightBox clearfix">
                     <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index"  @click="_openNewBacklog" >
                         <i class="iconfont marR5" :class="[item.icon]"></i>
@@ -85,8 +108,9 @@
                     :total="Number(toDoList[0].count)">
                     </el-pagination>
                 </div>
-
-               
+                <div v-if="toDoList && toDoList.length ==0">
+                    <img src="static/img/backlogIcon/no-meeting.png" alt="">
+                </div>
             </div>
         </div>
         
@@ -188,11 +212,11 @@
                         <el-col :span=12 class="tar vam">
                             <div class="particulars-title-right dib">
                                 <!-- 编辑待办 -->
-                                <i v-if="permissionShow == true" @click="_editDetail" class="iconBox-particulars cp">
+                                <i v-if="permissionShow"  @click="_editDetail" class="iconBox-particulars cp">
                                     <img  v-lazy="'static/img/backlogIcon/gray_editor.png'" alt="">
                                 </i>
                                 <!-- 删除此条待办 -->
-                                <i v-if="permissionShow == true" @click="_deleteMeeting(backlogDetail.meetingid)" class="iconBox-particulars cp">
+                                <i v-if="permissionShow"  @click="_deleteMeeting(backlogDetail.meetingid)" class="iconBox-particulars cp">
                                     <img  v-lazy="'static/img/backlogIcon/gray-delet.png'" alt="">
                                 </i>
                                 <!-- 关闭弹出层 -->
@@ -240,7 +264,7 @@
                             <i class="iconBox-particulars">
                                 <img  v-lazy="'static/img/backlogIcon/gray_content.png'" alt="">
                             </i>
-                            <span class="particulars-content-titleTxt">项目会议</span>
+                            <span class="particulars-content-titleTxt">{{backlogDetail.meetingtypename}}</span>
                         </div>
                         <!-- 待办详情 -->
                         <div class="particulars-desc-content-box">
@@ -248,9 +272,11 @@
                                 {{backlogDetail.meetingdesc}}
                             </div>
                             <div class="particulars-desc-bottom">
-                                <span>{{backlogDetail.address ||'暂无地点'}}</span>
+                                <span>{{backlogDetail.createname ||'无名'}}</span>
                                 <span class="particulars-bottom-interval">|</span>
-                                <span class="particulars-desc-createTime">{{backlogDetail.meetingtime}}</span>
+                                <span class="particulars-desc-createTime">{{backlogDetail.createtime}}</span>
+                                <span class="particulars-bottom-interval">|</span>
+                                <span>{{backlogDetail.address ||'暂无地址'}}</span>
                             </div>
                         </div>
                     </div>
@@ -261,18 +287,20 @@
                             <i class="iconBox-particulars">
                                 <img  v-lazy="'static/img/backlogIcon/gray_executor.png'" alt="">
                             </i>
-                            <span class="particulars-content-titleTxt" style="margin-right:20px">参会人员</span>
+                            <span class="particulars-content-titleTxt" style="margin-right:20px">参会人员 ({{backlogDetail.userlist && backlogDetail.userlist.length}})</span>
                         </div>
                         <!-- 执行人列表 -->
                         <div class="particulars-personnel-list">
-                            <el-row >
-                                <el-col :span="4" v-for="(item,index) in backlogDetail.userlist" :key="index" class="particulars-personnel-item">
-                                    <div class="personnel-avatar">
-                                        <img class="personnelImg" v-lazy="{src:item.portrait,error:'static/img/portrait.png'}"  alt="">
+                            <div class="row">
+                                <div v-for="(item,index) in backlogDetail.userlist" :key="index" class="col-lg-1_6">
+                                    <div class="particulars-personnel-item">
+                                        <div class="personnel-avatar">
+                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = 'static/img/portrait.png'"  alt="">
+                                        </div>
+                                        <div class="personnel-completeTxt">{{item.staffname}}</div>
                                     </div>
-                                    <div class="personnel-completeTxt">{{item.staffname}}</div>
-                                </el-col>
-                        </el-row>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -289,7 +317,7 @@
                             <el-row :gutter="20" v-for="(item,index) in backlogDetail.taskrecordlist" :key="index" class="particulars-comment-item">
                                 <el-col :span="3">
                                     <div class="personnel-avatar">
-                                        <img class="personnelImg" :src="item.portrait"  alt="">
+                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = 'static/img/portrait.png'" alt="">
                                     </div>
                                 </el-col>
                                 <el-col :span="21">
@@ -343,7 +371,26 @@ export default {
   mixins: [comment],
   data () {
     return {
-        
+        // 分页
+        pageSize: 4,
+        formulaList: {
+            //编辑栏按钮数
+            parent: "marketClue",
+            left: [
+                {
+                    title: "编辑",
+                    clickEvent: "compile",
+                    icon: "icon-iconfontedit"
+                }
+            ],
+            right: [
+                {
+                    title: "新建会议纪要",
+                    clickEvent: "changeState",
+                    icon: "icon-jia"
+                }
+            ]
+        },   
         permissionShow: false, // 会议操作权限
         // 新建相关数据
     
@@ -385,16 +432,17 @@ export default {
   methods:{
     // 会议权限
     meetingPermission(createId) {
-        // let reqBody = {
-        //         "companyid": sessionStorage.getItem("companyid"),
-        //         "userid": sessionStorage.getItem("userid"),
-        //         "uid": 'cc92eac238ef4f7bbac653f25e9c1dbd',
-        //     }
+        let reqBody = {
+                "companyid": sessionStorage.getItem("companyid"),
+                "userid": sessionStorage.getItem("userid"),
+                "uid": createId,
+            }
+             console.log('createId:', createId);
              
-        //    return Permission(reqBody,'user/level').then(res => {
-        //         console.log('权限res:', res);
-        //         this.permissionShow = res
-        //     })
+           return Permission(reqBody,'user/level').then(res => {
+                console.log('权限res:', res);
+                this.permissionShow = res;
+            })
 
     },
     //   删除会议
@@ -431,6 +479,9 @@ export default {
     let toDoList = this.$refs.toDoList;
     let toDoDetail = this.$refs.toDoDetail && !this.$refs.toDoDetail.contains(e.target);
     let detailShow = true;
+    if(!toDoList) {
+        return;
+    }
     toDoList.forEach(item => {
         if(item.contains(e.target)) {
             detailShow = false
@@ -515,7 +566,9 @@ export default {
                 "page":page,
                 "pagesize":this.pageSize,
                 "companyid":sessionStorage.getItem('companyid'),
-                "search":this.searchData.antistop
+                "search":this.searchData.antistop,
+                 "starttime": this.starttime,
+                "endtime": this.endtime
             }
             this.getToDoList(reqBody);
         },
@@ -765,7 +818,7 @@ export default {
         // border:1px solid #ddd
         margin-bottom 10px
         .backlogItemContent
-            padding 20px 20px
+            padding 12px 20px
             .backlog-bottom-items
                 .backlog-bottom-item
                     margin-right 20px
@@ -780,7 +833,7 @@ export default {
             color #666
         .backlogItemTitle
             border-bottom 1px solid #ddd
-            padding 10px 20px
+            padding 8px 20px
             .back-create-time
                 line-height 30px
                 font-size 14px
@@ -858,9 +911,6 @@ export default {
             padding 0 20px
             width 100%
             height 65px
-            .comment-form
-                line-height 65px
-
         .particularsCen
             overflow-y auto
             height 720px

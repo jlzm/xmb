@@ -4,7 +4,7 @@ import Router from 'vue-router'
 
 Vue.use(Router)
 
-let pathRedirect = '/addressBook'
+
 
 
 
@@ -12,7 +12,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      redirect: pathRedirect
+      
     },
     {
       path: '/',
@@ -60,13 +60,8 @@ export default new Router({
           meta: { title: '项目管理', page: 'project', tags: true }
         },
         {
-          path: '/projectDetails',
-          component: resolve => require(['../components/page/Project/details.vue'], resolve),
-          meta: { title: '项目详情', page: 'project', tags: true },
-        },
-        {
           path: '/financeFundsMore',
-          component: resolve => require(['../components/page/Project/FinanceFundsMore.vue'], resolve),
+          component: resolve => require(['../components/page/Project/financeFundsMore.vue'], resolve),
           meta: {
             title: '财务资金明细',
             page: 'projectDetails'
@@ -81,6 +76,11 @@ export default new Router({
           }
         },
         {
+          path: '/projectDetails',
+          component: resolve => require(['../components/page/Project/details.vue'], resolve),
+          meta: { title: '项目详情', page: 'project' }
+        },
+        {
           path: '/schedule',
           component: resolve => require(['../components/page/Schedule/index.vue'], resolve),
           meta: { title: '进度管理', page: 'schedule', tags: true }
@@ -90,6 +90,7 @@ export default new Router({
           component: resolve => require(['../components/page/Schedule/details.vue'], resolve),
           meta: { title: '项目详情', page: 'schedule' }
         },
+        
         {
           path: '/document',
           component: resolve => require(['../components/page/Document/index.vue'], resolve),
@@ -110,11 +111,11 @@ export default new Router({
           component: resolve => require(['../components/page/Purchase/details.vue'], resolve),
           meta: { title: '采购管理详情', page: 'purchase' }
         },
-        {
-          path: '/purchaseNew',
-          component: resolve => require(['../components/page/Purchase/new.vue'], resolve),
-          meta: { title: '添加采购记录', page: 'purchase' }
-        },
+        // {
+        //   path: '/purchaseNew',
+        //   component: resolve => require(['../components/page/Purchase/new.vue'], resolve),
+        //   meta: { title: '添加采购记录', page: 'purchase' }
+        // },
         {
           path: '/afterSale',
           component: resolve => require(['../components/page/AfterSale/index.vue'], resolve),
@@ -139,6 +140,11 @@ export default new Router({
           path: '/fundMore',
           component: resolve => require(['../components/page/Finance/fundMore.vue'], resolve),
           meta: { title: '资金明细', page: 'finance' }
+        },
+        {
+          path: '/statisticsMore',
+          component: resolve => require(['../components/page/Finance/statisticsMore.vue'], resolve),
+          meta: { title: '数据统计', page: 'finance' }
         },
         {
           path: '/financeDetails',

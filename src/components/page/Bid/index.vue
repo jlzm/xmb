@@ -9,17 +9,16 @@
                         </el-form-item>
                         <el-form-item label="投标状态">
                             <el-select v-model="sellStatus" placeholder="请选择投标状态" popper-class="border">
-                                <el-option value="-1" label="所有列表"></el-option>
+                                <el-option value="-1" label="所有项目"></el-option>
                                 <el-option value="0" label="投标中"></el-option>
                                 <el-option value="1" label="未中标"></el-option>
                                 <el-option value="2" label="已中标"></el-option>
                                 <el-option value="3" label="未投标"></el-option>
-                                
-                                
+
                             </el-select>
                         </el-form-item>
                         <el-form-item>
-                            <div class="leftBtn btn"  @click="getBinList(1)">
+                            <div class="leftBtn btn"  @click="setReset()">
                         
                                 <span class="btnTitle">查询</span>
                             </div>
@@ -28,7 +27,7 @@
                     
                 </div>
                 <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-if="item.limits" v-for="(item,index) in formulaList.right" :key="index"  @click="getFormulaBar(item.clickEvent)" >
+                    <div class="rightBtn btn" v-if="item.limits" v-for="(item,index) in formulaList.right" :class="item.bgColor" :key="index"  @click="getFormulaBar(item.clickEvent)" >
                         <i class="iconfont marR5" :class="[item.icon]"></i>
                         <span class="btnTitle">{{item.title}}</span>
                     </div> 
@@ -39,13 +38,13 @@
                     <el-row :gutter="20" class="marB20" >
                         <el-col :span="6">
                             <div class="financialDataBox" v-if="tableData.mothsummoney">
-                                <div class="marB10 "><span class="fbold color666">本月销售线索金额：</span><span class="fsize24" style="color:#4c97ff">￥{{tableData.mothsummoney}}</span></div>
+                                <div class="marB10 "><span class="fbold color666">本月招投标项目金额：</span><span class="fsize24" style="color:#4c97ff">￥{{tableData.mothsummoney}}</span></div>
                                
                             </div>
                             </el-col>
                         <el-col :span="12">
                             <div class="financialDataBox" v-if="tableData.yearsummoney">
-                                <div class="marB10 "><span class="fbold color666">年度销售线索金额：</span><span  class="fsize24" style="color:#1ace59">￥{{tableData.yearsummoney}}</span></div>
+                                <div class="marB10 "><span class="fbold color666">年度招投标项目金额：</span><span  class="fsize24" style="color:#1ace59">￥{{tableData.yearsummoney}}</span></div>
                                 
                             </div>
                         </el-col>
@@ -164,9 +163,10 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData.total>0">
+                <div class="pagination" v-if="pageReset">
                     <el-pagination 
                     background
+                    :current-page.sync="page"
                     :page-size="pageSize"
                     layout="prev, pager, next"
                     @current-change="pagingChange"
@@ -190,8 +190,11 @@
             <div class="marB20">
                 <el-radio v-model="radioState" label="1">未中标</el-radio>
             </div>
-            <div >
+            <div class="marB20">
                 <el-radio v-model="radioState" label="3">未投标</el-radio>
+            </div>
+            <div >
+                <el-radio v-model="radioState" label="0">投标中</el-radio>
             </div>
             
         </div>
@@ -307,6 +310,7 @@ export default {
         multipleSelection: [],
         pageSize:10,
         page:1,
+        pageReset:false,
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
@@ -314,9 +318,10 @@ export default {
             ],
             right:[
                 {
-                    title:'导出',
+                    title:'批量导出',
                     clickEvent:'export',
-                    icon:'icon-jia',
+                    icon:'icon-export',
+                    bgColor:'bg4C97FF',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.query
                 }
             ]
@@ -342,8 +347,14 @@ export default {
     getCutTab(res){
         console.log(res)
     },
+    setReset(){
+        this.pageReset = false
+        this.page = 1
+        this.getBinList()
+    },
     //分页
     pagingChange(val){
+        console.log(val)
         this.page = val
         this.getBinList()
     },
@@ -379,6 +390,9 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.tableData = res.data
+                if(res.data.total>0){
+                    this.pageReset = true
+                }
                 
             }else{
                 this.tableData = []

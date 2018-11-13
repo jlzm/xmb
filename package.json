@@ -5,7 +5,7 @@
   "author": "",
   "private": true,
   "scripts": {
-    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js",
+    "dev": "webpack-dev-server --inline --progress --config build/webpack.dev.conf.js ",
     "start": "npm run dev",
     "build": "node build/build.js"
   },
@@ -20,6 +20,7 @@
     "lib-flexible": "^0.3.2",
     "postcss-px2rem": "^0.3.0",
     "px2rem-loader": "^0.1.9",
+    "qs": "^6.5.2",
     "stylus": "^0.54.5",
     "stylus-loader": "^3.0.2",
     "v-charts": "^1.17.10",

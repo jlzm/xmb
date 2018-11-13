@@ -18,7 +18,7 @@
                             </el-select>
                         </el-form-item>
                         <el-form-item>
-                            <div class="leftBtn btn" @click="getProjectList(1)" >
+                            <div class="leftBtn btn" @click="setReset" >
                         
                                 <span class="btnTitle">查询</span>
                             </div>
@@ -27,7 +27,7 @@
                     
                 </div>
                 <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :key="index" v-if="item.limits!=0&&item.limits"  @click="getFormulaBar(item.clickEvent)">
+                    <div class="rightBtn btn" v-for="(item,index) in formulaList.right" :class="item.bgColor" :key="index" v-if="item.limits!=0&&item.limits"  @click="getFormulaBar(item.clickEvent)">
                         <i class="iconfont marR5" :class="[item.icon]"></i>
                         <span class="btnTitle">{{item.title}}</span>
                     </div> 
@@ -148,7 +148,7 @@
                                 </el-tooltip>
                                 
                                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                    <el-button type="success" icon="el-icon-edit" v-if="jurisdiction.project.save"  @click="_getProjectInfo(scope.row)" ></el-button>
+                                    <el-button type="success" icon="el-icon-edit" v-if="jurisdiction.project.save" :disabled="scope.row.status==0"  @click="_getProjectInfo(scope.row)" ></el-button>
                                 </el-tooltip>
                                
                             </template>
@@ -158,9 +158,10 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData">
+                <div class="pagination" v-if="pageReset">
                     <el-pagination 
                     background
+                    :current-page.sync="page"
                     :page-size="pageSize"
                     @current-change="pagingChange"
                     layout="prev, pager, next"
@@ -191,10 +192,10 @@
                     <span class="newCustmerSpan">元</span>
                 </el-form-item>
                 <el-form-item label="项目启动时间" :show-message='false' :required='true'>
-                    <el-date-picker v-model="form.projectstarttime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
+                    <el-date-picker :picker-options="pickerOptions0" v-model="form.projectstarttime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
                 </el-form-item>
                 <el-form-item label="约定完工时间" :show-message='false' :required='true'>
-                    <el-date-picker v-model="form.appointedtime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
+                    <el-date-picker :picker-options="pickerOptions1" v-model="form.appointedtime" value-format="yyyy-MM-dd HH:mm" format="yyyy-MM-dd HH:mm" type="datetime" placeholder="选择日期"></el-date-picker>
                 </el-form-item>
                 <el-form-item label="客户名称" :show-message='false' :required='true'>
                     <div class="relative">
@@ -305,6 +306,8 @@ export default {
         },
         dialogtTitle:'',
         pageSize:10,
+        page:1,
+        pageReset:false,
         customerList:[],
         deptempList:[],
         limits:JSON.parse(sessionStorage.getItem('limits')),
@@ -333,18 +336,33 @@ export default {
             ],
             right:[
                 {
-                    title:'新建',
+                    title:'新建项目',
                     clickEvent:'new',
-                    icon:'icon-bianji',
+                    icon:'icon-jia',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
                 },{
-                    title:'导出',
+                    title:'批量导出',
                     clickEvent:'export',
-                    icon:'icon-jia',
+                    icon:'icon-export',
+                    bgColor:'bg4C97FF',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.query
                 }
             ]
-        }
+        },
+        pickerOptions0: {
+                disabledDate: (time) => {
+                    if (this.form.appointedtime != "") {
+                        
+                        return  time.getTime() > new Date(this.form.appointedtime);
+                    } 
+
+                }
+        },
+        pickerOptions1: {
+            disabledDate: (time) => {
+                return time.getTime() < new Date(this.form.projectstarttime) 
+            }
+        },
     }
   },
   components:{
@@ -394,7 +412,13 @@ export default {
     },
     //分页
     pagingChange(val){
+        this.page = val
         this.getProjectList(val)
+    },
+    setReset(){
+        this.pageReset = false
+        this.page = 1
+        this.getProjectList()
     },
     //跳转详情事件
     onDetails(row){
@@ -406,7 +430,7 @@ export default {
          })
     },
     //获取列表数据
-    getProjectList(page){
+    getProjectList(){
         this.loading = true
         let reqBody = {
             "api": "getprojectlist",
@@ -414,7 +438,7 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['project'],
-            "page":page,
+            "page":this.page,
             "status":this.searchData.status,
 
             "pagesize":this.pageSize
@@ -424,7 +448,9 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.tableData = res.data
-                
+                if(res.data.total>0){
+                    this.pageReset = true
+                }
             }else{
                 this.$message.error(res.msg);
             }

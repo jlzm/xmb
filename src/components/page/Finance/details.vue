@@ -194,6 +194,7 @@ export default {
     vFormulaBar,vParticularsTab
   },
   created(){
+    sessionStorage.setItem('tabIndex',1)
     this._getExpenditureInfo()
     this._getSumsource()
     this._getPurchaseProjectList()
@@ -243,10 +244,6 @@ export default {
         console.log(this.newExpend.imagestwo);
     },
     
- 
-   
-    
-  
     //项目支出详情
     _getExpenditureInfo(){
         let reqBody = {

@@ -90,6 +90,13 @@
                         sessionStorage.setItem('userportrait',res.data.userportrait)
                         let jurisdiction = {}
                         let limits ={}
+                        if(!res.data.fauths){
+                            this.$router.replace({ 
+                                path: '/announcement',                
+                        
+                            })
+                            return false
+                        }
                         for(let i=0;i<res.data.fauths.length;i++){
                             jurisdiction[res.data.fauths[i].modular] = res.data.fauths[i]
                             limits[res.data.fauths[i].modular] = res.data.fauths[i].alllimits
@@ -140,7 +147,7 @@
 
                         }
                         if(!pathRedirect){
-                            pathRedirect = '/addressBook'
+                            pathRedirect = '/announcement'
                         }
                         this.$router.replace({ 
                             path: pathRedirect,                

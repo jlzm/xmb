@@ -11,7 +11,7 @@
             
                         </div>
                     </el-col>
-                    <el-col :span="20">
+                    <el-col :span="10">
                         <div class="screenBox">
                         
                             <el-form :inline="true"  class="demo-form-inline" :model="searchData">
@@ -29,29 +29,35 @@
                                     <el-input v-model="searchData.antistop" placeholder="请输入工单编号或项目名称"></el-input>
                                 </el-form-item>
                                 
-                            
                                 <el-form-item>
-                                    <div class="leftBtn btn"  @click="getWorkorderList(1)">
+                                    <div class="leftBtn btn"  @click="setReset">
                                         <span class="btnTitle">查询</span>
                                     </div>
                                 </el-form-item>
 
-                                <el-form-item v-if="jurisdiction.workorder.add">
-                                    <div class="leftBtn btn"  @click="onNew">
-                                        <span class="btnTitle">新建工单</span>
-                                    </div>
-                                </el-form-item>
-
-                                <el-form-item v-if="jurisdiction.workorder.query">
-                                    <div class="leftBtn btn"  >
-                                        <span class="btnTitle" @click="exportworkorder">导出</span>
-                                    </div>
-                                </el-form-item>
+                                
                                 
                             </el-form>
 
                         </div>
+                        
                     
+                    </el-col>
+                    <el-col :span="10">
+                        <div class="floatRight rightBox clearfix">
+                            <div class="rightBtn btn" @click="onNew"  v-if="jurisdiction.workorder.add" >
+                                <div>
+                                    <i class="iconfont marR5 icon-jia" ></i>
+                                    <span class="btnTitle">新建工单</span>
+                                </div>
+                            </div> 
+                            <div class="rightBtn btn bg4C97FF" @click="exportworkorder" v-if="jurisdiction.workorder.query"  >
+                                <div>
+                                    <i class="iconfont marR5 icon-export" ></i>
+                                    <span class="btnTitle">批量导出</span>
+                                </div>
+                            </div> 
+                        </div>
                     </el-col>
                 </el-row>
                 
@@ -88,6 +94,9 @@
                         label="工单编号"
                         align="center"
                         width="140">
+                            <template slot-scope="scope">
+                                <span>{{scope.row.wordorder}}</span>
+                            </template>
                         </el-table-column>
                         <el-table-column
                         prop="projectname"
@@ -95,6 +104,9 @@
                         
                         align="center"
                         show-overflow-tooltip>
+                            <template slot-scope="scope">
+                                <span>{{scope.row.projectname}}</span>
+                            </template>
                         </el-table-column>
                         <el-table-column
                         prop="name"
@@ -160,7 +172,7 @@
                         </el-table-column>
 
                        
-                        <el-table-column
+                        <!-- <el-table-column
                       
                         label="完成状态"
                         align="center"
@@ -168,12 +180,15 @@
                              <template slot-scope="scope">
                                 <span>{{scope.row.workstatus==0?'进行中':'已完成'}}</span>
                             </template>
-                        </el-table-column>
+                        </el-table-column> -->
                         <el-table-column
                         prop="finishtime"
                         label="完成时间"
                         align="center"
-                        width="140">
+                        width="140"
+                      
+                        v-if="workstatus==1"
+                        >
                             <template slot-scope="scope">
                                 <span>{{scope.row.finishtime?scope.row.finishtime:'--'}}</span>
                             </template>
@@ -182,14 +197,14 @@
                         fixed="right"
                         label="操作"
                         width="200"
-                        align="center"  v-if="jurisdiction.workorder.save||jurisdiction.workorder.query">
+                        align="center"  v-if="(jurisdiction.workorder.save&&workstatus!=1)||jurisdiction.workorder.query">
                             <template slot-scope="scope">
                                 <el-tooltip class="item" effect="dark" content="查看详情" placement="top-end">
                                     <el-button @click="onDetails(scope.row)" v-if="jurisdiction.workorder.query" type="primary" icon="el-icon-view" ></el-button>
                                 </el-tooltip>
                                 
                                 <el-tooltip class="item" effect="dark" content="编辑" placement="top-end">
-                                    <el-button type="success" icon="el-icon-edit" v-if="jurisdiction.workorder.save"  @click="onCompile(scope.row)" ></el-button>
+                                    <el-button type="success" icon="el-icon-edit" v-if="jurisdiction.workorder.save&&workstatus!=1"  @click="onCompile(scope.row)" ></el-button>
                                 </el-tooltip>
 
                                 <!-- <el-tooltip class="item" effect="dark" content="删除" placement="top-end" >
@@ -203,9 +218,10 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData[0]">
+                <div class="pagination" v-if="pageReset">
                     <el-pagination 
                     background
+                    :current-page.sync="page"
                     :page-size="pageSize"
                     layout="prev, pager, next"
                     @current-change="pagingChange"
@@ -290,6 +306,16 @@
             <el-button type="primary" @click="updateCompile">确 定</el-button>
         </span>
         </el-dialog>
+        <el-dialog
+            title="新建售后工单"
+            :visible.sync="newVisible"
+            width="40%"
+        >
+            <v-newAfter @newAfter='newAfter' @onVisible="onVisible"  v-if="newVisible"></v-newAfter>
+            
+        
+        </el-dialog>
+
         <v-map :mapVisible="mapCompile" :mapVal="mapCompileVal" @closeVisible="closeCompile" @confirmVal="confirmCompile"  v-if="mapCompile"></v-map>
     </div>
     
@@ -301,6 +327,8 @@ import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
 import {AxiosExport} from './../../../api/axios'
 import vMap from '../../common/Map.vue';  
+import vNewAfter from './new.vue';  //项目信息
+
 export default {
   
   data () {
@@ -323,6 +351,8 @@ export default {
         servicelist:[],
         workstatus:"0",
         pageSize:10,
+        page:1,
+        pageReset:false,
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         limits:JSON.parse(sessionStorage.getItem('limits')),
         newMarketClue:{
@@ -338,12 +368,13 @@ export default {
             companyid:'',
             longitude:'',
             latitude:''
-        }
+        },
+        newVisible:false
         
     }
   },
   components:{
-    vMap
+    vMap,vNewAfter
   },
   created () {
       this.getWorkorderList(1)      
@@ -360,8 +391,10 @@ export default {
     },
     setWorkStatus(workstatus){
         if(workstatus!=this.workstatus){
+            this.pageReset = false
+            this.page = 1
             this.workstatus = workstatus
-            this.getWorkorderList(1)  
+            this.getWorkorderList()  
         }
     },
     //表格全选事件
@@ -370,14 +403,17 @@ export default {
     },
     //分页
     pagingChange(val){
-        this.getWorkorderList(val)
+        this.page = val
+        this.getWorkorderList()
+    },
+    setReset(){
+        this.pageReset = false
+        this.page = 1
+        this.getWorkorderList()
     },
     //新建
     onNew(row){
-            this.$router.push({ 
-                path: 'newAfterSale',                
-            
-            })
+        this.newVisible = true
     },
     //跳转详情事件
     onDetails(row){
@@ -390,7 +426,7 @@ export default {
     },
 
     //获取列表数据
-    getWorkorderList(page){
+    getWorkorderList(){
         this.loading = true
         let reqBody = {
             "api": "getworkorderlist",
@@ -399,7 +435,7 @@ export default {
             "userid": sessionStorage.getItem('userid'),
             "workstatus":this.workstatus,
             "limit":this.limits['workorder'],
-            "page":page,
+            "page":this.page,
             "pagesize":this.pageSize
         }
 
@@ -407,6 +443,9 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.tableData = res.data
+                if(res.data[0].total>0){
+                    this.pageReset = true
+                }
                 this._getCustomerList()
                 this._getDeptemp()
                 this._getPurchaseProjectList()
@@ -581,7 +620,6 @@ export default {
             }
         }
         window.open(Session.exportUrl+'exportworkorder?companyid='+sessionStorage.getItem('companyid')+'&id='+ids)
-        
         let reqBody = {
             "api": "exportworkorder",
             "companyid": sessionStorage.getItem('companyid'),
@@ -600,6 +638,16 @@ export default {
         this.newMarketClue.projectaddress = mapVal.address
         this.newMarketClue.longitude = mapVal.lng
         this.newMarketClue.latitude = mapVal.lat
+    },
+    newAfter(msg){
+        console.log(msg)
+        this.page = 1
+        this.newVisible = false
+        this.getWorkorderList()
+    },
+    onVisible(msg){
+        console.log(msg)
+        this.newVisible = false
     }
     
 
@@ -702,4 +750,6 @@ export default {
             height: 28px;
     .newContent
         padding-right 40px
+    .rightBox 
+        padding: 10px
 </style>

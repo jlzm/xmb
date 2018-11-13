@@ -6,7 +6,7 @@
                 <i class="iconfont marR5" :class="[particularsTabList.icon]"></i>
                 <span>{{particularsTabList.tabTitle}}</span>
             </div>
-            <div v-for="(item,index) in particularsTabList.item" :key="index" class="particularsTabItem pointer" :class="[particularsTabList.tabActive==index?'activeTabItem':'']" @click="onCutTab(particularsTabList.tabType,index)">
+            <div v-for="(item,index) in particularsTabList.item" v-if="item.limits!=0" :key="index" class="particularsTabItem pointer" :class="[particularsTabList.tabActive==index?'activeTabItem':'']" @click="onCutTab(particularsTabList.tabType,index)">
                 <i></i>
                 <span>{{item.title}}</span>
             </div>
@@ -67,4 +67,6 @@ export default {
                         width 100%
                         height 3px
                         background-color #4c97ff
+            .pointer 
+                padding 0 20px
 </style>

@@ -18,7 +18,7 @@
         <div class="floatLeft infoItemContent">雀圆路358号</div>
     </div> -->
     <div class="infoItem clearfix">
-        <div class="floatLeft infoItemTitle">项目状态：</div>
+        <div class="floatLeft infoItemTitle">投标状态：</div>
         <div class="floatLeft infoItemContent" v-if="infoData.state==0">投标中</div>
         <div class="floatLeft infoItemContent" v-if="infoData.state==1">未中标</div>
         <div class="floatLeft infoItemContent" v-if="infoData.state==2">已中标</div>
@@ -26,7 +26,7 @@
     </div>
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">投标预算金额：</div>
-        <div class="floatLeft infoItemContent">{{infoData.bindsum?infoData.bindsum+'元':'待填写'}}</div>
+        <div class="floatLeft infoItemContent">{{infoData.bindsum?infoData.bindsum1+'元':'待填写'}}</div>
     </div>
     <div class="infoItem clearfix">
         <div class="floatLeft infoItemTitle">标书购买截止时间：</div>

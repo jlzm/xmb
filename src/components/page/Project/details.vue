@@ -26,6 +26,56 @@
                         <div class="pad10">
                             <!-- 进度查看开始 -->
                             <div v-show="tabListIndex==0" class="invitationBox">
+                                <div  ref="progress" class="marB20" >
+                                    <div :style="'left:'+progressTextLeft+'px'" class="progressText" ref="progressText">
+                                        <div  v-if="fProjectManage.status==1">
+                                            <div v-if="rateData.remainingdays>=0">
+                                                <div class="marB5">项目启动历时<span class="dayStyle">{{rateData.currentdays}}</span>天</div>
+                                                <div >距离完成剩余<span class="dayStyle">{{rateData.remainingdays}}</span>天</div>
+                                            </div>
+                                            <div v-if="rateData.remainingdays<0">
+                                                <div class="marB5">项目启动历时<span class="dayStyle dayOverdueStyle">{{rateData.currentdays}}</span>天</div>
+                                                <div >项目已逾期<span class="dayStyle dayOverdueStyle">{{-rateData.remainingdays}}</span>天</div>
+                                            </div>
+                                        </div>
+                                        <div v-if="fProjectManage.status==0">
+                                            <div  v-if="rateData.remainingdays>=0">
+                                                <div class="marB5">项目启动历时<span class="dayStyle">{{rateData.currentdays}}</span>天</div>
+                                                <div class="marB5"><span class="timeIcon"></span><span>{{fProjectManage.finishtime}}</span></div>
+                                            </div>
+                                            <div  v-if="rateData.remainingdays<0">
+                                                <div class="marB5">项目启动历时<span class="dayStyle dayOverdueStyle">{{rateData.currentdays}}</span>天</div>
+                                                <div class="marB5">项目逾期<span class="dayStyle dayOverdueStyle">{{-rateData.remainingdays}}</span>天完成</div>
+                                                <div class="marB5"><span class="timeIcon"></span><span>{{fProjectManage.finishtime}}</span></div>
+                                            </div>
+                                            
+                                        </div>
+                                        
+                                    </div>
+                                    <div class="progressBox" >
+                                        
+                                        <div class="progressbar-box">
+                                            <div class="progressbar">
+                                                <div class="progressbar-line" v-if="rateData.remainingdays" :class="rateData.remainingdays>=0?'':'overdue'" :style="'width:'+this.progressVal+'%'">
+                                                    <span class="progressbar-icon"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="clearfix progressTime" >
+                                        <div class="floatLeft">
+                                            <div class="marB5">项目启动时间</div>
+                                            <div>{{fProjectManage.projectstarttime1}}</div>
+                                        </div>
+                                        <div class="floatRight endTime">
+                                            <div class="marB5">约定完工时间</div>
+                                            <div>{{fProjectManage.appointedtime1}}</div>
+                                        </div>
+                                    </div>
+
+                                    
+                                </div>
                                 <el-table
                                     ref="multipleTable"
                                     :data="ratelist"
@@ -186,7 +236,7 @@
                                             <div class="finance-total-box ">
                                                 <div class="fsize18">项目总金额</div>
                                                 <div class=" marT45 row">
-                                                <span class="fsize40">{{fprojectManage.bargainsum}}</span>
+                                                <span class="fsize40">{{fprojectManage.bargainsum1}}</span>
                                                 <span class="fsize18">元</span>
                                                 </div>
                                             </div>
@@ -501,6 +551,13 @@ export default {
         fileBoxList:[],
         customerList:[],
         deptempList:[],
+
+        fProjectManage:{},
+        rateData:{},
+        progressVal:0,
+        progressWidth:0,
+        progressTextWidth:0,
+
         updatedescribe:'',
         addDialogVisible:false,
         newDialogVisible:false,
@@ -512,7 +569,7 @@ export default {
         fileList:[],
         fileListStr:'',
         fileListName:'',
-        filetypeid:'1',
+        filetypeid:'',
         uploadData:{},
         successLength:0,
         fprojectManage:'',
@@ -545,11 +602,12 @@ export default {
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
-                {
-                    title:'编辑',
-                    clickEvent:'compile',
-                    icon:'icon-iconfontedit'
-                }
+                // {
+                //         title:'编辑',
+                //         clickEvent:'compile',
+                //         icon:'icon-iconfontedit',
+                //         limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.save
+                //     }
 
             ],
             right:[
@@ -608,6 +666,11 @@ export default {
   components:{
     vFormulaBar,vParticularsTab,vProjectInfo,vBidInfo
   },
+  mounted(){
+    this.progressTextWidth = this.$refs.progressText.offsetWidth
+    this.progressWidth = this.$refs.progress.offsetWidth
+       
+    },
   created(){
       this.uploadData = {
             "companyid": sessionStorage.getItem('companyid'),
@@ -668,7 +731,7 @@ export default {
         }
         if(this.successLength== fileList.length){
             this.successLength = 0
-           this.addFile()
+            this.addFile()
         }
 
         
@@ -720,7 +783,7 @@ export default {
                 {
                     title:'添加文件',
                     clickEvent:'add',
-                    icon:'icon-bianji',
+                    icon:'icon-jia',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add||(JSON.parse(sessionStorage.getItem('jurisdiction')).file&&JSON.parse(sessionStorage.getItem('jurisdiction')).file.add)
                 }
             ]
@@ -734,13 +797,14 @@ export default {
                     {
                         title:'添加进度节点',
                         clickEvent:'addprojectrate',
-                        icon:'icon-bianji',
-                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
-                    },{
-                        title:'确认完成项目',
-                        clickEvent:'updateprojectstatus',
                         icon:'icon-jia',
-                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
+                        limits:true
+                    },{
+                        title:'确认完成',
+                        clickEvent:'updateprojectstatus',
+                        icon:'icon-wancheng',
+                        bgColor:'bg4C97FF',
+                        limits:true
                     }
                 ]
             }else{
@@ -748,8 +812,8 @@ export default {
                     {
                         title:'添加进度节点',
                         clickEvent:'addprojectrate',
-                        icon:'icon-bianji',
-                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
+                        icon:'icon-jia',
+                        limits:true
                     }
                 ]
             }
@@ -770,7 +834,22 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.projectInfo = res.data
-                console.log(this.projectInfo.project_manage.status)
+                if(res.data.project_manage.status){
+                    this.formulaList.left = [
+                        {
+                            title:'编辑',
+                            clickEvent:'compile',
+                            icon:'icon-iconfontedit',
+                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.save
+                        }
+                    ]
+                    console.log(this.formulaList)
+                }else{
+                   this.formulaList.left = []
+                }
+                // if(res.data.isrp==2){
+                //     this.formulaList.left = []
+                // }
                 this._getRateList()
                 
             }else{
@@ -782,34 +861,39 @@ export default {
     //进度列表
     _getRateList(){
         let reqBody = {
-            "api": "getratelist",
+            "api": "getratedetails",
             "projectid": this.$route.query.id,
             "companyid": sessionStorage.getItem('companyid'),
         }
         Axios(reqBody,'project').then((res) => {
             console.log(res)
             if(res.state==10001){
-                this.progressstatus = res.data.progressstatus
+                this.progressstatus = res.data.fProject_manage
                 this.ratelist = res.data.ratelist
+                this.rateData = res.data
+                this.fProjectManage = res.data.fProject_manage
+                if(res.data.currentdays<=res.data.allday&&res.data.currentdays!=0){
+                    this.progressVal = res.data.currentdays/res.data.allday*100
+                }else if(res.data.currentdays<=res.data.allday&&res.data.currentdays==0){
+                    this.progressVal = 0
+                }else{
+                    this.progressVal = 100
+                }
 
-                if(res.data.progressstatus.status==0){
+                if(this.progressstatus.status==0){
                     this.formulaList.right = []
                 }
-                if(this.tabListIndex==0&&res.data.progressstatus.status==0){
+                if(this.tabListIndex==0&&this.progressstatus.status==0){
                         this.formulaList.right = []
                 }else{
-                    if(this.projectInfo.project_manage.projectleader==sessionStorage.getItem('userid')){
+
+                    if(this.projectInfo.isrp==2){
                         this.formulaList.right = [
                             {
                                 title:'添加进度节点',
                                 clickEvent:'addprojectrate',
-                                icon:'icon-bianji',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
-                            },{
-                                title:'确认完成项目',
-                                clickEvent:'updateprojectstatus',
                                 icon:'icon-jia',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
+                                limits:true
                             }
                         ]
                     }else{
@@ -817,11 +901,18 @@ export default {
                             {
                                 title:'添加进度节点',
                                 clickEvent:'addprojectrate',
-                                icon:'icon-bianji',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
+                                icon:'icon-jia',
+                                limits:true
+                            },{
+                                title:'确认完成',
+                                clickEvent:'updateprojectstatus',
+                                icon:'icon-wancheng',
+                                bgColor:'bg4C97FF',
+                                limits:true
                             }
                         ]
                     }
+                    
                 }
                 
             }else if(res.status==20001){
@@ -843,7 +934,7 @@ export default {
             "userid":sessionStorage.getItem('userid'),
         }
         Axios(reqBody,'project').then((res) => {
-            console.log(res)
+ 
             if(res.state==10001){
         
                 this.fileBoxList = res.data.filetype
@@ -863,7 +954,7 @@ export default {
         }
 
         Axios(reqBody, 'index').then((res) => {
-            console.log(res)
+           
             if (res.state == 10001) {
                 this.customerList =  res.data
                 
@@ -882,7 +973,7 @@ export default {
         }
 
         Axios(reqBody, 'index').then((res) => {
-            console.log(res)
+           
             if (res.state == 10001) {
                 this.deptempList =  res.data
                 
@@ -927,7 +1018,7 @@ export default {
         }
 
         Axios(reqBody,'project').then((res) => {
-            console.log(res)
+           
             if(res.state==10001){
             
                 this.financeInfo = res.data
@@ -1100,7 +1191,7 @@ export default {
                 
             }
         })
-        console.log(this.fileListName)
+       
     },
     getfilelist(){
         let reqBody = {
@@ -1113,7 +1204,7 @@ export default {
         }
 
         Axios(reqBody, 'project').then((res) => {
-            console.log(res)
+            
             if (res.state == 10001) {
                 this.fileTypeList = res.data.filetype
 
@@ -1124,8 +1215,11 @@ export default {
         })
     },
     submitUpload(){
-     
-
+   
+        if(!this.filetypeid ){
+            this.$message.error('请选择文件夹')
+            return false
+        }
         this.$refs.upload.submit()
        
     },
@@ -1242,11 +1336,20 @@ export default {
         });
         
     },
-   
     
-    
-  
-    
+  },
+  computed: {
+    // 一个计算属性的 
+    progressTextLeft () {
+        
+        let Width =  this.progressWidth-17-140
+        let marLeft = (Width * this.progressVal /100)+70
+        return marLeft
+    },
+    progressBoxPad(){
+        let pad = this.progressTextWidth/2
+        return pad
+    }
   }
 }
 </script>
@@ -1394,10 +1497,83 @@ export default {
     background-size 100% 100%
 .iframe
     height 100vh
-    padding-bottom 200px
+    padding-bottom 60px
     overflow: auto
     margin: 0
     z-index 3333
     .iframeVisible .el-dialog__body
         overflow hidden
+.progressBox
+    padding 0 70px
+    margin 12px 0
+    
+.progressText
+    text-align center
+    position relative
+    display inline-block
+    font-size 14px
+    color #666
+    transform:translateX(-50%)
+    .dayStyle
+        font-size 20px
+        color #409EFF
+        font-weight bold
+        margin 0 2px
+    .dayOverdueStyle
+        color #F33B3B
+    .timeIcon
+        display inline-block
+        width 14px
+        height 14px
+        background  url('../../../../static/img/do_complete.png')  
+        background-size 100% 100%
+        vertical-align middle
+        margin-right 6px
+
+.progressTime
+    text-align center
+    padding 0 10px 40px
+    font-size 14px
+    color #666
+// .endTime
+//     text-align right 
+
+// 
+.progressbar-box
+    position relative
+    .progressbar
+        position relative
+        height 10px
+        border-radius 100px
+        background-color #ebeef5
+        width 100%
+        position relative
+        vertical-align middle
+        .progressbar-line
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            background-color: #409EFF;
+            text-align: right;
+            border-radius: 100px;
+            line-height: 1;
+            .progressbar-icon
+                position: absolute
+                right 0
+                top -4px
+                display inline-block
+                width 18px
+                height 18px
+                background  url('../../../../static/img/progressbarIcon.png')  
+        .overdue
+            background-color:#F33B3B;
+            .progressbar-icon
+                position: absolute
+                right 0
+                top -4px
+                display inline-block
+                width 18px
+                height 18px
+                background  url('../../../../static/img/overdueIcon.png')  
 </style>

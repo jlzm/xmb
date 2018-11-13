@@ -43,16 +43,16 @@
                 if (item) {
                     delItem.path === this.$route.path && this.$router.push(item.path);
                 }else{
-                    this.$router.push('/');
+                    this.getPathRedirect()
                 }
             },
             // 关闭全部标签
             closeAll(){
                 this.tagsList = [];
-                this.$router.push('/');
+                this.getPathRedirect()
             },
             // 关闭其他标签
-            closeOther(){
+            closeOther(){ 
                 const curItem = this.tagsList.filter(item => {
                     return item.path === this.$route.path;
                 })
@@ -85,6 +85,58 @@
             },
             handleTags(command){
                 command === 'other' ? this.closeOther() : this.closeAll();
+            },
+            getPathRedirect(){
+                let pathRedirect = ''
+                        let fauths = JSON.parse(sessionStorage.getItem('fauths'))
+                        for (let i = 0; i < fauths.length; i++) {
+                            if (fauths[i].modular == 'sellthreacd') {
+                            pathRedirect = '/marketClue'
+                            break
+                            } else if (fauths[i].modular == 'bin') {
+                            pathRedirect = '/bid'
+                            break
+                            }
+                            else if (fauths[i].modular == 'sellanalysis') {
+                            pathRedirect = '/marketAnalyze'
+                            break
+                            }
+                            else if (fauths[i].modular == 'project') {
+                            pathRedirect = '/project'
+                            break
+                            }
+                            else if (fauths[i].modular == 'rate') {
+                            pathRedirect = '/schedule'
+                            break
+                            }
+                            else if (fauths[i].modular == 'file') {
+                            pathRedirect = '/document'
+                            break
+                            }
+                            else if (fauths[i].modular == 'purchase') {
+                            pathRedirect = '/purchase'
+                            break
+                            }
+                            else if (fauths[i].modular == 'workorder') {
+                            pathRedirect = '/afterSale'
+                            break
+                            }
+                            else if (fauths[i].modular == 'finance') {
+                            pathRedirect = '/finance'
+                            break
+                            }
+                            
+
+
+                        }
+                        if(!pathRedirect){
+                            pathRedirect = '/addressBook'
+                        }
+                        this.$router.replace({ 
+                            path: pathRedirect,                
+                        
+                        })
+                       
             }
         },
         computed: {

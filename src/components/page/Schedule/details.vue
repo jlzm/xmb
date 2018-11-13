@@ -24,27 +24,53 @@
                         <v-particularsTab :particularsTabList="rightTabList" @returnCutTab="getCutTab"></v-particularsTab>
                         <!-- 标题Tab结束 -->
                         <div class="pad10">
-                            <div ref="progress" >
-                                <div :style="'margin-left:'+progressTextLeft+'px'" class="progressText" ref="progressText">
-                                    <div v-if="fProjectManage.status==1">
-                                        <div class="marB5">项目启动历时{{rateData.currentdays}}天</div>
-                                        <div>距离完成剩余{{rateData.remainingdays}}天</div>
+                            <div  ref="progress">
+                                
+                                <div :style="'left:'+progressTextLeft+'px'" class="progressText" ref="progressText">
+                                    <div  v-if="fProjectManage.status==1">
+                                        <div v-if="rateData.remainingdays>=0">
+                                            <div class="marB5">项目启动历时<span class="dayStyle">{{rateData.currentdays}}</span>天</div>
+                                            <div >距离完成剩余<span class="dayStyle">{{rateData.remainingdays}}</span>天</div>
+                                        </div>
+                                        <div v-else>
+                                            <div class="marB5">项目启动历时<span class="dayStyle dayOverdueStyle">{{rateData.currentdays}}</span>天</div>
+                                            <div >项目已逾期<span class="dayStyle dayOverdueStyle">{{-rateData.remainingdays}}</span>天</div>
+                                        </div>
+                                        
+
                                     </div>
                                     <div v-if="fProjectManage.status==0">
-                                        <div class="marB5">该项目已完成</div>
+                                        <div  v-if="rateData.remainingdays>=0">
+                                            <div class="marB5">项目启动历时<span class="dayStyle">{{rateData.currentdays}}</span>天</div>
+                                            <div class="marB5"><span class="timeIcon"></span><span>{{fProjectManage.finishtime}}</span></div>
+                                        </div>
+                                        <div  v-else>
+                                            <div class="marB5">项目启动历时<span class="dayStyle dayOverdueStyle">{{rateData.currentdays}}</span>天</div>
+                                            <div class="marB5">项目逾期<span class="dayStyle dayOverdueStyle">{{-rateData.remainingdays}}</span>天完成</div>
+                                            <div class="marB5"><span class="timeIcon"></span><span>{{fProjectManage.finishtime}}</span></div>
+                                        </div>
+                                        
                                     </div>
                                     
                                 </div>
-                                <div class="progressBox" :style="'padding: 0px '+progressBoxPad+'px'">
-                                    <el-progress :stroke-width="10" :percentage="this.progressVal" :show-text="false"></el-progress>
+                                <div class="progressBox" >
+                                    
+                                    <div class="progressbar-box">
+                                        <div class="progressbar">
+                                            <div class="progressbar-line" :class="rateData.remainingdays>=0?'':'overdue'" :style="'width:'+this.progressVal+'%'">
+                                                <span class="progressbar-icon"></span>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="clearfix progressTime" :style="'padding: 0px '+progressBoxPad+'px 40px'">
+
+                                <div class="clearfix progressTime" >
                                     <div class="floatLeft">
                                         <div class="marB5">项目启动时间</div>
                                         <div>{{fProjectManage.projectstarttime1}}</div>
                                     </div>
                                     <div class="floatRight endTime">
-                                        <div class="marB5">项目结束时间</div>
+                                        <div class="marB5">约定完工时间</div>
                                         <div>{{fProjectManage.appointedtime1}}</div>
                                     </div>
                                 </div>
@@ -141,6 +167,7 @@ export default {
         projectInfo:{},
         ratelist:[],
         fProjectManage:{},
+        rateData:{},
         updatedescribe:'',
         addDialogVisible:false,
         progressVal:0,
@@ -196,12 +223,17 @@ export default {
   mounted(){
         this.progressTextWidth = this.$refs.progressText.offsetWidth
         this.progressWidth = this.$refs.progress.offsetWidth
-         console.log(this.$refs.progressText.offsetWidth)
+         console.log(this.$refs.progress.offsetWidth-17)
     },
   methods:{
     getFormulaBar(res){
-        this.updatedescribe = ''
-        this.addDialogVisible = true
+        if(res=='addprojectrate'){
+            this.updatedescribe = ''
+            this.addDialogVisible = true
+        }else if(res=='updateprojectstatus'){
+            this.updateprojectstatus()
+        }
+        
     },
     getCutTab(res){
         console.log(res)
@@ -222,6 +254,35 @@ export default {
             if(res.state==10001){
                 this.projectInfo = res.data
                 
+                if(res.data.project_manage.status==0){
+                    this.formulaList.right = []
+                }else{
+                    if(this.projectInfo.isrp==2){
+                        this.formulaList.right = [
+                            {
+                                title:'添加进度节点',
+                                clickEvent:'addprojectrate',
+                                icon:'icon-jia',
+                                limits:true
+                            }
+                        ]
+                    }else{
+                        this.formulaList.right = [
+                            {
+                                title:'添加进度节点',
+                                clickEvent:'addprojectrate',
+                                icon:'icon-jia',
+                                limits:true
+                            },{
+                                 title:'确认完成',
+                                clickEvent:'updateprojectstatus',
+                                icon:'icon-wancheng',
+                                bgColor:'bg4C97FF',
+                                limits:true
+                            }
+                        ]
+                    }
+                }
                 
             }else{
                 this.$message.error(res.msg);
@@ -253,12 +314,31 @@ export default {
                 if(res.data.fProject_manage.status==0){
                     this.formulaList.right = []
                 }else{
-                    this.formulaList.right = [{
-                    title:'添加进度节点',
-                    clickEvent:'addprojectrate',
-                    icon:'icon-bianji',
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).project.add
-                }]
+                    if(this.projectInfo.isrp==2){
+                        this.formulaList.right = [
+                            {
+                                title:'添加进度节点',
+                                clickEvent:'addprojectrate',
+                                icon:'icon-jia',
+                                limits:true
+                            }
+                        ]
+                    }else{
+                        this.formulaList.right = [
+                            {
+                                title:'添加进度节点',
+                                clickEvent:'addprojectrate',
+                                icon:'icon-jia',
+                                limits:true
+                            },{
+                                title:'确认完成',
+                                clickEvent:'updateprojectstatus',
+                                icon:'icon-wancheng',
+                                bgColor:'bg4C97FF',
+                                limits:true
+                            }
+                        ]
+                    }
                 }
             }else{
                 this.$message.error(res.msg);
@@ -292,13 +372,35 @@ export default {
             }
         })
     },
+    //确认完成
+    updateprojectstatus(){
+        let reqBody = {
+            "api": "updateprojectstatus",
+            "id": this.$route.query.id,
+             "userid": sessionStorage.getItem('userid'),
+             "companyid":sessionStorage.getItem('companyid'),
+
+        }
+
+        Axios(reqBody,'project').then((res) => {
+            console.log(res)
+            if(res.state==10001){
+                this._getRateList()
+                this.$message.success('更新成功');
+            }else{
+                this.$message.error(res.msg);
+            }
+
+        })
+    },
     
   },
   computed: {
     // 一个计算属性的 
     progressTextLeft () {
-        let Width =  this.progressWidth - this.progressTextWidth -20
-        let marLeft = Width * this.progressVal /100
+        
+        let Width =  this.progressWidth-17-140
+        let marLeft = (Width * this.progressVal /100)+70
         return marLeft
     },
     progressBoxPad(){
@@ -315,17 +417,77 @@ export default {
         padding 10px 15px
         overflow hidden
     .progressBox{
-       
-        margin 20px 0
+        padding 0 70px
+        margin 12px 0
     }
     .progressText
+        text-align center
+        position relative
         display inline-block
         font-size 14px
         color #666
-        min-width 110px
+        transform:translateX(-50%)
+        .dayStyle
+            font-size 20px
+            color #409EFF
+            font-weight bold
+            margin 0 2px
+        .dayOverdueStyle
+            color #F33B3B
+        .timeIcon
+            display inline-block
+            width 14px
+            height 14px
+            background  url('../../../../static/img/do_complete.png')  
+            background-size 100% 100%
+            vertical-align middle
+            margin-right 6px
+
     .progressTime
+        text-align center
+        padding 0 10px 40px
         font-size 14px
         color #666
-    .endTime
-        text-align right 
-</style>
+    // .endTime
+    //     text-align right 
+    
+    // 
+    .progressbar-box
+        position relative
+        .progressbar
+            position relative
+            height 10px
+            border-radius 100px
+            background-color #ebeef5
+            width 100%
+            position relative
+            vertical-align middle
+            .progressbar-line
+                position: absolute;
+                left: 0;
+                top: 0;
+                height: 100%;
+                background-color: #409EFF;
+                text-align: right;
+                border-radius: 100px;
+                line-height: 1;
+                .progressbar-icon
+                    position: absolute
+                    right 0
+                    top -4px
+                    display inline-block
+                    width 18px
+                    height 18px
+                    background  url('../../../../static/img/progressbarIcon.png')  
+            .overdue
+                background-color:#F33B3B;
+                .progressbar-icon
+                    position: absolute
+                    right 0
+                    top -4px
+                    display inline-block
+                    width 18px
+                    height 18px
+                    background  url('../../../../static/img/overdueIcon.png')  
+            
+</style>    

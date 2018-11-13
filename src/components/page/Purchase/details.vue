@@ -8,7 +8,7 @@
                     <div class="purchaseBox">
                         <div class="title clearfix">
                             <span class="titleSpan">{{purchaseInfo.projectname}}</span>
-                            <div class="compileBtn"  @click="openCompile" v-if="jurisdiction.purchase.save">编辑</div>
+                            <!-- <div class="compileBtn"  @click="openCompile" v-if="jurisdiction.purchase.save">编辑</div> -->
                     
                         </div>
 
@@ -297,7 +297,12 @@ export default {
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
-                
+                {
+                    title:'编辑',
+                    clickEvent:'compile',
+                    icon:'icon-bianji',
+                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.save
+                },
                 
 
             ],
@@ -306,18 +311,20 @@ export default {
                 {
                     title:'添加文件',
                     clickEvent:'addFile',
-                    icon:'icon-iconfontedit',
+                    icon:'icon-jia',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.add
                 },
                 {
                     title:'下载文件',
                     clickEvent:'download',
-                    icon:'icon-bianji',
+                    icon:'icon-download',
+                    bgColor:'bg4C97FF',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.query
                 },{
                     title:'删除文件',
                     clickEvent:'delFile',
-                    icon:'icon-jia',
+                    icon:'icon-delete',
+                    bgColor:'bgDelete',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).purchase.remove
                 }
             ]
@@ -437,6 +444,8 @@ export default {
             this.batchFileDownload()
         }else if(res == 'delFile'){
             this.delFile()
+        }else if(res == 'compile'){
+            this.openCompile()
         }
     },
     getCutTab(res){
@@ -545,6 +554,7 @@ export default {
     handleSelectionChange(val) {
         this.multipleSelection = val;
     },
+
     batchFileDownload(){
         if(this.multipleSelection.length<1){
             this.$message.error('请选择文件')
@@ -560,25 +570,22 @@ export default {
                     a.href = this.multipleSelection[i].fileurl;  //设置下载地址
                     a.dispatchEvent(e); //给指定的元素，执行事件click事件
             }, triggerDelay*i);
-            
-           
-               
         }
        
         //window.open(row.fileurl)
     },
-    fileDownload(url, triggerDelay, removeDelay){
-        setTimeout(function() {
-            var frame = document.createElement("iframe") 
-            //frame.css('display','none')
-            console.log(frame)
-            //frame.src(url);
-            // $(document.body).after(frame);
-            setTimeout(function() {
-                frame.remove();
-            }, removeDelay);
-        }, triggerDelay);
-    },
+    // fileDownload(url, triggerDelay, removeDelay){
+    //     setTimeout(function() {
+    //         var frame = document.createElement("iframe") 
+    //         //frame.css('display','none')
+    //         console.log(frame)
+    //         //frame.src(url);
+    //         // $(document.body).after(frame);
+    //         setTimeout(function() {
+    //             frame.remove();
+    //         }, removeDelay);
+    //     }, triggerDelay);
+    // },
     delFile(){
         if(this.multipleSelection.length<=0){
              this.$message.error('请先勾选');

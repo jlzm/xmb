@@ -1,18 +1,40 @@
 <template>
     <div class="backlog"  @click="hideToDodetail">
         <div class="listBox" >
-            <div class="operationBox clearfix">
+            <el-row class="operationBox clearfix">
                 <div class="floatLeft leftBox clearfix">
                     <el-form :inline="true"  class="demo-form-inline" :model="searchData">
+                        <div class="dib vam">
+                            <el-form-item >
+                                <el-input v-model="searchData.antistop" placeholder="请输入关键词"></el-input>
+                            </el-form-item>
+                        </div>
+                        <div class="dib vam">
+                            <div class="dib">
+                            <el-date-picker
+                            v-model="starttime"
+                            type="date"
+                            :picker-options="pickerOptions0"
+                            value-format='yyyy-MM-dd'
+                            placeholder="开始日期">
+                            </el-date-picker>
+                        </div>
+                        <span>至</span>
+                        <div class="dib">
+                            <el-date-picker
+                            v-model="endtime"
+                            :picker-options="pickerOptions1"
+                            type="date"
+                            value-format='yyyy-MM-dd'
+                            placeholder="结束日期">
+                        </el-date-picker>
+                        </div>
                         <el-form-item >
-                            <el-input v-model="searchData.antistop" placeholder="请输入关键词"></el-input>
+                        <div class="btn"  @click="_getMyBacklogList(1)">
+                            <span class="btnTitle">查询</span>
+                        </div>
                         </el-form-item>
-
-                        <el-form-item>
-                            <div class="leftBtn btn"  @click="_getMyBacklogList(1)">
-                                <span class="btnTitle">查询</span>
-                            </div>
-                        </el-form-item>
+                        </div>
                     </el-form>
                 </div>
                 <!-- 右侧编辑栏 -->
@@ -22,7 +44,7 @@
                         <span class="btnTitle">{{item.title}}</span>
                     </div> 
                 </div>
-            </div>
+            </el-row>
             <div class="contentBox clearfix padTb5 ">
                 <div class="" v-loading="loading">
                     <div class="bgWhite backlogItem cp" ref="toDoList" v-for="(item,index) in toDoList" :key="index" @click="myIssueDetail(item.taskid)">
@@ -33,8 +55,8 @@
                                     <div class="remind-alert"
                                         :closable="false"
                                         center>
-                                        <img v-if="item.state==0 && item.surplusday<0 && (item.flag==1 || item.flag==0)" src="static/img/backlogIcon/overdue.png" alt="">
-                                        <img v-else-if="item.state==0 && item.flag==1" src="static/img/backlogIcon/urgency.png" alt="">
+                                        <!-- <img v-if="item.state==0 && item.surplusday<0 && (item.flag==1 || item.flag==0)" src="static/img/backlogIcon/overdue.png" alt=""> -->
+                                        <img v-if="item.state==0 && item.flag==1" src="static/img/backlogIcon/urgency.png" alt="">
                                         <img v-else-if="item.state==0 && item.flag==0" src="static/img/backlogIcon/general.png" alt="">
                                         <img v-else-if="item.state==3" src="static/img/backlogIcon/closed.png" alt="">
                                         <img v-else-if="item.state==1" src="static/img/backlogIcon/complete.png" alt="">
@@ -55,7 +77,8 @@
                                 <span v-if="item.state==0 && item.surplusday>0" class="fsize14" style="color:#4c97ff">【剩余{{item.surplusday}}天】</span>
                                 <span v-else-if="item.state==0 && item.surplusday==0" class="fsize14" style="color:#f69e3f">【最后1天】</span>
                                 <span v-else-if="item.state==0 && item.surplusday<0" class="fsize14" style="color:#f33b3b">【逾期{{Math.abs(item.surplusday)}}天】</span>
-                                <p :class="[item.state==3 ? 'color999' : 'color333']" class="dib fsize16">{{item.taskdescribe}}</p>
+                                <span v-else-if="item.state==2 && item.mysurplusday<0" class="fsize14" style="color:#f33b3b">【逾期{{Math.abs(item.mysurplusday)}}天】</span>
+                                <p :class="[item.state==3 || item.state==1? 'color999' : 'color333']" class="dib fsize16">{{item.taskdescribe}}</p>
                                 </div>
                             <div class="backlog-bottom-items">
                                 <!-- 发起人 -->
@@ -223,13 +246,13 @@
                             <span v-if="backlogDetail.state==0 && backlogDetail.surplusday>0" class="vam fsize14" style="color:#4c97ff">【剩余{{backlogDetail.surplusday}}天】</span>
                             <span v-else-if="backlogDetail.state==0 && backlogDetail.surplusday==0" class="vam fsize14" style="color:#f69e3f">【最后1天】</span>
                             <span v-else-if="backlogDetail.state==0 && backlogDetail.surplusday<0" class="vam fsize14" style="color:#f33b3b">【逾期{{Math.abs(backlogDetail.surplusday)}}天】</span>
+                            <span v-else-if="backlogDetail.state==2 && backlogDetail.mysurplusday<0" class="fsize14" style="color:#f33b3b">【逾期{{Math.abs(backlogDetail.mysurplusday)}}天】</span>
                         </div>
                         <div class="particulars-desc-content-box row">
                             <div class="col-lg-7 particulars-desc-content vam">{{backlogDetail.endtime}}</div>
                             <div class="col-lg-3 vam tar fsize14">
-                                <el-button v-if="backlogDetail.state == 0" style="background:#f69e3f;color:#fff;border:0" @click="closeTask()">关闭任务</el-button>
+                                <el-button v-if="backlogDetail.state == 0 || backlogDetail.state == 1" style="background:#f69e3f;color:#fff;border:0" @click="closeTask()">关闭任务</el-button>
                                 <el-button v-else-if="backlogDetail.state == 3" disabled style="background:#ccc;color:#fff">已关闭</el-button>
-                                <el-button v-else disabled style="background:#39d88f;color:#fff">已完成</el-button>
                             </div>
                         </div>
                     </div>
@@ -266,18 +289,21 @@
                         </div>
                         <!-- 执行人列表 -->
                         <div class="particulars-personnel-list">
-                            <el-row >
-                                <el-col :span="4" v-for="(item,index) in backlogDetail.userlist" :key="index" class="particulars-personnel-item">
-                                    <div class="personnel-avatar">
-                                        <img class="personnelImg" v-lazy="{src:item.portrait,error:'static/img/portrait.png'}"  alt="">
-                                    </div>
-                                    <i class="accomplish-icon" v-if="item.state==2">
-                                        <img v-lazy="'static/img/do_complete.png'"  alt="">
-                                    </i>
-                                    <div class="personnel-completeTxt tac">{{item.staffname}}</div>
-                                    <div v-if="item.state==2" class="personnel-completeTime tac">{{item.createtime}}</div>
-                                </el-col>
-                        </el-row>
+                            <div class="row">
+                                <div v-for="(item,index) in backlogDetail.userlist" :key="index" class="col-lg-1_6">
+                                   <div class="particulars-personnel-item">
+                                        <div class="personnel-avatar">
+                                         
+                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = 'static/img/portrait.png'" alt="">
+                                        </div>
+                                        <i class="accomplish-icon" v-if="item.state==2">
+                                            <img v-lazy="'static/img/do_complete.png'"  alt="">
+                                        </i>
+                                        <div class="personnel-completeTxt tac">{{item.staffname}}</div>
+                                        <div v-if="item.state==2" class="personnel-completeTime tac">{{item.createtime}}</div>
+                                   </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -294,7 +320,7 @@
                             <el-row :gutter="20" v-for="(item,index) in backlogDetail.taskrecordlist" :key="index" class="particulars-comment-item">
                                 <el-col :span="3">
                                     <div class="personnel-avatar">
-                                        <img class="personnelImg" :src="item.portrait"  alt="">
+                                        <img class="personnelImg" :src="item.portrait" @error="item.portrait = 'static/img/portrait.png'" alt="">
                                     </div>
                                 </el-col>
                                 <el-col :span="21">
@@ -357,6 +383,24 @@ export default {
             currentPage: 1,
             
             // 新建相关数据
+            formulaList: {
+                //编辑栏按钮数
+                parent: "marketClue",
+                left: [
+                    {
+                        title: "编辑",
+                        clickEvent: "compile",
+                        icon: "icon-iconfontedit"
+                    }
+                ],
+                right: [
+                    {
+                        title: "新建待办",
+                        clickEvent: "changeState",
+                        icon: "icon-jia"
+                    }
+                ]
+            },
             newIssue: {
                 //表单绑定数据
                 taskid: "",
@@ -473,7 +517,9 @@ export default {
                 page: page,
                 pagesize: this.pageSize,
                 companyid: sessionStorage.getItem("companyid"),
-                search: this.searchData.antistop
+                search: this.searchData.antistop,
+                starttime: this.starttime,
+                endtime: this.endtime
             };
             this.getToDoList(reqBody);
         },
@@ -708,9 +754,6 @@ export default {
             padding 0 20px
             width 100%
             height 65px
-            .comment-form
-                line-height 65px
-
         .particularsCen
             overflow-y auto
             height 720px

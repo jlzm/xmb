@@ -188,30 +188,7 @@
                             index: '5',
                             title: '基础数据管理',
                             subs:[
-                                {
-                                    index: 'purchaseType',
-                                    title: '采购类别'
-                                },
-                                {
-                                    index: 'folder',
-                                    title: '文件夹'
-                                },
-                                {
-                                    index: 'expenditure',
-                                    title: '支出类别'
-                                },
-                            {
-                                    index: 'sourceOfFunds',
-                                    title: '资金来源'
-                                },
-                                {
-                                    index: 'meetingType',
-                                    title: '会议类型'
-                                },
-                            {
-                                    index: 'customerManagement',
-                                    title: '客户管理'
-                                },
+                                
 
                             ]
                          },
@@ -220,10 +197,7 @@
                         index: '1',
                         title: '系统设置',
                         subs:[
-                            {
-                                index: 'addressBook',
-                                title: '企业通讯录'
-                            },
+                           
                             {
                                 index: 'announcement',
                                 title: '企业通知公告'
@@ -255,6 +229,9 @@
             
             },
             setItems(){
+                if(!sessionStorage.getItem('fauths')){
+                    return false
+                }
                 let fauths = sessionStorage.getItem('fauths')
                 fauths = JSON.parse(fauths)
                 for(let i=0;i<fauths.length;i++){
@@ -292,12 +269,15 @@
                             ]
                          }
                     }else if(fauths[i].modular=='role'){
-                        this.items[3].subs[2] = {
+                        this.items[3].subs.push({
                             index: 'role',
                             title: '角色管理'
-                        }
+                        })
                     }else if(fauths[i].modular=='deptemp'){
-
+                        this.items[3].subs.unshift({
+                            index: 'addressBook',
+                            title: '企业通讯录'
+                        })
                     }else{
                         if(fauths[i].modular=='sellthreacd'){
                             this.items[0].subs.push({

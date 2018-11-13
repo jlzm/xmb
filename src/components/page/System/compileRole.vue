@@ -44,7 +44,6 @@
               </el-form>
             </div>
           </div>
-
         </div>
         <div class="floatLeft rightBox554">
           <div class="rightContentBox">
@@ -119,11 +118,26 @@
                   </el-form-item>
                 </div>
               </el-form>
-
-
             </div>
           </div>
+          <div class="sectionBox">
+            <div class="title" @click="test">权限等级</div>
+            <div class="padTb20">
+              <el-tree :data="rankList"
+                       :props="defaultProps"
+                       show-checkbox
+                       node-key="id"
+                       ref="tree"
+                       :check-strictly="true"
+                       default-expand-all
+                       :expand-on-click-node="false"
+                       @check-change="handleCheckChange"
+                       @node-click="nodeClick"></el-tree>
+            </div>
+          </div>
+          <div>
 
+          </div>
         </div>
         <div class="floatLeft rightBox554">
           <div class="rightContentBox">
@@ -181,6 +195,7 @@
   </div>
 </template>
 <script>
+
   import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
   import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
   import vProjectInfo from '../../common/ProjectInfo.vue';  //项目信息
@@ -192,6 +207,16 @@
   export default {
     data() {
       return {
+        defaultProps: {
+          children: 'children',
+          label: 'rolename'
+        },
+        clickId: '',
+        rankList: [],
+        props: {
+          children: 'children',
+          label: 'rolename'
+        },
         editData: [],
         newRoleData: [],
         list: [],
@@ -206,7 +231,6 @@
           rolename: '',
         },
         authidList: '',
-
         compile: {
           name: '',
           describe: '',
@@ -226,12 +250,100 @@
           value: '1',
           label: '全部权限'
         }],
-        value: ''
+        value: '',
       }
     },
     methods: {
       init() {
         this.jurisdictionList();
+        this.roleRank();
+      },
+      //跳转测试
+      test() {
+       /* this.$router.push({
+          path: 'treeTable',
+          query: {
+            rankList :this.rankList
+          }
+        })*/
+      },
+      handleCheckChange(data, checked, item) {
+        if (checked == true) {//点击未选中复选框
+          this.clickId = data.roleid;
+          this.$refs.tree.setCheckedKeys([data]);
+          this.$refs.tree.setCheckedKeys([item.id]);
+        }
+      },
+      nodeClick(data, checked, item) {
+        this.clickId = data.roleid
+        this.$refs.tree.setCheckedKeys([data])
+      },
+      //递归拼装树形结构
+      toTreeData(data) {
+        let resData = data;
+        let tree = [];
+        for (let i = 0; i < resData.length; i++) {
+          if (resData[i].pid == 0) {
+            let obj = {
+              pid: resData[i].pid,
+              roleid: resData[i].roleid,
+              rolename: resData[i].rolename,
+              children: []
+            };
+            tree.push(obj);
+            resData.splice(i, 1);
+            i--;
+          }
+        }
+        run(tree);
+
+        function run(chiArr) {
+          if (resData.length !== 0) {
+            for (let i = 0; i < chiArr.length; i++) {
+              for (let j = 0; j < resData.length; j++) {
+                if (chiArr[i].roleid === resData[j].pid) {
+                  let obj = {
+                    pid: resData[j].pid,
+                    roleid: resData[j].roleid,
+                    rolename: resData[j].rolename,
+                    children: []
+                  };
+                  chiArr[i].children.push(obj);
+                  resData.splice(j, 1);
+                  j--;
+                }
+              }
+              // console.log(chiArr[i].children);
+              run(chiArr[i].children);
+            }
+          }
+        }
+
+        return tree;
+      },
+
+
+      //树状图
+      roleRank() {
+        let reqBody = {
+          "api": "roleslists",
+          "companyid": sessionStorage.getItem('companyid'),
+        };
+        Axios(reqBody, 'user').then((res) => {
+          // console.log(res)
+          if (res.state == 10001) {
+            console.log(res.data);
+            this.rankList = this.toTreeData(res.data);
+            console.log(this.rankList);
+            // this.$refs.tree.setCheckedKeys(this.rankList);
+          } else {
+            this.$message.error(res.msg);
+          }
+          setTimeout(() => {
+            this.loading = false
+          }, 1000);
+
+        })
       },
       //编辑
       edit() {
@@ -315,7 +427,6 @@
           })
         }
       },
-
 
       //下拉框选择
       choice(index) {
@@ -524,9 +635,9 @@
           if (res.state == 10001) {
             let arrayData = [];
             this.dataList = res.data;
-            this.dataList.forEach((item, index) => {
+            this.dataList && this.dataList.forEach((item, index) => {
               if (index % 2 == 0) {
-                item.auth.forEach((it, el) => {
+                item.auth && item.auth.forEach((it, el) => {
                   it.mychecked = false;
                 });
                 arrayData.push({
@@ -541,7 +652,7 @@
                 })
               } else {
                 arrayData.forEach(el => {
-                  item.auth.forEach(it => {
+                  item.auth && item.auth.forEach(it => {
                     it.mychecked = false
                   });
                   if (item.authname === el.authname) {

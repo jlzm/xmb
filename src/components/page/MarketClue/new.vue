@@ -56,7 +56,7 @@
             </div>
         </div>
         
-         <el-dialog
+        <el-dialog
         title="添加客户信息"
         :visible.sync="newCustmerVisible"
         width="30%"

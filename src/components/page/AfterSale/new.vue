@@ -1,10 +1,6 @@
 <template>
     <div class="new">
-        <v-formulaBar :formulaList="formulaList" @formulaBarRoutes="getFormulaBar">
-        </v-formulaBar> 
-
         <div class="contentBox clearfix bgWhite padTb10">
-            <div class="title">新建售后工单</div>
             <div class="newContent"> 
                 <el-form ref="newMarketClue" :model="newMarketClue" label-width="140px">
                     <el-form-item label="项目名称：" :show-message='false' :required='true'>
@@ -68,13 +64,16 @@
                 </el-form>
             </div>
         </div>
-
+        <span slot="footer" class="dialog-footer">
+            <el-button @click="visible">取 消</el-button>
+            <el-button type="primary" @click="addworkorder">确 定</el-button>
+        </span>
         <v-map :mapVisible="mapVisible" :mapVal="mapVal" @closeVisible="closeVisible" @confirmVal="confirmVal"  v-if="mapVisible"></v-map>
     </div>
 </template>
 
 <script>
-import vFormulaBar from '../../common/FormulaBar.vue';   //编辑栏
+
 import vMap from '../../common/Map.vue';  
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
@@ -87,19 +86,6 @@ export default {
             purchaseProjectList:[],
             customerList:[],
             deptemp:[],
-            formulaList:{ //编辑栏按钮数
-                parent:'marketClue',
-                left:[
-                    {
-                        title:'确定新建',
-                        clickEvent:'confirm',
-                        icon:'icon-iconfontedit',
-                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.query
-                    }
-
-                ],
-                
-            },
             newMarketClue:{
                 projectid:'',
                 projectaddress:'',
@@ -117,7 +103,7 @@ export default {
         }
     },
     components:{
-        vFormulaBar,vMap
+        vMap
     },
     created(){
         this._getCustomerList()
@@ -125,15 +111,8 @@ export default {
         this._getPurchaseProjectList()
     },
     methods:{
-        getFormulaBar(res){
-            console.log(res)
-            if(res=='confirm'){
-                this.addworkorder()
-            }
-        },
-        getCutTab(res){
-            console.log(res)
-            this.tabListIndex = res.index
+        visible(){
+            this.$emit('onVisible',false)
         },
         //新增
         addworkorder(){
@@ -174,9 +153,7 @@ export default {
                         message: '新建成功',
                         type: 'success'
                     })
-                    this.$router.replace({ 
-                        path: 'afterSale',                
-                    })
+                     this.$emit('newAfter',true)
                     
                 }else{
                     this.$message.error(res.msg);
@@ -250,6 +227,9 @@ export default {
             this.newMarketClue.projectaddress = mapVal.address
             this.newMarketClue.longitude = mapVal.lng
             this.newMarketClue.latitude = mapVal.lat
+            this.mapVal.address = mapVal.address
+            this.mapVal.lng = mapVal.lng
+            this.mapVal.lat = mapVal.lat
         }
 
         
@@ -261,7 +241,7 @@ export default {
 <style scoped lang="stylus" rel="stylesheet/stylus">
     .new
         width 100%
-        padding 10px 15px
+        
         overflow hidden
         .title
             padding 10px 0
@@ -271,10 +251,12 @@ export default {
             margin 0 20px
         .newContent
             margin-left 20px
-            padding 20px 0
-            width 30%
+            padding-right 80px
+            
             .el-date-editor,.el-select
                 width 100%
     .mapBox
         background rgba(0,0,0,.5)
+    .dialog-footer
+        float right
 </style>

@@ -10,7 +10,7 @@
                        
                         
                         <el-form-item>
-                            <div class="leftBtn btn" @click="getProjectList(1)" >
+                            <div class="leftBtn btn" @click="setReset" >
                         
                                 <span class="btnTitle">查询</span>
                             </div>
@@ -129,9 +129,10 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData">
+                <div class="pagination" v-if="pageReset">
                     <el-pagination 
                     background
+                    :current-page.sync="page"
                     :page-size="pageSize"
                     @current-change="pagingChange"
                     layout="prev, pager, next"
@@ -169,6 +170,8 @@ export default {
         },
         tableData: [],
         pageSize:10,
+        page:1,
+        pageReset:false,
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
         limits:JSON.parse(sessionStorage.getItem('limits')),
         multipleSelection: [],
@@ -212,7 +215,13 @@ export default {
     },
     //分页
     pagingChange(val){
+        this.page = val
         this.getProjectList(val)
+    },
+    setReset(){
+        this.pageReset = false
+        this.page = 1
+        this.getProjectList()
     },
     onDetails(row){
         this.$router.push({ 
@@ -230,7 +239,7 @@ export default {
             "companyid": sessionStorage.getItem('companyid'),
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['file'],
-            "page":page,
+            "page":this.page,
             "status":-1,
             "pagesize":this.pageSize
         }
@@ -239,7 +248,9 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.tableData = res.data
-                
+                if(res.data.total>0){
+                    this.pageReset = true
+                }
             }else{
                 this.$message.error(res.msg);
             }

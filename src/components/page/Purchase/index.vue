@@ -22,13 +22,13 @@
 
 
                         <el-form-item>
-                            <div class="leftBtn btn" @click="getPurchaseList(1)" >
+                            <div class="leftBtn btn" @click="setReset" >
                                 <span class="btnTitle">查询</span>
                             </div>
-                        </el-form-item>
+                        </el-form-item> 
 
-                        <el-form-item v-if="jurisdiction.purchase.add">
-                            <div class="leftBtn btn"  @click="onAdd">
+                        <!-- <el-form-item v-if="jurisdiction.purchase.add">
+                            <div class="leftBtn btn"  >
                                 <span class="btnTitle">添加采购记录</span>
                             </div>
                         </el-form-item>
@@ -36,19 +36,38 @@
                             <div class="leftBtn btn" @click="exportworkorder()" >
                                 <span class="btnTitle">导出</span>
                             </div>
-                        </el-form-item>
+                        </el-form-item> -->
                     </el-form>
                     
                 </div>
                 <div class="floatRight rightBox clearfix">
-                    <div class="rightBtn btn" v-if="item.limits" v-for="(item,index) in formulaList.right" :key="index"   >
-                        <i class="iconfont marR5" :class="[item.icon]"></i>
-                        <span class="btnTitle">{{item.title}}</span>
+                    <div class="rightBtn btn" v-if="jurisdiction.purchase.add"  @click="onAdd" >
+                        <i class="iconfont marR5 icon-jia" ></i>
+                        <span class="btnTitle">新建采购记录</span>
+                    </div> 
+                    <div class="rightBtn btn bg4C97FF" v-if="jurisdiction.purchase.query"  @click="exportworkorder" >
+                        <i class="iconfont marR5 icon-export" ></i>
+                        <span class="btnTitle">批量导出</span>
                     </div> 
                 </div>
             </div> 
             <div class="contentBox clearfix bgWhite padTb10">
                 <div class="pad20 bgWhite">
+                    <el-row :gutter="20" class="marB20" >
+                        <el-col :span="6">
+                            <div class="financialDataBox" v-if="tableData.mothpurchasemoney">
+                                <div class="marB10 "><span class="fbold color666">本月采购金额：</span><span class="fsize24" style="color:#4c97ff">￥{{tableData.mothpurchasemoney}}</span></div>
+                               
+                            </div>
+                            </el-col>
+                        <el-col :span="12">
+                            <div class="financialDataBox" v-if="tableData.yearpurchasemoney">
+                                <div class="marB10 "><span class="fbold color666">年度采购金额：</span><span  class="fsize24" style="color:#1ace59">￥{{tableData.yearpurchasemoney}}</span></div>
+                                
+                            </div>
+                        </el-col>
+                    
+                    </el-row>
                     <!-- 投标文件开始 -->
                     <el-table
                         ref="multipleTable"
@@ -151,13 +170,14 @@
 
                 </div>
                 <!-- 分页 -->
-                <div class="pagination" v-if="tableData.list">
+                <div class="pagination" v-if="pageReset">
                     <el-pagination 
                     background
+                    :current-page.sync="page"
                     :page-size="pageSize"
                     layout="prev, pager, next"
                     @current-change="pagingChange"
-                    :total="tableData.list[0].total">
+                    :total="tableData.total">
                     </el-pagination>
                 </div>
 
@@ -215,23 +235,7 @@
                         </el-upload>
                     </div>
                 </div>  
-                <!-- <div class="clearfix marB15">
-                    <div class="floatLeft addVoucherTitle">上传文件</div>
-                    <div class="floatLeft addVoucherContent">
-                        <el-upload
-                        multiple
-                        class="upload-demo"
-                        :action="exportUrl"
-                        :on-change="handleChange"
-                        :on-remove = "handleRemove"
-                        :file-list="fileList"
-                        :on-success="handleSuccess"
-                        >
-                        <el-button size="small" type="primary">点击上传</el-button>
-                        
-                        </el-upload>
-                    </div> 
-                </div>   -->
+               
 
                 <div class="clearfix marB15">
                     <div class="floatLeft addVoucherTitle">备注信息</div>
@@ -249,15 +253,23 @@
         </span>
         </el-dialog>
         
-
+         <el-dialog
+            title="新建采购明细"
+            :visible.sync="newVisible"
+            width="40%"
+        >
+            <v-newPurchase @newPurchase='newPurchase' @onVisible="onVisible"  v-if="newVisible"></v-newPurchase>
+                
+            
+         </el-dialog>
+        
     </div>
     
 </template>
 <script>
 
-import vParticularsTab from '../../common/ParticularsTab.vue';  //详情信息tab
-import vProjectInfo from '../../common/ProjectInfo.vue';  //项目信息
-import vBidInfo from '../../common/BidInfo.vue';  //招投标信息
+
+import vNewPurchase from './new.vue';  //项目信息
 import {Axios} from './../../../api/axios'
 import {Session} from './../../../api/axios'
 
@@ -279,6 +291,7 @@ export default {
         projectList:[],
         pageSize:10,
         page:1,
+        pageReset:false,
         multipleSelection: [],
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
@@ -320,17 +333,17 @@ export default {
         remark:'',
         purchaseid:'',
         exportUrl:Session.exportUrl+'saveFile',
-        
+        newVisible:false
     }
   },
   created () {
-      this.getPurchaseList(1)
+      this.getPurchaseList()
       this.getPurchaseTypeList()      
       this.getPurchaseProjectList()
     
   },
   components:{
-    vParticularsTab,vProjectInfo,vBidInfo
+    vNewPurchase
   },
   methods:{
     //FormulaBar组件按钮事件
@@ -353,7 +366,12 @@ export default {
     //分页
     pagingChange(val){
         this.page = val
-        this.getPurchaseList(val)
+        this.getPurchaseList()
+    },
+    setReset(){
+        this.pageReset = false
+        this.page = 1
+        this.getPurchaseList()
     },
     //跳转详情事件
     onDetails(row){
@@ -365,7 +383,7 @@ export default {
          })
     },
     //获取列表数据
-    getPurchaseList(page){
+    getPurchaseList(){
         this.loading = true
         let reqBody = {
             "api": "getpurchaselist",
@@ -374,7 +392,7 @@ export default {
             "userid": sessionStorage.getItem('userid'),
             "limit":this.limits['purchase'],
             "projectid":this.searchData.custmerId,
-            "page":page,
+            "page":this.page,
             "pagesize":this.pageSize
         }
 
@@ -382,7 +400,9 @@ export default {
             console.log(res)
             if(res.state==10001){
                 this.tableData = res.data
-                
+                if(res.data.total>0){
+                    this.pageReset = true
+                }
             }else{
                 this.$message.error(res.msg);
             }
@@ -441,10 +461,7 @@ export default {
     },
     //跳转添加
     onAdd(){
-        this.$router.push({ 
-            path: 'purchaseNew'              
-            
-         })
+        this.newVisible = true
     },
     //导出
     exportworkorder(){
@@ -478,7 +495,7 @@ export default {
                 console.log(res)
                 if(res.state==10001){
                     this.$message.success('删除成功')
-                    this.getPurchaseList(1)
+                    this.getPurchaseList()
                     
                 }else{
                     this.$message.error(res.msg);
@@ -673,7 +690,7 @@ export default {
         Axios(reqBody,'index').then((res) => {
             console.log(res)
             if(res.state==10001){
-                this.getPurchaseList(this.page)
+                this.getPurchaseList()
                 this.$message.success('修改成功')
                 this.compileVisible = false
                 
@@ -682,6 +699,16 @@ export default {
             }
 
         })
+    },
+    newPurchase(msg){
+        console.log(msg)
+        this.page = 1
+        this.newVisible = false
+        this.getPurchaseList()
+    },
+    onVisible(msg){
+        console.log(msg)
+        this.newVisible = false
     }
 
     

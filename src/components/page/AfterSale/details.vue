@@ -118,15 +118,16 @@
                                            </div>
                                        </div>
                                        <div class="floatLeft imgBox">
-                                           <div class="fsize14 fbold marB15">{{item.staffname}} <span class="marL20">{{item.createtime}}</span> </div>
+                                           <div class="fsize14 fbold marB15">{{item.staffname}}</div>
                                            <div class="fsize14 color666 marB15">{{item.remark}}</div>
-                                           <div class="voucherImgBox clearfix marB15" v-if="item.fileurl">
+                                           <div class="voucherImgBox clearfix" v-if="item.fileurl">
                                                <div class="voucherImgItem" v-for="(_item,_index) in item.fileurl.split(',')" :key="_index" @click="examinePicture(_item)">
                                                    <img :src="_item" alt="">
                                                </div>
                                                
                                            </div>
-                                           <div class="fsize14 color999 marB15">{{item.serviceaddress}}</div>
+                                           <div class="fsize14 color999 marB5" v-if="item.serviceaddress">{{item.serviceaddress}}</div>
+                                           <div class="fsize14 color999 marB15">{{item.createtime}}</div>
                                        </div>
                                    </div>
                                    <!-- 凭证列表项结束 -->
@@ -317,6 +318,7 @@ export default {
         deptemp:[],
         servicelist:'',
         jurisdiction:JSON.parse(sessionStorage.getItem('jurisdiction')),
+        limits:JSON.parse(sessionStorage.getItem('limits')),
         formulaList:{ //编辑栏按钮数
             parent:'marketClue',
             left:[
@@ -488,76 +490,60 @@ export default {
                         {
                             title:'上传凭证',
                             clickEvent:'uploading',
-                            icon:'icon-iconfontedit',
-                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                            icon:'icon-export',
+                            limits:true
                         },
                         {
                             title:'确认完成',
                             clickEvent:'confirm',
-                            icon:'icon-jia',
-                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
+                            bgColor:'bg4C97FF',
+                            icon:'icon-wancheng',
+                            limits:true
                         }
                     ]
                     if(res.data.workstatus==1){
-                        this.formulaList.left = [
-                            
-                        ]
                         this.formulaList.right = [
                             {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                                icon:'icon-export',
+                                limits:true
                             }
                         ]
-                    }else{
-                        this.formulaList.left = [
-                            {
-                                title:'编辑',
-                                clickEvent:'compile',
-                                icon:'icon-bianji',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
-                            }
-                        ]
-                        this.formulaList.right = [
-                            {
-                                title:'上传凭证',
-                                clickEvent:'uploading',
-                                icon:'icon-iconfontedit',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
-                            }
-                        ]
-                        
                     }
                 }else if(res.data.isworkservice==1){
                     if(res.data.isaccept==0){
+                        
                         this.formulaList.right = [
                             {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                                icon:'icon-export',
+                                limits:true
                             },
                             {
                                 title:'接受派单',
                                 clickEvent:'reception',
-                                icon:'icon-bianji',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
+                               
+                                icon:'icon-accept',
+                                limits:true
                             }
                         ]
                     }else if(res.data.isaccept==1){
+                        
                         this.formulaList.right = [
                             {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                                icon:'icon-export',
+                                limits:true
                             },
                                 {
                                 title:'确认完成',
                                 clickEvent:'confirm',
-                                icon:'icon-jia',
-                                 limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
+                                bgColor:'bg4C97FF',
+                                icon:'icon-wancheng',
+                                 limits:true
                             }
                         ]
                     }else if(res.data.isaccept==2){
@@ -565,21 +551,19 @@ export default {
                              {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                                icon:'icon-export',
+                                limits:true
                             }
                         ]
                     }
                     if(res.data.workstatus==1){
-                        this.formulaList.left = [
-                           
-                        ]
+                       
                         this.formulaList.right = [
                             {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                                icon:'icon-export',
+                                limits:true
                             }
                         ]
                     }
@@ -590,14 +574,15 @@ export default {
                         {
                             title:'上传凭证',
                             clickEvent:'uploading',
-                            icon:'icon-iconfontedit',
-                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                            icon:'icon-export',
+                            limits:true
                         },
                         {
                             title:'确认完成',
                             clickEvent:'confirm',
-                            icon:'icon-jia',
-                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
+                            bgColor:'bg4C97FF',
+                                icon:'icon-wancheng',
+                            limits:true
                         }
                         ]
                     }else if(res.data.isaccept==2){
@@ -605,30 +590,28 @@ export default {
                             {
                                 title:'上传凭证',
                                 clickEvent:'uploading',
-                                icon:'icon-iconfontedit',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.add
+                                icon:'icon-export',
+                                limits:true
                             }
                         ]
                     }
-                    if(res.data.workstatus==0){
-                        this.formulaList.left = [
-                            {
-                                title:'编辑',
-                                clickEvent:'compile',
-                                icon:'icon-bianji',
-                                limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
-                            }
-                        ]
-                    }else{
-                        this.formulaList.left = [
-                           
-                        ]
-                    }
-                    
-                    
                 }
                 
-            
+                if(res.data.workstatus==1){
+                    this.formulaList.left = [
+                        
+                    ]
+                }else{
+                    this.formulaList.left = [
+                        {
+                            title:'编辑',
+                            clickEvent:'compile',
+                            icon:'icon-bianji',
+                            limits:JSON.parse(sessionStorage.getItem('jurisdiction')).workorder.save
+                        }
+                    ]
+                    
+                }
 
                 this.workrateList = res.data.workratelist
                 
@@ -665,7 +648,7 @@ export default {
             "api": "addproof",
             "workid": this.$route.query.workorderid,
             "serviceid": sessionStorage.getItem('userid'),
-            "serviceaddress": "项目宝-电脑版",
+            "serviceaddress": "",
             "remark": this.upVoucher.remark,
             "fileurl": "",
             "companyid":sessionStorage.getItem('companyid'),
@@ -885,7 +868,7 @@ export default {
             width 100px
             height 100px
             margin-right 20px
-            margin-bottom 20px
+            margin-bottom 15px
         .imgBox
             width 970px
     .addVoucherTitle

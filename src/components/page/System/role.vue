@@ -63,7 +63,7 @@
               label="操作"
               width="300"
               align="center"
-              v-if="limit==1 || jurisdiction.role.query || jurisdiction.role.save || jurisdiction.role.remove">
+              v-if="limit==1 || jurisdiction.role.query == 1 || jurisdiction.role.save == 1 || jurisdiction.role.remove == 1">
               <template slot-scope="scope">
                 <el-tooltip v-if="jurisdiction.role.query" class="item" effect="dark" content="角色详情"
                             placement="top-end">

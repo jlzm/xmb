@@ -31,19 +31,23 @@
                          
                             <div  v-if="tabListIndex==0" class="invitationBox">
                                 <div>
-                                <div class="particularsRightItem"  v-for="(item,index) in threadInfo.sellThreadRates" :key="index" >
-                                    <div class="rightItemTitleBox clearfix">
-                                        <div class="rightItemTitle floatLeft">{{item.name}} {{item.updatetime}}</div>
-                                        <!-- <div class="rightItemTitleBtnBox floatRight">
-                                            <div class="rightItemTitleBtn floatLeft">编辑</div>
-                                            <div class="rightItemTitleBtn titleBtnDelete floatLeft">删除</div>
-                                        </div> -->
+                                    <div class="particularsRightItem"  v-for="(item,index) in threadInfo.sellThreadRates" :key="index" >
+                                        <div class="rightItemTitleBox clearfix">
+                                            <div class="rightItemTitle floatLeft">{{item.name}} {{item.updatetime}}</div>
+                                            <!-- <div class="rightItemTitleBtnBox floatRight">
+                                                <div class="rightItemTitleBtn floatLeft">编辑</div>
+                                                <div class="rightItemTitleBtn titleBtnDelete floatLeft">删除</div>
+                                            </div> -->
+                                        </div>
+                                        <div class="rightItemContentBox">
+                                            <div>{{item.record}}</div>
+                                        </div>
                                     </div>
-                                    <div class="rightItemContentBox">
-                                        <div>{{item.record}}</div>
-                                    </div>
+                                    <div class="pad20"  v-if="threadInfo.sellThreadRates&&threadInfo.sellThreadRates.length<=0">
+                                        <img class="notIcon"  v-lazy="{src:'static/img/notIcon.png'}" alt="">
+                                    <div class="notText">暂无跟进记录</div>
                                 </div>
-                            </div>
+                                </div>
                             </div>
                          
                             <!-- 跟进记录结束 -->
@@ -272,8 +276,11 @@
             <div class="marB20">
                 <el-radio v-model="radioState" label="1">未中标</el-radio>
             </div>
-            <div >
+            <div class="marB20">
                 <el-radio v-model="radioState" label="3">未投标</el-radio>
+            </div>
+            <div >
+                <el-radio v-model="radioState" label="0">投标中</el-radio>
             </div>
             
         </div>
@@ -450,15 +457,16 @@ export default {
             ],
             right:[
                 {
-                    title:'添加记录',
+                    title:'添加跟进记录',
                     clickEvent:'addRecord',
                     icon:'icon-jia',
-                    limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.add
+                    limits:true
                 },
                 {
                     title:'更改项目状态',
                     clickEvent:'changeState',
                     icon:'icon-bianji',
+                    bgColor:'bg4C97FF',
                     limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.save
                 }
             ]
@@ -619,18 +627,19 @@ export default {
                         title:'添加文件',
                         clickEvent:'add',
                         icon:'icon-jia',
-                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.add
+                        limits:true
                     },
                     {
-                        title:'添加记录',
+                        title:'添加跟进记录',
                         clickEvent:'addRecord',
                         icon:'icon-jia',
-                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.add
+                        limits:true
                     },
                     {
                         title:'更改项目状态',
                         clickEvent:'changeState',
                         icon:'icon-bianji',
+                        bgColor:'bg4C97FF',
                         limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.save
                     }
 
@@ -638,15 +647,16 @@ export default {
             }else{
                 this.formulaList.right=[
                     {
-                        title:'添加记录',
+                        title:'添加跟进记录',
                         clickEvent:'addRecord',
                         icon:'icon-jia',
-                        limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.add
+                        limits:true
                     },
                     {
                         title:'更改项目状态',
                         clickEvent:'changeState',
                         icon:'icon-bianji',
+                        bgColor:'bg4C97FF',
                         limits:JSON.parse(sessionStorage.getItem('jurisdiction')).bin.save
                     }
                 ]
@@ -951,7 +961,7 @@ export default {
             width 220px
     .iframe
         height 100vh
-        padding-bottom 200px
+        padding-bottom 60px
         overflow: auto
         margin: 0
         z-index 3333
